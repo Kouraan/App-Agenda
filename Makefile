@@ -11,8 +11,8 @@ SOURCES = $(shell find $(SRC_DIR) -name "*.java")
 
 # Inclui todos os .jar do lib/ no classpath
 JARS = $(wildcard $(LIB_DIR)/*.jar)
-JARS_CP = $(subst $(space),:,$(JARS)
-)
+JARS_CP = $(subst $(space),:,$(JARS))
+
 JAVAC_FLAGS = -d $(SRC_DIR) -sourcepath $(SRC_DIR) -cp "$(JARS_CP)"
 JAVA_FLAGS = -cp "$(SRC_DIR):$(JARS_CP):$(RES_DIR)"
 
