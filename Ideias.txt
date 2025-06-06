@@ -10,3 +10,25 @@ Back-end: Java
 Front-end: JavaFX
 Persitencia: Ficherios JSON
 Distribuicao: Empactor como .jar com JavaFX. Executavel .exe
+
+
+Ótima questão! Para um projeto de agenda moderno, usar ficheiros .json é uma escolha muito melhor do que ficheiros de texto simples ou ficheiros binários de objetos, porque:
+
+JSON é legível, fácil de editar e de integrar com outras aplicações.
+Existem bibliotecas Java que facilitam muito a leitura e escrita de objetos em JSON.
+Como fazer o parse de .json em Java
+1. Usar uma biblioteca JSON
+As mais comuns são:
+
+Jackson
+Gson
+
+Preciso de ficheiro binário?
+Não!
+Com JSON, não precisas de ficheiros binários nem de ObjectOutputStream.
+JSON é mais flexível, portável e fácil de manter.
+
+Resumo
+Usa uma biblioteca como Gson ou Jackson.
+Lê e escreve listas de objetos diretamente em ficheiros .json.
+O parse é automático: a biblioteca converte entre JSON e os teus objetos Java.

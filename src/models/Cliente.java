@@ -1,15 +1,11 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Cliente {
     private String id;
     private String nome;
     private String numeroTelefone;
     private String tipoCliente;
     private int faltas;
-    private List<String> observacoes;
 
     // Construtores
     public Cliente() {
@@ -18,16 +14,14 @@ public class Cliente {
         this.numeroTelefone = "";
         this.tipoCliente = "";
         this.faltas = 0;
-        this.observacoes = new ArrayList<>();
     }
 
-    public Cliente(String id, String nome, String numeroTelefone, String tipoCLiente, int faltas, String[] observacoes) {
+    public Cliente(String id, String nome, String numeroTelefone, String tipoCLiente, int faltas) {
         this.id = id;
         this.nome = nome;
         this.numeroTelefone = numeroTelefone;
         this.tipoCliente = tipoCliente;
         this.faltas = faltas;
-        this.observacoes = new ArrayList<>(observacoes.length);
     }
 
     public Cliente(Cliente outro) {
@@ -36,7 +30,6 @@ public class Cliente {
         this.numeroTelefone = outro.numeroTelefone;
         this.tipoCliente = outro.tipoCliente;
         this.faltas = outro.faltas;
-        this.observacoes = new ArrayList<>(outro.observacoes);
     }
 
     // Getters e Setters
@@ -80,14 +73,6 @@ public class Cliente {
         this.faltas = faltas;
     }
 
-    public List<String> getObservacoes() {
-        return new ArrayList<>(observacoes);
-    }
-
-    public void setObservacoes(List<String> observacoes) {
-        this.observacoes = new ArrayList<>(observacoes);
-    }
-
     @Override
     public Cliente clone() {
         return new Cliente(this);
@@ -101,7 +86,6 @@ public class Cliente {
                 ", numeroTelefone='" + numeroTelefone + '\'' +
                 ", tipoCliente='" + tipoCliente + '\'' +
                 ", faltas=" + faltas +
-                ", observacoes=" + String.join(", ", observacoes) +
                 '}';
     }
 }
