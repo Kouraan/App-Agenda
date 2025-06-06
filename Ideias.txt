@@ -1,0 +1,12 @@
+App Agenda
+
+interface gráfica facil de usar
+funcionar offline, sem necessidade de servidor online
+distribuida como executavel (em Windows), sem necessidade de instalacao de compiladores
+guardar dados
+ter logs de acoes
+
+Back-end: Java
+Front-end: JavaFX
+Persitencia: Ficherios JSON
+Distribuicao: Empactor como .jar com JavaFX. Executavel .exe
