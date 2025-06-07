@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -56,6 +57,38 @@ public class Persistencia {
             return marcacaoMap;
         } catch (Exception e) {
             return new HashMap<>();
+        }
+    }
+
+    // Guarda utilizadores no ficheiro JSON
+    public static boolean guardarUtilizadores(List<Utilizador> utilizadores) {
+        if (utilizadores.size() > 1) return false; // só pode haver 1
+        Gson gson = new Gson();
+        try (FileWriter writer = new FileWriter("../data/utilizadores.json")) {
+            gson.toJson(utilizadores, writer);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    // Guarda clientes no ficheiro JSON
+    public static boolean guardarClientes(Map<String, Cliente> clientes) {
+        Gson gson = new Gson();
+        try (FileWriter writer = new FileWriter("../data/clientes.json")) {
+            gson.toJson(clientes.values(), writer);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    // Guarda marcaçoes no ficheiro JSON
+    public static boolean guardarMarcacoes(Map<LocalDateTime, Marcacao> marcacoes) {
+        Gson gson = new Gson();
+        try (FileWriter writer = new FileWriter("../data/marcacoes.json")) {
+            gson.toJson(marcacoes.values(), writer);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 }
