@@ -1,7 +1,6 @@
 package models;
 
 public class Cliente {
-    private String id;
     private String nome;
     private String numeroTelefone;
     private String tipoCliente;
@@ -9,15 +8,13 @@ public class Cliente {
 
     // Construtores
     public Cliente() {
-        this.id = "";
         this.nome = "";
         this.numeroTelefone = "";
         this.tipoCliente = "";
         this.faltas = 0;
     }
 
-    public Cliente(String id, String nome, String numeroTelefone, String tipoCLiente, int faltas) {
-        this.id = id;
+    public Cliente(String nome, String numeroTelefone, String tipoCLiente, int faltas) {
         this.nome = nome;
         this.numeroTelefone = numeroTelefone;
         this.tipoCliente = tipoCliente;
@@ -25,22 +22,20 @@ public class Cliente {
     }
 
     public Cliente(Cliente outro) {
-        this.id = outro.id;
         this.nome = outro.nome;
         this.numeroTelefone = outro.numeroTelefone;
         this.tipoCliente = outro.tipoCliente;
         this.faltas = outro.faltas;
     }
+    // Construtor para cliente temporário
+    public Cliente(String nome) {
+        this.nome = nome;
+        this.numeroTelefone = "";
+        this.tipoCliente = "desconhecido";
+        this.faltas = 0;
+    }
 
     // Getters e Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getNome() {
         return nome;
     }
@@ -73,6 +68,10 @@ public class Cliente {
         this.faltas = faltas;
     }
 
+    public boolean isTemporario() {
+        return "desconhecido".equalsIgnoreCase(this.tipoCliente);
+    }
+
     @Override
     public Cliente clone() {
         return new Cliente(this);
@@ -81,8 +80,7 @@ public class Cliente {
     @Override
     public String toString() {
         return "Cliente{" +
-                "id='" + id + '\'' +
-                ", nome='" + nome + '\'' +
+                "nome='" + nome + '\'' +
                 ", numeroTelefone='" + numeroTelefone + '\'' +
                 ", tipoCliente='" + tipoCliente + '\'' +
                 ", faltas=" + faltas +
