@@ -10,6 +10,7 @@ LIB_DIR = lib
 SOURCES = $(shell find $(SRC_DIR) -name "*.java")
 
 # Inclui todos os .jar do lib/ no classpath
+space := $(empty) $(empty)
 JARS = $(wildcard $(LIB_DIR)/*.jar)
 JARS_CP = $(subst $(space),:,$(JARS))
 
