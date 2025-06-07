@@ -14,15 +14,19 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class Persistencia {
-    // Parsing e criação de uma lista de Utilizadores proveniente do ficheiro JSON
-    public static List<Utilizador> lerUtilizador() {
+    // Parsing e criação de um Utilizador proveniente do ficheiro JSON
+    public static Utilizador lerUtilizador() {
         Gson gson = new Gson();
         Type utilizadorListType = new TypeToken<List<Utilizador>>(){}.getType();
         try (FileReader reader = new FileReader("../data/utilizadores.json")) {
             List<Utilizador> utilizadores = gson.fromJson(reader, utilizadorListType);
-            return utilizadores != null ? utilizadores : List.of();
+            if (utilizadores != null && !utilizadores.isEmpty()) {
+                return utilizadores.get(0).clone();
+            } else {
+                return null;
+            }
         } catch (Exception e) {
-            return List.of();
+            return null;
         }
     }
     // Parsing e criação de um Map de Clientes (chave: nome) de um ficheiro JSON
@@ -60,12 +64,11 @@ public class Persistencia {
         }
     }
 
-    // Guarda utilizadores no ficheiro JSON
-    public static boolean guardarUtilizadores(List<Utilizador> utilizadores) {
-        if (utilizadores.size() > 1) return false; // só pode haver 1
+    // Guarda utilizador no ficheiro JSON
+    public static boolean guardarUtilizador(Utilizador utilizador) {
         Gson gson = new Gson();
         try (FileWriter writer = new FileWriter("../data/utilizadores.json")) {
-            gson.toJson(utilizadores, writer);
+            gson.toJson(utilizador, writer);
             return true;
         } catch (Exception e) {
             return false;
@@ -74,8 +77,11 @@ public class Persistencia {
     // Guarda clientes no ficheiro JSON
     public static boolean guardarClientes(Map<String, Cliente> clientes) {
         Gson gson = new Gson();
+        List<Cliente> clientesOrdenados = clientes.values().stream()
+                .sorted((c1,c2) -> c1.getNome().compareToIgnoreCase(c2.getNome()))
+                .toList();
         try (FileWriter writer = new FileWriter("../data/clientes.json")) {
-            gson.toJson(clientes.values(), writer);
+            gson.toJson(clientesOrdenados, writer);
             return true;
         } catch (Exception e) {
             return false;
@@ -84,8 +90,11 @@ public class Persistencia {
     // Guarda marcaçoes no ficheiro JSON
     public static boolean guardarMarcacoes(Map<LocalDateTime, Marcacao> marcacoes) {
         Gson gson = new Gson();
+        List<Marcacao> marcacoesOrdenadas = marcacoes.values().stream()
+                .sorted((m1, m2) -> m1.getDataHora().compareTo(m2.getDataHora()))
+                .toList();
         try (FileWriter writer = new FileWriter("../data/marcacoes.json")) {
-            gson.toJson(marcacoes.values(), writer);
+            gson.toJson(marcacoesOrdenadas, writer);
             return true;
         } catch (Exception e) {
             return false;
