@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.HashMap; 
 
 public class Persistencia {
     // Parsing e criação de um Utilizador proveniente do ficheiro JSON

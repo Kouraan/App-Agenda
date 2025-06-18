@@ -63,5 +63,34 @@ public class Validation {
         if (numero == null) return false;
         String limpo = numero.replaceAll("[\\s\\-()]", "");
         return limpo.matches("^(\\+)?\\d{8,15}$");
-}
+    }
+
+    // Validacao de Utilizador, Cliente, Marcacao e Log
+    public static boolean utilizadorValido(Utilizador u) {
+        return u != null &&
+               u.getNome() != null && !u.getNome().trim().isEmpty() &&
+               u.getPassword() != null && !u.getPassword().trim().isEmpty();
+    }
+
+    public static boolean clienteValido(Cliente c) {
+        return c != null &&
+               nomeValido(c.getNome()) &&
+               numeroTelefoneValido(c.getNumeroTelefone()) &&
+               (c.getTipoCliente() == Cliente.TipoCliente.NORMAL || c.getTipoCliente() == Cliente.TipoCliente.DESCONHECIDO ||
+                (c.getTipoCliente() == Cliente.TipoCliente.SEMANAL && c.getDiaSemana() != null && c.getHoraCorte() != null));
+    }
+
+    public static boolean marcacaoValida(Marcacao m) {
+        return m != null &&
+               clienteValido(m.getCliente()) &&
+               m.getDataHora() != null &&
+               m.getDataHora().isAfter(LocalDateTime.now()) &&
+               m.getDuracao() > 0;
+    }
+
+    public static boolean logValido(Log l) {
+        return l != null &&
+               (l.getCliente() != null || l.getUtilizador() != null || l.getMarcacao() != null) &&
+               l.getDataHora() != null;
+    }
 }

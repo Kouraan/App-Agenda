@@ -30,6 +30,7 @@ MAIN_CLASS = Main
 
 # Compilar todas as classes
 all: initdata
+	@echo "Compilando fontes Java..."
 	$(JAVAC) $(JAVAC_FLAGS) $(SOURCES)
 
 # Limpar arquivos compilados
