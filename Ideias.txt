@@ -32,3 +32,40 @@ Resumo
 Usa uma biblioteca como Gson ou Jackson.
 Lê e escreve listas de objetos diretamente em ficheiros .json.
 O parse é automático: a biblioteca converte entre JSON e os teus objetos Java.
+
+Estrutura do projeto:
+App-Agenda:
+|
+|--data/
+|  |--clientes.json
+|  |--marcacoes.json
+|  |--utilizador.json
+|--lib/
+|  |--gson-2.10.1.jar
+|  |--javafx.base.jar
+|  |--javafx.controls.jar
+|  |--javafx.fxml.jar
+|  |--javafx.graphics.jar
+|  |--javafx.media.jar
+|  |--javafx.swing.jar
+|  |--javafx.web.jar
+|  |--javafx-swt.jar
+|--logs/
+|  |--logsClientes.json
+|  |--logsMarcacoes.json
+|  |--logsUtilizador.json
+|--resources/
+|--src/
+|  |--controller/
+|  |--models/
+|     |--Cliente.java
+|     |--Log.java
+|     |--Marcacao.java
+|     |--Utilizador.java
+|  |--utils/
+|     |--Logger.java
+|     |--Persistencia.java
+|     |--Validation.java
+|  |--view/
+|  |--Main.java
+|--Makefile

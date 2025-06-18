@@ -6,6 +6,7 @@ SRC_DIR = src
 RES_DIR = resources
 LIB_DIR = lib
 DATA_DIR = data
+LOG_DIR = logs
 
 # Listar todos os ficheiros .java dentro de src/
 SOURCES = $(shell find $(SRC_DIR) -name "*.java")
@@ -24,13 +25,16 @@ initdata:
 	@test -f $(DATA_DIR)/utilizador.json || echo "[]" > $(DATA_DIR)/utilizador.json
 	@test -f $(DATA_DIR)/clientes.json || echo "[]" > $(DATA_DIR)/clientes.json
 	@test -f $(DATA_DIR)/marcacoes.json || echo "[]" > $(DATA_DIR)/marcacoes.json
+	@mkdir -p $(LOG_DIR)
+	@test -f $(LOG_DIR)/logsUtilizador.json || echo "[]" > $(LOG_DIR)/logsUtilizador.json
+	@test -f $(LOG_DIR)/logsClientes.json || echo "[]" > $(LOG_DIR)/logsCliente.json
+	@test -f $(LOG_DIR)/logsMarcacoes.json || echo "[]" > $(LOG_DIR)/logsMarcacao.json
 
 # Nome da classe principal do programa
 MAIN_CLASS = Main
 
 # Compilar todas as classes
 all: initdata
-	@echo "Compilando fontes Java..."
 	$(JAVAC) $(JAVAC_FLAGS) $(SOURCES)
 
 # Limpar arquivos compilados
