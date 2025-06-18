@@ -1,24 +1,47 @@
 package models;
 
 public class Cliente {
+    public enum TipoCliente {
+        NORMAL,
+        DESCONHECIDO,
+        SEMANAL,
+    }
+
     private String nome;
     private String numeroTelefone;
-    private String tipoCliente;
+    private TipoCliente tipoCliente;
     private int faltas;
+    private String diaSemana;
+    private String horaCorte;
 
     // Construtores
     public Cliente() {
         this.nome = "";
         this.numeroTelefone = "";
-        this.tipoCliente = "";
+        this.tipoCliente = TipoCliente.DESCONHECIDO;
         this.faltas = 0;
+        this.diaSemana = null;
+        this.horaCorte = null;
     }
 
-    public Cliente(String nome, String numeroTelefone, String tipoCLiente, int faltas) {
+    // Construtor para NORMAL e DESCONHECIDO
+    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente, int faltas) {
         this.nome = nome;
         this.numeroTelefone = numeroTelefone;
         this.tipoCliente = tipoCliente;
         this.faltas = faltas;
+        this.diaSemana = null;
+        this.horaCorte = null;
+    }
+
+    // Construtor para SEMANAL
+    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente, int faltas, String diaSemana, String horaCorte) {
+        this.nome = nome;
+        this.numeroTelefone = numeroTelefone;
+        this.tipoCliente = tipoCliente;
+        this.faltas = faltas;
+        this.diaSemana = diaSemana;
+        this.horaCorte = horaCorte;
     }
 
     public Cliente(Cliente outro) {
@@ -26,13 +49,6 @@ public class Cliente {
         this.numeroTelefone = outro.numeroTelefone;
         this.tipoCliente = outro.tipoCliente;
         this.faltas = outro.faltas;
-    }
-    // Construtor para cliente temporário
-    public Cliente(String nome) {
-        this.nome = nome;
-        this.numeroTelefone = "";
-        this.tipoCliente = "desconhecido";
-        this.faltas = 0;
     }
 
     // Getters e Setters
@@ -52,11 +68,11 @@ public class Cliente {
         this.numeroTelefone = numeroTelefone;
     }
 
-    public String getTipoCliente() {
+    public TipoCliente getTipoCliente() {
         return tipoCliente;
     }
 
-    public void setTipoCliente(String tipoCliente) {
+    public void setTipoCliente(TipoCliente tipoCliente) {
         this.tipoCliente = tipoCliente;
     }
 
@@ -68,8 +84,24 @@ public class Cliente {
         this.faltas = faltas;
     }
 
+    public String getDiaSemana() {
+        return diaSemana;
+    }
+
+    public void setDiaSemana(String diaSemana) {
+        this.diaSemana = diaSemana;
+    }
+
+    public String getHoraCorte() {
+        return horaCorte;
+    }
+
+    public void setHoraCorte(String horaCorte) {
+        this.horaCorte = horaCorte;
+    }
+
     public boolean isTemporario() {
-        return "desconhecido".equalsIgnoreCase(this.tipoCliente);
+        return this.tipoCliente == TipoCliente.DESCONHECIDO;
     }
 
     @Override
@@ -84,6 +116,10 @@ public class Cliente {
                 ", numeroTelefone='" + numeroTelefone + '\'' +
                 ", tipoCliente='" + tipoCliente + '\'' +
                 ", faltas=" + faltas +
+                (tipoCliente == TipoCliente.SEMANAL
+                 ? ", diaSemana='" + diaSemana + '\'' +
+                  ", horaCorte='" + horaCorte + '\''
+                  : "") +
                 '}';
     }
 }

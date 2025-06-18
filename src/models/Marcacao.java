@@ -8,7 +8,6 @@ public class Marcacao {
     private LocalDateTime dataHora;
     private Cliente cliente;
     private int duracao;
-    private String servico;
     private List<String> observacoes;
     
     // Construtores
@@ -16,15 +15,13 @@ public class Marcacao {
         this.dataHora = LocalDateTime.now();
         this.cliente = new Cliente();
         this.duracao = 0;
-        this.servico = "";
         this.observacoes = new ArrayList<>();
     }
 
-    public Marcacao(LocalDateTime dataHora, Cliente cliente, int duracao, String servico, List<String> observacoes) {
+    public Marcacao(LocalDateTime dataHora, Cliente cliente, int duracao, List<String> observacoes) {
         this.dataHora = dataHora;
         this.cliente = cliente.clone();
         this.duracao = duracao;
-        this.servico = servico;
         this.observacoes = new ArrayList<>(observacoes);
     }
 
@@ -32,7 +29,6 @@ public class Marcacao {
         this.dataHora = outra.dataHora;
         this.cliente = outra.cliente.clone();
         this.duracao = outra.duracao;
-        this.servico = outra.servico;
         this.observacoes = new ArrayList<>(outra.observacoes);
     }
 
@@ -61,14 +57,6 @@ public class Marcacao {
         this.duracao = duracao;
     }
 
-    public String getServico() {
-        return servico;
-    }
-
-    public void setServico(String servico) {
-        this.servico = servico;
-    }
-
     public List<String> getObservacoes() {
         return new ArrayList<>(observacoes);
     }
@@ -88,7 +76,6 @@ public class Marcacao {
                 "dataHora=" + dataHora +
                 ", cliente=" + cliente +
                 ", duracao=" + duracao +
-                ", servico='" + servico +
                 ", observacoes=" + observacoes +
                 '}';
     }
