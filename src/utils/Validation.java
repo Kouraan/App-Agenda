@@ -68,29 +68,32 @@ public class Validation {
     // Validacao de Utilizador, Cliente, Marcacao e Log
     public static boolean utilizadorValido(Utilizador u) {
         return u != null &&
-               u.getNome() != null && !u.getNome().trim().isEmpty() &&
+               nomeValido(u.getNome()) &&
                u.getPassword() != null && !u.getPassword().trim().isEmpty();
     }
 
-    public static boolean clienteValido(Cliente c) {
+    public static boolean clienteValido(Cliente c, Map<String, Cliente> clientes) {
         return c != null &&
                nomeValido(c.getNome()) &&
                numeroTelefoneValido(c.getNumeroTelefone()) &&
+               !clienteDuplicado(clientes, c.getNome(), c.getNumeroTelefone()) &&
                (c.getTipoCliente() == Cliente.TipoCliente.NORMAL || c.getTipoCliente() == Cliente.TipoCliente.DESCONHECIDO ||
                 (c.getTipoCliente() == Cliente.TipoCliente.SEMANAL && c.getDiaSemana() != null && c.getHoraCorte() != null));
     }
 
-    public static boolean marcacaoValida(Marcacao m) {
+    public static boolean marcacaoValida(Marcacao m, Map<String, Cliente> clientes) {
         return m != null &&
-               clienteValido(m.getCliente()) &&
+               clienteValido(m.getCliente(), clientes) &&
                m.getDataHora() != null &&
-               m.getDataHora().isAfter(LocalDateTime.now()) &&
+               horaValida(null, m.getDataHora()) &&
                m.getDuracao() > 0;
     }
 
-    public static boolean logValido(Log l) {
+    public static boolean logValido(Log l, Map<String, Cliente> clientes) {
         return l != null &&
-               (l.getCliente() != null || l.getUtilizador() != null || l.getMarcacao() != null) &&
-               l.getDataHora() != null;
+               horaValida(null, l.getDataHora()) &&
+               (l.getCliente() == null || clienteValido(l.getCliente(), clientes)) &&
+               (l.getUtilizador() == null || utilizadorValido(l.getUtilizador())) &&
+               (l.getMarcacao() == null || marcacaoValida(l.getMarcacao(), clientes));
     }
 }
