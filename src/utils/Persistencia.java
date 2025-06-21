@@ -6,7 +6,6 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,7 +45,7 @@ public class Persistencia {
         }
     }
     // Parsing e criação de um Map de Clientes (chave: nome) de um ficheiro JSON
-    public static Map<String, Cliente> lerClientes() throws IOException {
+    public static Map<String, Cliente> lerClientes() {
         Type clienteListType = new TypeToken<List<Cliente>>(){}.getType();
         try (FileReader reader = new FileReader("data/clientes.json")) {
             List<Cliente> clientes = gson.fromJson(reader, clienteListType);
