@@ -1,35 +1,33 @@
 package models;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Marcacao {
     private LocalDateTime dataHora;
     private Cliente cliente;
     private int duracao;
-    private List<String> observacoes;
+    private String observacoes;
     
     // Construtores
     public Marcacao() {
         this.dataHora = LocalDateTime.now();
         this.cliente = new Cliente();
         this.duracao = 0;
-        this.observacoes = new ArrayList<>();
+        this.observacoes = "";
     }
 
-    public Marcacao(LocalDateTime dataHora, Cliente cliente, int duracao, List<String> observacoes) {
+    public Marcacao(LocalDateTime dataHora, Cliente cliente, int duracao, String observacoes) {
         this.dataHora = dataHora;
         this.cliente = cliente.clone();
         this.duracao = duracao;
-        this.observacoes = new ArrayList<>(observacoes);
+        this.observacoes = observacoes;
     }
 
     public Marcacao(Marcacao outra) {
         this.dataHora = outra.dataHora;
         this.cliente = outra.cliente.clone();
         this.duracao = outra.duracao;
-        this.observacoes = new ArrayList<>(outra.observacoes);
+        this.observacoes = outra.observacoes;
     }
 
     // Getters e Setters
@@ -57,12 +55,12 @@ public class Marcacao {
         this.duracao = duracao;
     }
 
-    public List<String> getObservacoes() {
-        return new ArrayList<>(observacoes);
+    public String getObservacoes() {
+        return observacoes;
     }
 
-    public void setObservacoes(List<String> observacoes) {
-        this.observacoes = new ArrayList<>(observacoes);
+    public void setObservacoes(String observacoes) {
+        this.observacoes = observacoes;
     }
 
     @Override

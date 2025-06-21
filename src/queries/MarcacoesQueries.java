@@ -2,7 +2,6 @@ package queries;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import models.*;
 
@@ -34,7 +33,9 @@ public class MarcacoesQueries {
     // Métodos
     public void addMarcacao(Marcacao marcacao) {
         if (marcacao != null && marcacao.getDataHora() != null) {
-            marcacoes.put(marcacao.getDataHora(), marcacao.clone());
+            if (!utils.Validation.marcacaoDuplicada(marcacoes, marcacao.getDataHora())) {
+                marcacoes.put(marcacao.getDataHora(), marcacao.clone());
+            }
         }
     }
 
@@ -44,16 +45,20 @@ public class MarcacoesQueries {
         }
     }
 
-    public void alterarMarcacao(LocalDateTime dataHoraMarcacao, LocalDateTime dataHora, Cliente cliente, int duracao, List<String> observacoes) {
+    public void alterarMarcacao(LocalDateTime dataHoraMarcacao, LocalDateTime dataHora, Cliente cliente, int duracao, String observacoes) {
         if (dataHoraMarcacao != null && marcacoes.containsKey(dataHoraMarcacao)) {
             Marcacao marcacao = marcacoes.get(dataHoraMarcacao);
+
+            if (dataHora != null && !dataHoraMarcacao.equals(dataHora) && marcacoes.containsKey(dataHora)) {
+                return;
+            }
 
             if (dataHora != null) marcacao.setDataHora(dataHora);
             if (cliente != null) marcacao.setCliente(cliente.clone());
             if (duracao > 0) marcacao.setDuracao(duracao);
             if (observacoes != null) marcacao.setObservacoes(observacoes);
 
-            if (!dataHoraMarcacao.equals(marcacao.getDataHora())) {
+            if (dataHora != null && !dataHoraMarcacao.equals(marcacao.getDataHora())) {
                 marcacoes.remove(dataHoraMarcacao);
                 marcacoes.put(dataHora, marcacao.clone());
             } else {

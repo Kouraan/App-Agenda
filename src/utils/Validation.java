@@ -58,6 +58,11 @@ public class Validation {
         );
     }
 
+    // Marcacao Duplicada
+    public static boolean marcacaoDuplicada(Map<LocalDateTime, Marcacao> marcacoes, LocalDateTime dataHora) {
+        return marcacoes.containsKey(dataHora);
+    }
+
     // Valida número de telefone
     public static boolean numeroTelefoneValido(String numero) {
         if (numero == null) return false;
@@ -87,13 +92,5 @@ public class Validation {
                m.getDataHora() != null &&
                horaValida(null, m.getDataHora()) &&
                m.getDuracao() > 0;
-    }
-
-    public static boolean logValido(Log l, Map<String, Cliente> clientes) {
-        return l != null &&
-               horaValida(null, l.getDataHora()) &&
-               (l.getCliente() == null || clienteValido(l.getCliente(), clientes)) &&
-               (l.getUtilizador() == null || utilizadorValido(l.getUtilizador())) &&
-               (l.getMarcacao() == null || marcacaoValida(l.getMarcacao(), clientes));
     }
 }

@@ -7,7 +7,7 @@ import models.*;
 
 public class Logger {
     public static void escreverLogUtilizador(Log log) {
-        try (FileWriter writer = new FileWriter("../logs/logsUtilizador.json", true)) {
+        try (FileWriter writer = new FileWriter("logs/logsUtilizador.json", true)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String linha = String.format(
                 "[%s] Utilizador: %s | Detalhes: %s\n",
@@ -22,7 +22,7 @@ public class Logger {
     }
 
     public static void escreverLogCliente(Log log) {
-        try (FileWriter writer = new FileWriter("../logs/logsClientes.json", true)) {
+        try (FileWriter writer = new FileWriter("logs/logsClientes.json", true)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String linha = String.format(
                 "[%s] Cliente: %s | Detalhes: %s\n",
@@ -37,7 +37,7 @@ public class Logger {
     }
 
     public static void escreverLogMarcacao(Log log) {
-        try (FileWriter writer = new FileWriter("../logs/logsMarcacoes.json", true)) {
+        try (FileWriter writer = new FileWriter("logs/logsMarcacoes.json", true)) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String linha = String.format(
                 "[%s] Marcacao: %s de %s | Detalhes: %s\n",

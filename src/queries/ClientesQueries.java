@@ -34,7 +34,9 @@ public class ClientesQueries {
     // Métodos
     public void addCliente(Cliente cliente) {
         if (cliente != null && cliente.getNome() != null) {
-            clientes.put(cliente.getNome(), cliente.clone());
+            if (!utils.Validation.clienteDuplicado(clientes, cliente.getNome(), cliente.getNumeroTelefone())) {
+                clientes.put(cliente.getNome(), cliente.clone());
+            }
         }
     }
 

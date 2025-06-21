@@ -27,8 +27,8 @@ initdata:
 	@test -f $(DATA_DIR)/marcacoes.json || echo "[]" > $(DATA_DIR)/marcacoes.json
 	@mkdir -p $(LOG_DIR)
 	@test -f $(LOG_DIR)/logsUtilizador.json || echo "[]" > $(LOG_DIR)/logsUtilizador.json
-	@test -f $(LOG_DIR)/logsClientes.json || echo "[]" > $(LOG_DIR)/logsCliente.json
-	@test -f $(LOG_DIR)/logsMarcacoes.json || echo "[]" > $(LOG_DIR)/logsMarcacao.json
+	@test -f $(LOG_DIR)/logsClientes.json || echo "[]" > $(LOG_DIR)/logsClientes.json
+	@test -f $(LOG_DIR)/logsMarcacoes.json || echo "[]" > $(LOG_DIR)/logsMarcacoes.json
 
 # Nome da classe principal do programa
 MAIN_CLASS = Main

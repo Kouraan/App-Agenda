@@ -25,21 +25,21 @@ public class Cliente {
     }
 
     // Construtor para NORMAL e DESCONHECIDO
-    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente, int faltas) {
+    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente) {
         this.nome = nome;
         this.numeroTelefone = numeroTelefone;
         this.tipoCliente = tipoCliente;
-        this.faltas = faltas;
+        this.faltas = 0;
         this.diaSemana = null;
         this.horaCorte = null;
     }
 
     // Construtor para SEMANAL
-    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente, int faltas, String diaSemana, String horaCorte) {
+    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente, String diaSemana, String horaCorte) {
         this.nome = nome;
         this.numeroTelefone = numeroTelefone;
         this.tipoCliente = tipoCliente;
-        this.faltas = faltas;
+        this.faltas = 0;
         this.diaSemana = diaSemana;
         this.horaCorte = horaCorte;
     }
@@ -49,6 +49,8 @@ public class Cliente {
         this.numeroTelefone = outro.numeroTelefone;
         this.tipoCliente = outro.tipoCliente;
         this.faltas = outro.faltas;
+        this.diaSemana = outro.diaSemana;
+        this.horaCorte = outro.horaCorte;
     }
 
     // Getters e Setters

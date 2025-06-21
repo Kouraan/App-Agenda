@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "dataHora": "2025-06-05T12:00",
+    "cliente": {
+      "nome": "Nuno",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "SEMANAL",
+      "faltas": 0,
+      "diaSemana": "saturday",
+      "horaCorte": "10:00"
+    },
+    "duracao": 30,
+    "observacoes": "nada agora"
+  },
+  {
+    "dataHora": "2025-06-07T12:00",
+    "cliente": {
+      "nome": "Marco",
+      "numeroTelefone": "96513183",
+      "tipoCliente": "NORMAL",
+      "faltas": 0
+    },
+    "duracao": 30,
+    "observacoes": "Corte+Barba+Sobrancelhas"
+  }
+]
