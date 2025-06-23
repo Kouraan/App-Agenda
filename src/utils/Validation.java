@@ -19,14 +19,17 @@ public class Validation {
     }
 
     public static boolean horaValida(LocalTime horaCorte, LocalDateTime dataHora) {
-        LocalTime inicio = LocalTime.of(7, 0);
-        LocalTime fim = LocalTime.of(21, 0);
+        LocalTime inicioManha = LocalTime.of(7, 0);
+        LocalTime fimManha = LocalTime.of(12, 30);
+        LocalTime inicioTarde = LocalTime.of(14, 0);
+        LocalTime fimTarde = LocalTime.of(21, 0);
 
         // Caso para horaCorte
         if (horaCorte != null && dataHora == null) {
-            boolean meiaHora = horaCorte.getMinute() == 0 || horaCorte.getMinute() == 30;
-            boolean horaOk = !horaCorte.isBefore(inicio) && !horaCorte.isAfter(fim);
-            return meiaHora && horaOk;
+            boolean quartoHora = horaCorte.getMinute() % 15 == 0;
+            boolean manha = !horaCorte.isBefore(inicioManha) && !horaCorte.isAfter(fimManha);
+            boolean tarde = !horaCorte.isBefore(inicioTarde) && !horaCorte.isAfter(fimTarde);
+            return quartoHora && (manha || tarde);
         }
 
         // Caso para dataHora
@@ -34,13 +37,14 @@ public class Validation {
             LocalTime hora = dataHora.toLocalTime();
             int diaSemana = dataHora.getDayOfWeek().getValue();
             boolean diaOk = diaSemana >= 1 && diaSemana <= 6;
-            boolean meiaHora = hora.getMinute() == 0 || hora.getMinute() == 30;
-            boolean horaOk = !hora.isBefore(inicio) && !hora.isAfter(fim);
+            boolean quartoHora = hora.getMinute() % 15 == 0;
+            boolean manha = !hora.isBefore(inicioManha) && !hora.isAfter(fimManha);
+            boolean tarde = !hora.isBefore(inicioTarde) && !hora.isAfter(fimTarde);
             boolean horaFutura = true;
             if (dataHora.toLocalDate().equals(LocalDateTime.now().toLocalDate())) {
                 horaFutura = hora.isAfter(LocalTime.now());
             }
-            return diaOk && meiaHora && horaOk && horaFutura;
+            return diaOk && quartoHora && (manha || tarde) && horaFutura;
         }
             
         return false;

@@ -57,11 +57,16 @@ App-Agenda:
 |--resources/
 |--src/
 |  |--controller/
+|     |--Controller.java
 |  |--models/
 |     |--Cliente.java
 |     |--Log.java
 |     |--Marcacao.java
 |     |--Utilizador.java
+|  |--queries/
+|     |--ClientesQueries.java
+|     |--MarcacoesQueries.java
+|     |--UtilizadorQueries.java
 |  |--utils/
 |     |--Logger.java
 |     |--Persistencia.java
