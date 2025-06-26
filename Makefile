@@ -7,17 +7,29 @@ RES_DIR = resources
 LIB_DIR = lib
 DATA_DIR = data
 LOG_DIR = logs
+JAVAFX_LIB = ../javafx-sdk/lib
+
+# Módulos JavaFX necessários
+JAVAFX_MODULES = javafx.controls,javafx.fxml
 
 # Listar todos os ficheiros .java dentro de src/
 SOURCES = $(shell find $(SRC_DIR) -name "*.java")
 
-# Inclui todos os .jar do lib/ no classpath
+# Espaço para substituir corretamente na JARS_CP
 space := $(empty) $(empty)
+
+# Obter todos os .jar da pasta lib/
 JARS = $(wildcard $(LIB_DIR)/*.jar)
 JARS_CP = $(subst $(space),:,$(JARS))
 
-JAVAC_FLAGS = -d $(SRC_DIR) -sourcepath $(SRC_DIR) -cp "$(JARS_CP)"
-JAVA_FLAGS = -cp "$(SRC_DIR):$(JARS_CP):$(RES_DIR)"
+# Flags do compilador Java
+JAVAC_FLAGS = -d $(SRC_DIR) -sourcepath $(SRC_DIR) -cp "$(JARS_CP):$(JAVAFX_LIB)/*"
+
+# Flags para executar o programa com JavaFX e dependências
+JAVA_FLAGS = --module-path "$(JAVAFX_LIB)" --add-modules $(JAVAFX_MODULES) -cp "$(SRC_DIR):$(JARS_CP):$(RES_DIR)"
+
+# Nome da classe principal do programa
+MAIN_CLASS = Main
 
 # Criar os ficheiros JSON se não existirem
 initdata:
@@ -30,8 +42,6 @@ initdata:
 	@test -f $(LOG_DIR)/logsClientes.json || echo "[]" > $(LOG_DIR)/logsClientes.json
 	@test -f $(LOG_DIR)/logsMarcacoes.json || echo "[]" > $(LOG_DIR)/logsMarcacoes.json
 
-# Nome da classe principal do programa
-MAIN_CLASS = Main
 
 # Compilar todas as classes
 all: initdata
@@ -43,6 +53,6 @@ clean:
 
 # Executar o programa
 run: all
-	java $(JAVA_FLAGS) $(MAIN_CLASS)
+	java -Dprism.order=sw $(JAVA_FLAGS) $(MAIN_CLASS)
 
-.PHONY: all clean run
+.PHONY: all clean run initdata

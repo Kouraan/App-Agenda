@@ -42,14 +42,6 @@ App-Agenda:
 |  |--utilizador.json
 |--lib/
 |  |--gson-2.10.1.jar
-|  |--javafx.base.jar
-|  |--javafx.controls.jar
-|  |--javafx.fxml.jar
-|  |--javafx.graphics.jar
-|  |--javafx.media.jar
-|  |--javafx.swing.jar
-|  |--javafx.web.jar
-|  |--javafx-swt.jar
 |--logs/
 |  |--logsClientes.json
 |  |--logsMarcacoes.json
@@ -74,3 +66,10 @@ App-Agenda:
 |  |--view/
 |  |--Main.java
 |--Makefile
+|--javafx-sdk
+|  |--legal/
+|     |...
+|  |--src/
+|     |...
+|  |--lib/
+|  |...
