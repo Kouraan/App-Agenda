@@ -47,6 +47,8 @@ App-Agenda:
 |  |--logsMarcacoes.json
 |  |--logsUtilizador.json
 |--resources/
+|  |--pizza.png
+|  |--icon.png
 |--src/
 |  |--controller/
 |     |--Controller.java
@@ -66,10 +68,3 @@ App-Agenda:
 |  |--view/
 |  |--Main.java
 |--Makefile
-|--javafx-sdk
-|  |--legal/
-|     |...
-|  |--src/
-|     |...
-|  |--lib/
-|  |...
