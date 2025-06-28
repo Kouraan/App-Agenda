@@ -7,6 +7,7 @@
             prefWidth="400" prefHeight="250">
 
     <children>
+        <Label fx:id="errorLabel" layoutX="100" layoutY="20" textFill="red" visible="false" text="Utilizador ou password incorretos"/>
         <Label layoutX="100" layoutY="50" text="Username:" />
         <TextField fx:id="usernameField" layoutX="180" layoutY="50" />
 

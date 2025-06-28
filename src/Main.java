@@ -1,3 +1,4 @@
+import controller.Controller;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -36,7 +37,7 @@ public class Main extends Application {
         primaryStage.setScene(scene2);
         primaryStage.show();*/
 
-        Group root = new Group();
+        /*Group root = new Group();
         Scene scene = new Scene(root,600,600,Color.LIGHTSKYBLUE);
         Stage stage = new Stage();
 
@@ -96,7 +97,16 @@ public class Main extends Application {
         root.getChildren().add(circle);
         root.getChildren().add(imageView);
         stage.setScene(scene);
-        stage.show();
+        stage.show();*/
+
+        /*FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/test.fxml"));
+        Parent root = loader.load();
+        Scene scene = new Scene(root);
+        primaryStage.setScene(scene);
+        primaryStage.show();*/
+
+        Controller appController = new Controller(primaryStage);
+        appController.startApp();
     }
 
     public static void main(String[] args) {

@@ -32,14 +32,9 @@ public class Persistencia {
 
     // Parsing e criação de um Utilizador proveniente do ficheiro JSON
     public static Utilizador lerUtilizador() {
-        Type utilizadorListType = new TypeToken<List<Utilizador>>(){}.getType();
-        try (FileReader reader = new FileReader("data/utilizadores.json")) {
-            List<Utilizador> utilizadores = gson.fromJson(reader, utilizadorListType);
-            if (utilizadores != null && !utilizadores.isEmpty()) {
-                return utilizadores.get(0).clone();
-            } else {
-                return null;
-            }
+        try (FileReader reader = new FileReader("data/utilizador.json")) {
+            Utilizador utilizador = gson.fromJson(reader, Utilizador.class);
+            return utilizador != null ? utilizador.clone() : null;
         } catch (Exception e) {
             return null;
         }

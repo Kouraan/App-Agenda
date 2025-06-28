@@ -55,6 +55,10 @@ public class Validation {
         return nome != null && !nome.trim().isEmpty() && nome.length() >= 2;
     }
 
+    public static boolean passwordValida(String password) {
+        return password != null && !password.trim().isEmpty() && password.length() >= 6;
+    }
+
     // Clientes Duplicados
     public static boolean clienteDuplicado(Map<String, Cliente> clientes, String nome, String numeroTelefone) {
         return clientes.values().stream().anyMatch(
@@ -78,6 +82,7 @@ public class Validation {
     public static boolean utilizadorValido(Utilizador u) {
         return u != null &&
                nomeValido(u.getNome()) &&
+               passwordValida(u.getPassword()) &&
                u.getPassword() != null && !u.getPassword().trim().isEmpty();
     }
 
