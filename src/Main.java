@@ -99,12 +99,6 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.show();*/
 
-        /*FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/test.fxml"));
-        Parent root = loader.load();
-        Scene scene = new Scene(root);
-        primaryStage.setScene(scene);
-        primaryStage.show();*/
-
         Controller appController = new Controller(primaryStage);
         appController.startApp();
     }

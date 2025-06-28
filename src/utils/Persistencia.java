@@ -1,16 +1,16 @@
 package utils;
 
-import models.*;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
-
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap; 
+import models.*;
+
 
 public class Persistencia {
     // Gson com suporte a LocalDateTime

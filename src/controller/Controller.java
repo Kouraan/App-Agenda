@@ -9,6 +9,8 @@ import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 
 public class Controller {
     private Stage stage;
@@ -27,20 +29,40 @@ public class Controller {
         if (utilizador != null) {
             mostrarLogin();
         } else {
-            // Avançar para a app sem login
-            System.out.println("Nenhum utilizador encontrado, a app avança sem login.");
+            mostrarRegisto();
         }
     }
 
-    private void mostrarLogin() throws Exception {
+    public void setUtilizador(Utilizador utilizador) {
+        this.utilizador = utilizador;
+    }
+
+    public void mostrarLogin() throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Login.fxml"));
         Parent root = loader.load();
         LoginController loginController = loader.getController();
         loginController.setUtilizador(utilizador);
         loginController.setAppController(this); // Para navegação futura
         Scene scene = new Scene(root);
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setWidth(screenBounds.getWidth());
+        stage.setHeight(screenBounds.getHeight());
         stage.setScene(scene);
         stage.setTitle("Login");
+        stage.show();
+    }
+
+    private void mostrarRegisto() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Registo.fxml"));
+        Parent root = loader.load();
+        RegistoController registoController = loader.getController();
+        registoController.setAppController(this);
+        Scene scene = new Scene(root);
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setWidth(screenBounds.getWidth());
+        stage.setHeight(screenBounds.getHeight());
+        stage.setScene(scene);
+        stage.setTitle("Registo");
         stage.show();
     }
 }
