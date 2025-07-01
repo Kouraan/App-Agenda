@@ -43,8 +43,14 @@ public class LoginController {
             queries.UtilizadorQueries.autenticar(usernameField.getText(), passwordField.getText(), utilizador);
             
         if (valido) {
-            // Aqui podes avançar para o resto da app
-            System.out.println("Login bem-sucedido!");
+            // Login bem-sucedido, abrir página principal
+            try {
+                appController.mostrarPaginaPrincipal();
+            } catch (Exception e) {
+                errorLabel.setText("Erro ao abrir página principal.");
+                errorLabel.setVisible(true);
+                e.printStackTrace();
+            }
         } else {
             errorLabel.setVisible(true);
             setFieldError(usernameField, true);

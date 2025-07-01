@@ -52,6 +52,21 @@ public class Controller {
         stage.show();
     }
 
+    public void mostrarPaginaPrincipal() throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/PaginaPrincipal.fxml"));
+        Parent root = loader.load();
+        PaginaPrincipalController paginaPrincipalController = loader.getController();
+        paginaPrincipalController.setUtilizador(utilizador);
+        paginaPrincipalController.setAppController(this);
+        Scene scene = new Scene(root);
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setWidth(screenBounds.getWidth());
+        stage.setHeight(screenBounds.getHeight());
+        stage.setScene(scene);
+        stage.setTitle("App Agenda - Principal");
+        stage.show();
+    }
+
     private void mostrarRegisto() throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Registo.fxml"));
         Parent root = loader.load();
