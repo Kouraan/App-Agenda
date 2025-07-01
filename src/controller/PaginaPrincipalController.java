@@ -297,14 +297,18 @@ public class PaginaPrincipalController implements Initializable {
     }
 
     private void atualizarDia() {
-        // Cabeçalho com o nome do dia e data
-        Label diaLabel = new Label(diaSelecionado.getDayOfWeek().toString() + ", " + diaSelecionado.toString());
-        diaLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
-        calendarioGrid.add(diaLabel, 0, 0);
-
-        // Horas do dia
+        // Configurar colunas
+        calendarioGrid.getColumnConstraints().clear();
+        ColumnConstraints colHora = new ColumnConstraints();
+        colHora.setPrefWidth(80);
+        colHora.setMinWidth(80);
+        ColumnConstraints colConteudo = new ColumnConstraints();
+        colConteudo.setHgrow(Priority.ALWAYS);
+        calendarioGrid.getColumnConstraints().addAll(colHora, colConteudo);
+        
+        // Preencher linhas com horas e células vazias para conteúdos futuros
         LocalTime horaAtual = HORA_ABERTURA;
-        int linha = 1;
+        int linha = 0;
         while (!horaAtual.isAfter(HORA_FECHO)) {
             Label horaLabel = new Label(horaAtual.format(DateTimeFormatter.ofPattern("HH:mm")));
             horaLabel.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8;");
@@ -314,12 +318,21 @@ public class PaginaPrincipalController implements Initializable {
             Pane celula = new Pane();
             celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
             celula.setPrefHeight(40);
+            celula.setMaxWidth(Double.MAX_VALUE);
 
             calendarioGrid.add(horaLabel, 0, linha);
             calendarioGrid.add(celula, 1, linha);
 
             linha++;
             horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
+        }
+
+        calendarioGrid.getRowConstraints().clear();
+        for (int i = 0; i < linha; i++) {
+            RowConstraints rowConstraints = new RowConstraints();
+            rowConstraints.setPrefHeight(40);
+            rowConstraints.setVgrow(Priority.NEVER);
+            calendarioGrid.getRowConstraints().add(rowConstraints);
         }
 
         atualizarCabecalho();
