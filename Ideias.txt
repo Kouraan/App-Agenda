@@ -47,11 +47,12 @@ App-Agenda:
 |  |--logsMarcacoes.json
 |  |--logsUtilizador.json
 |--resources/
-|  |--pizza.png
-|  |--icon.png
 |--src/
 |  |--controller/
 |     |--Controller.java
+|     |--LoginController.java
+|     |--RegistoController.java
+|     |--PaginaPrincipalController.java
 |  |--models/
 |     |--Cliente.java
 |     |--Log.java
@@ -67,5 +68,7 @@ App-Agenda:
 |     |--Validation.java
 |  |--view/
 |     |--Login.fxml
+|     |--Resgisto.fxml
+|     |--PaginaPrincipal.fxml
 |  |--Main.java
 |--Makefile

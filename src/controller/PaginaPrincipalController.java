@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.Pos;
 import models.Utilizador;
+
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,9 +19,13 @@ public class PaginaPrincipalController implements Initializable {
     
     @FXML private Label userLabel;
     @FXML private Label semanaLabel;
+    @FXML private Button todayBtn;
     @FXML private Button semanaAnteriorBtn;
     @FXML private Button proximaSemanaBtn;
     @FXML private GridPane calendarioGrid;
+    @FXML private ToggleButton semanaToggle;
+    @FXML private ToggleButton mesToggle;
+    @FXML private ToggleButton diaToggle;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -30,6 +35,10 @@ public class PaginaPrincipalController implements Initializable {
     private static final LocalTime HORA_ABERTURA = LocalTime.of(7, 0);
     private static final LocalTime HORA_FECHO = LocalTime.of(21, 0);
     private static final int INTERVALO_MINUTOS = 30;
+
+    private enum ModoVisualizacao { SEMANA, MES, DIA }
+    private ModoVisualizacao modoAtual = ModoVisualizacao.SEMANA;
+    private LocalDate diaSelecionado = LocalDate.now();
     
     public void setUtilizador(Utilizador utilizador) {
         this.utilizador = utilizador;
@@ -44,22 +53,122 @@ public class PaginaPrincipalController implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        semanaAtual = LocalDate.now();
-        // Ajustar para o início da semana (segunda-feira)
-        semanaAtual = semanaAtual.with(DayOfWeek.MONDAY);
+        semanaAtual = LocalDate.now().with(DayOfWeek.MONDAY);
+        
+        ToggleGroup group = new ToggleGroup();
+        semanaToggle.setToggleGroup(group);
+        mesToggle.setToggleGroup(group);
+        diaToggle.setToggleGroup(group);
+        semanaToggle.setSelected(true);
+
+        group.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            LocalDate hoje = LocalDate.now();
+            
+            if (newToggle == semanaToggle) {
+                modoAtual = ModoVisualizacao.SEMANA;
+                if (oldToggle == mesToggle) {
+                    if (semanaAtual.getMonth() == hoje.getMonth() && semanaAtual.getYear() == hoje.getYear()) {
+                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
+                        diaSelecionado = hoje;
+                    } else {
+                        semanaAtual = semanaAtual.withDayOfMonth(1).with(DayOfWeek.MONDAY);
+                        diaSelecionado = semanaAtual;
+                    }
+                }
+                else if (oldToggle == diaToggle) {
+                    if (diaSelecionado.equals(hoje)) {
+                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
+                        diaSelecionado = hoje;
+                    } else {
+                        semanaAtual = diaSelecionado.with(DayOfWeek.MONDAY);
+                        diaSelecionado = semanaAtual;
+                    }
+                }
+                atualizarCalendario();
+            } else if (newToggle == mesToggle) {
+                modoAtual = ModoVisualizacao.MES;
+                if (oldToggle == semanaToggle) {
+                    LocalDate inicioSemana = semanaAtual;
+                    LocalDate fimSemana = semanaAtual.plusDays(6);
+                    if (!hoje.isBefore(inicioSemana) && !hoje.isAfter(fimSemana)) {
+                        semanaAtual = hoje.withDayOfMonth(1);
+                        diaSelecionado = hoje;
+                    } else {
+                        semanaAtual = semanaAtual.withDayOfMonth(1);
+                        diaSelecionado = semanaAtual;
+                    }
+                }
+                else if (oldToggle == diaToggle) {
+                    if (diaSelecionado.equals(hoje)) {
+                        semanaAtual = hoje.withDayOfMonth(1);
+                        diaSelecionado = hoje;
+                    } else {
+                        semanaAtual = diaSelecionado.withDayOfMonth(1);
+                        diaSelecionado = diaSelecionado;
+                    }
+                }
+                atualizarCalendario();
+            } else if (newToggle == diaToggle) {
+                modoAtual = ModoVisualizacao.DIA;
+                if (oldToggle == semanaToggle) {
+                    LocalDate inicioSemana = semanaAtual;
+                    LocalDate fimSemana = semanaAtual.plusDays(6);
+                    if (!hoje.isBefore(inicioSemana) && !hoje.isAfter(fimSemana)) {
+                        diaSelecionado = hoje;
+                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
+                    } else {
+                        diaSelecionado = semanaAtual;
+                    }
+                }
+                else if (oldToggle == mesToggle) {
+                    LocalDate primeiroDiaMes = semanaAtual.withDayOfMonth(1);
+                    LocalDate ultimoDiaMes = primeiroDiaMes.plusMonths(1).minusDays(1);
+                    if (!hoje.isBefore(primeiroDiaMes) && !hoje.isAfter(ultimoDiaMes)) {
+                        diaSelecionado = hoje;
+                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
+                } else {
+                        diaSelecionado = primeiroDiaMes;
+                        semanaAtual = primeiroDiaMes.with(DayOfWeek.MONDAY);
+                    }
+                }
+                atualizarCalendario();
+            }
+        });
         
         atualizarCalendario();
     }
     
     @FXML
     private void semanaAnterior() {
-        semanaAtual = semanaAtual.minusWeeks(1);
+        switch (modoAtual) {
+            case SEMANA:
+                semanaAtual = semanaAtual.minusWeeks(1);
+                break;
+            case MES:
+                semanaAtual = semanaAtual.minusMonths(1);
+                break;
+            case DIA:
+                diaSelecionado = diaSelecionado.minusDays(1);
+                semanaAtual = diaSelecionado.with(DayOfWeek.MONDAY);
+                break;
+        }
         atualizarCalendario();
     }
     
     @FXML
     private void proximaSemana() {
-        semanaAtual = semanaAtual.plusWeeks(1);
+        switch (modoAtual) {
+            case SEMANA:
+                semanaAtual = semanaAtual.plusWeeks(1);
+                break;
+            case MES:
+                semanaAtual = semanaAtual.plusMonths(1);
+                break;
+            case DIA:
+                diaSelecionado = diaSelecionado.plusDays(1);
+                semanaAtual = diaSelecionado.with(DayOfWeek.MONDAY);
+                break;
+        }
         atualizarCalendario();
     }
     
@@ -73,6 +182,26 @@ public class PaginaPrincipalController implements Initializable {
             System.err.println("Erro ao fazer logout: " + e.getMessage());
         }
     }
+
+    @FXML
+    private void handleToday() {
+        LocalDate hoje = LocalDate.now();
+        switch (modoAtual) {
+            case SEMANA:
+                semanaAtual = hoje.with(DayOfWeek.MONDAY);
+                diaSelecionado = hoje;
+                break;
+            case MES:
+                semanaAtual = hoje.withDayOfMonth(1);
+                diaSelecionado = hoje;
+                break;
+            case DIA:
+                diaSelecionado = hoje;
+                semanaAtual = hoje.with(DayOfWeek.MONDAY);
+                break;
+        }
+        atualizarCalendario();
+    }
     
     private void atualizarCalendario() {
         // Limpar grid anterior
@@ -80,11 +209,27 @@ public class PaginaPrincipalController implements Initializable {
         calendarioGrid.getRowConstraints().clear();
         calendarioGrid.getColumnConstraints().clear();
         
-        // Atualizar label da semana
+        switch (modoAtual) {
+            case SEMANA:
+                atualizarSemana();
+                break;
+            case MES:
+                atualizarMes();
+                break;
+            case DIA:
+                atualizarDia();
+                break;
+        }
+    }
+
+    private void atualizarSemana() {
         LocalDate fimSemana = semanaAtual.plusDays(6);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM", Locale.ENGLISH);
-        semanaLabel.setText(semanaAtual.format(formatter) + " - " + fimSemana.format(formatter));
-        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd", Locale.ENGLISH);
+        String inicio = semanaAtual.format(formatter);
+        String fim = fimSemana.format(formatter);
+        semanaLabel.setText(inicio + " - " + fim);
+        semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+
         // Configurar colunas (8 colunas: 1 para horas + 7 para dias)
         for (int i = 0; i < 8; i++) {
             ColumnConstraints colConstraints = new ColumnConstraints();
@@ -97,12 +242,87 @@ public class PaginaPrincipalController implements Initializable {
             }
             calendarioGrid.getColumnConstraints().add(colConstraints);
         }
-        
-        // Criar cabeçalho dos dias
+
+        // Limpar cabeçalho dos dias
         criarCabecalhoDias();
-        
+
         // Criar grade de horários
         criarGradeHorarios();
+
+        atualizarCabecalho();
+    }
+
+    private void atualizarMes() {
+        // Cabeçalho dos dias da semana
+        String[] diasSemana = {"Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"};
+        for (int col = 0; col < 7; col++) {
+            Label label = new Label(diasSemana[col]);
+            label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #3498db");
+            label.setMaxWidth(Double.MAX_VALUE);
+            label.setAlignment(Pos.CENTER);
+            calendarioGrid.add(label, col, 0);
+        }
+
+        // Descobre o primeiro dia do mês e o primeiro dia a mostrar (pode ser do mês anterior)
+        LocalDate primeiroDiaMes = semanaAtual.withDayOfMonth(1);
+        int diaSemanaPrimeiro = primeiroDiaMes.getDayOfWeek().getValue();
+        LocalDate inicioGrid = primeiroDiaMes.minusDays(diaSemanaPrimeiro - 1);
+
+        LocalDate data = inicioGrid;
+        for (int row = 1; row <= 5; row++) {
+            for (int col = 0; col < 7; col++) {
+                Label diaLabel = new Label(String.valueOf(data.getDayOfMonth()));
+                diaLabel.setMaxWidth(Double.MAX_VALUE);
+                diaLabel.setMaxHeight(Double.MAX_VALUE);
+                diaLabel.setAlignment(Pos.CENTER);
+
+                if (data.getMonth() != primeiroDiaMes.getMonth()) {
+                    diaLabel.setStyle("-fx-text-fill: #bbb; -fx-opacity: 0.5;");
+                } else {
+                    diaLabel.setStyle("-fx-text-fill: #222; -fx-font-weight: bold; -fx-cursor: hand;");
+                    final LocalDate diaClicado = data;
+                    diaLabel.setOnMouseClicked(e -> {
+                        diaSelecionado = diaClicado;
+                        modoAtual = ModoVisualizacao.DIA;
+                        diaToggle.setSelected(true);
+                        atualizarCalendario();
+                    });
+                }
+                calendarioGrid.add(diaLabel, col, row);
+                data = data.plusDays(1);
+            }
+        }
+
+        atualizarCabecalho();
+    }
+
+    private void atualizarDia() {
+        // Cabeçalho com o nome do dia e data
+        Label diaLabel = new Label(diaSelecionado.getDayOfWeek().toString() + ", " + diaSelecionado.toString());
+        diaLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+        calendarioGrid.add(diaLabel, 0, 0);
+
+        // Horas do dia
+        LocalTime horaAtual = HORA_ABERTURA;
+        int linha = 1;
+        while (!horaAtual.isAfter(HORA_FECHO)) {
+            Label horaLabel = new Label(horaAtual.format(DateTimeFormatter.ofPattern("HH:mm")));
+            horaLabel.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8;");
+            horaLabel.setMaxWidth(Double.MAX_VALUE);
+            horaLabel.setAlignment(Pos.CENTER);
+
+            Pane celula = new Pane();
+            celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
+            celula.setPrefHeight(40);
+
+            calendarioGrid.add(horaLabel, 0, linha);
+            calendarioGrid.add(celula, 1, linha);
+
+            linha++;
+            horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
+        }
+
+        atualizarCabecalho();
     }
     
     private void criarCabecalhoDias() {
@@ -117,22 +337,53 @@ public class PaginaPrincipalController implements Initializable {
         
         // Cabeçalhos dos dias da semana
         String[] diasSemana = {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"};
-        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("dd/MM");
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("dd");
         
         for (int dia = 0; dia < 7; dia++) {
             LocalDate dataAtual = semanaAtual.plusDays(dia);
             String textoHeader = diasSemana[dia] + "\n" + dataAtual.format(dayFormatter);
             
-            Label diaLabel = new Label(textoHeader);
-            diaLabel.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; " +
-                             "-fx-font-weight: bold; -fx-alignment: center; " +
-                             "-fx-border-color: white; -fx-border-width: 1; -fx-padding: 10;");
-            diaLabel.setMaxWidth(Double.MAX_VALUE);
-            diaLabel.setMaxHeight(Double.MAX_VALUE);
-            diaLabel.setAlignment(Pos.CENTER);
+            Label diaSemanaLabel = new Label(diasSemana[dia]);
+            diaSemanaLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+            Label diaNumeroLabel = new Label(dataAtual.format(dayFormatter));
+            diaNumeroLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
             
-            calendarioGrid.add(diaLabel, dia + 1, 0);
+            VBox vbox = new VBox(2, diaSemanaLabel, diaNumeroLabel);
+            vbox.setAlignment(Pos.CENTER);
+            vbox.setOnMouseClicked(e -> {
+                diaSelecionado = dataAtual;
+                modoAtual = ModoVisualizacao.DIA;
+                diaToggle.setSelected(true);
+                atualizarCalendario();
+            });
+
+            vbox.setStyle("-fx-background-color: #3498db; -fx-border-color: white; -fx-border-width: 1; -fx-padding: 8;");
+
+            calendarioGrid.add(vbox, dia + 1, 0);
         }
+    }
+
+    private void atualizarCabecalho() {
+        DateTimeFormatter semanaFmt = DateTimeFormatter.ofPattern("MMMM dd", Locale.ENGLISH);
+        DateTimeFormatter mesFmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
+        DateTimeFormatter diaFmt = DateTimeFormatter.ofPattern("EEEE MMMM dd", Locale.ENGLISH);
+    
+        switch (modoAtual) {
+            case SEMANA:
+                LocalDate fimSemana = semanaAtual.plusDays(6);
+                String inicio = semanaAtual.format(semanaFmt);
+                String fim = fimSemana.format(semanaFmt);
+                semanaLabel.setText(inicio + " - " + fim);
+                break;
+            case MES:
+                semanaLabel.setText(semanaAtual.format(mesFmt));
+                break;
+            case DIA:
+                semanaLabel.setText(diaSelecionado.format(diaFmt));
+                break;
+        }
+        semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
     }
     
     private void criarGradeHorarios() {
