@@ -1,10 +1,12 @@
 package controller;
 
+import com.sun.jdi.VMCannotBeModifiedException;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import models.Utilizador;
 
 import java.net.URL;
@@ -253,12 +255,34 @@ public class PaginaPrincipalController implements Initializable {
     }
 
     private void atualizarMes() {
+        calendarioGrid.getColumnConstraints().clear();
+        calendarioGrid.getRowConstraints().clear();
+
+        for (int i = 0; i < 7; i++) {
+            ColumnConstraints col = new ColumnConstraints();
+            col.setHgrow(Priority.ALWAYS);
+            calendarioGrid.getColumnConstraints().add(col);
+        }
+        for (int i = 0; i < 6; i++) {
+            RowConstraints row = new RowConstraints();
+            if (i == 0) {
+                row.setPrefHeight(28);
+                row.setMinHeight(20);
+                row.setMaxHeight(32);
+                row.setVgrow(Priority.NEVER);
+            } else {
+                row.setVgrow(Priority.ALWAYS);
+            }
+            calendarioGrid.getRowConstraints().add(row);
+        }
+
         // Cabeçalho dos dias da semana
         String[] diasSemana = {"Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"};
         for (int col = 0; col < 7; col++) {
             Label label = new Label(diasSemana[col]);
-            label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #3498db");
+            label.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #3498db; -fx-background-color: #eaf6fb; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
             label.setMaxWidth(Double.MAX_VALUE);
+            label.setMaxHeight(28);
             label.setAlignment(Pos.CENTER);
             calendarioGrid.add(label, col, 0);
         }
@@ -271,24 +295,30 @@ public class PaginaPrincipalController implements Initializable {
         LocalDate data = inicioGrid;
         for (int row = 1; row <= 5; row++) {
             for (int col = 0; col < 7; col++) {
-                Label diaLabel = new Label(String.valueOf(data.getDayOfMonth()));
-                diaLabel.setMaxWidth(Double.MAX_VALUE);
-                diaLabel.setMaxHeight(Double.MAX_VALUE);
-                diaLabel.setAlignment(Pos.CENTER);
+                StackPane cell = new StackPane();
+                cell.setMaxWidth(Double.MAX_VALUE);
+                cell.setMaxHeight(Double.MAX_VALUE);
+
+                Label diaLabel = new Label(String.format("%02d", data.getDayOfMonth()));
+                diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #222; -fx-font-weight: bold;");
+                StackPane.setAlignment(diaLabel, Pos.TOP_LEFT);
+                diaLabel.setPadding(new Insets(4, 0, 0, 6));
+                cell.getChildren().add(diaLabel);
 
                 if (data.getMonth() != primeiroDiaMes.getMonth()) {
-                    diaLabel.setStyle("-fx-text-fill: #bbb; -fx-opacity: 0.5;");
+                    cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #bbb; -fx-font-weight: normal;");
                 } else {
-                    diaLabel.setStyle("-fx-text-fill: #222; -fx-font-weight: bold; -fx-cursor: hand;");
+                    cell.setStyle("-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-cursor: hand;");
                     final LocalDate diaClicado = data;
-                    diaLabel.setOnMouseClicked(e -> {
+                    cell.setOnMouseClicked(e -> {
                         diaSelecionado = diaClicado;
                         modoAtual = ModoVisualizacao.DIA;
                         diaToggle.setSelected(true);
                         atualizarCalendario();
                     });
                 }
-                calendarioGrid.add(diaLabel, col, row);
+                calendarioGrid.add(cell, col, row);
                 data = data.plusDays(1);
             }
         }

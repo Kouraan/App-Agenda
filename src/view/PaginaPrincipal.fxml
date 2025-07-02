@@ -48,7 +48,7 @@
                 </HBox>
                 
                 <!-- Grade do calendário -->
-                <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
                     <GridPane fx:id="calendarioGrid" hgap="1" vgap="1" 
                               style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7;"/>
                 </ScrollPane>
