@@ -56,11 +56,30 @@
             </VBox>
             
             <!-- Área Lateral Direita -->
-            <VBox prefWidth="200" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
-                <Label text="Área Lateral Direita" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-alignment: center;"/>
-                <Label text="(Em desenvolvimento)" style="-fx-font-size: 12px; -fx-text-fill: gray;"/>
-            </VBox>
-            
+            <VBox prefWidth="200" spacing="24" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
+                <Label text="Clientes Pendentes" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-alignment: center;"/>
+                <Pane
+                    fx:id="caixaClientesPendentes"
+                    prefHeight="350"
+                    style="
+                        -fx-background-color: white;
+                        -fx-border-color: #bdc3c7;
+                        -fx-border-width: 2;
+                        -fx-background-radius: 12;
+                        -fx-border-radius: 12;
+                        -fx-padding: 16;
+                        -fx-effect: dropshadow(gaussian, #bbb, 8, 0.2, 0, 2);
+                        "
+                    VBox.vgrow="NEVER"
+                />
+                <Region VBox.vgrow="ALWAYS"/>
+                <Label fx:id="relogioLabel"
+                       style="-fx-font-size: 40px; -fx-font-weight: 900; -fx-text-fill: #34495e; -fx-alignment: center;"
+                       alignment="CENTER"
+                       prefWidth="200"
+                />
+                <Region VBox.vgrow="ALWAYS"/>
+            </VBox>      
         </HBox>
     </center>
     

@@ -7,6 +7,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 import models.Utilizador;
 
 import java.net.URL;
@@ -28,6 +31,7 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private ToggleButton semanaToggle;
     @FXML private ToggleButton mesToggle;
     @FXML private ToggleButton diaToggle;
+    @FXML private Label relogioLabel;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -138,6 +142,13 @@ public class PaginaPrincipalController implements Initializable {
         });
         
         atualizarCalendario();
+
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.seconds(0), e -> atualizarRelogio()),
+            new KeyFrame(Duration.seconds(1))
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
     }
     
     @FXML
@@ -305,7 +316,20 @@ public class PaginaPrincipalController implements Initializable {
                 diaLabel.setPadding(new Insets(4, 0, 0, 6));
                 cell.getChildren().add(diaLabel);
 
-                if (data.getMonth() != primeiroDiaMes.getMonth()) {
+                if (data.equals(LocalDate.now())) {
+                    cell.setStyle("-fx-background-color: #ffb366; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: normal;");
+                    final LocalDate diaClicado = data;
+                    cell.setOnMouseClicked(e -> {
+                        diaSelecionado = diaClicado;
+                        modoAtual = ModoVisualizacao.DIA;
+                        diaToggle.setSelected(true);
+                        atualizarCalendario();
+                    });
+                } else if (data.getMonth() != primeiroDiaMes.getMonth() && data.isBefore(primeiroDiaMes)) {
+                    cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #bbb; -fx-font-weight: normal;");
+                } else if (data.getMonth() != primeiroDiaMes.getMonth()) {
                     cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
                     diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #bbb; -fx-font-weight: normal;");
                 } else {
@@ -381,10 +405,10 @@ public class PaginaPrincipalController implements Initializable {
         // Cabeçalhos dos dias da semana
         String[] diasSemana = {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"};
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("dd");
+        LocalDate hoje = LocalDate.now();
         
         for (int dia = 0; dia < 7; dia++) {
             LocalDate dataAtual = semanaAtual.plusDays(dia);
-            String textoHeader = diasSemana[dia] + "\n" + dataAtual.format(dayFormatter);
             
             Label diaSemanaLabel = new Label(diasSemana[dia]);
             diaSemanaLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
@@ -401,7 +425,11 @@ public class PaginaPrincipalController implements Initializable {
                 atualizarCalendario();
             });
 
-            vbox.setStyle("-fx-background-color: #3498db; -fx-border-color: white; -fx-border-width: 1; -fx-padding: 8;");
+            if (dataAtual.equals(hoje)) {
+                vbox.setStyle("-fx-background-color: #ffb366; -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8;");
+            } else {
+                vbox.setStyle("-fx-background-color: #3498db; -fx-border-color: white; -fx-border-width: 1; -fx-padding: 8;");
+            }
 
             calendarioGrid.add(vbox, dia + 1, 0);
         }
@@ -424,6 +452,11 @@ public class PaginaPrincipalController implements Initializable {
                 break;
             case DIA:
                 semanaLabel.setText(diaSelecionado.format(diaFmt));
+                if (diaSelecionado.equals(LocalDate.now())) {
+                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #ff8800;");
+                } else {
+                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+                }
                 break;
         }
         semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
@@ -482,5 +515,10 @@ public class PaginaPrincipalController implements Initializable {
             rowConstraints.setVgrow(Priority.NEVER);
             calendarioGrid.getRowConstraints().add(rowConstraints);
         }
+    }
+
+    private void atualizarRelogio() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        relogioLabel.setText(java.time.LocalTime.now().format(formatter));
     }
 }
