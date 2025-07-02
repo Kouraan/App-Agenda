@@ -25,6 +25,10 @@ public class Controller {
         marcacoesMap = Persistencia.lerMarcacoes();
     }
 
+    public Map<String, Cliente> getClientesMap() {
+        return clientesMap;
+    }
+
     public void startApp() throws Exception {
         if (utilizador != null) {
             mostrarLogin();

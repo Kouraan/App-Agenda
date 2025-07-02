@@ -23,38 +23,46 @@
         <HBox spacing="5" style="-fx-padding: 10;">
             
             <!-- Área Lateral Esquerda -->
-            <VBox prefWidth="200" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
-                <Label text="Área Lateral Esquerda" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-alignment: center;"/>
-                <Label text="(Em desenvolvimento)" style="-fx-font-size: 12px; -fx-text-fill: gray;"/>
+            <VBox prefWidth="200" spacing="12" alignment="TOP_CENTER"
+                  style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
+                <ToggleButton fx:id="calendarioToggle" text="Calendário" selected="true" onAction="#mostrarCalendario"
+                              maxWidth="Infinity" minHeight="40"
+                              style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <ToggleButton fx:id="clientesToggle" text="Clientes" onAction="#mostrarClientes"
+                              maxWidth="Infinity" minHeight="40"
+                              style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
             </VBox>
             
             <!-- Área Central - Calendário Semanal -->
-            <VBox HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
+            <StackPane fx:id="stackCentral" HBox.hgrow="ALWAYS">
+                <VBox fx:id="areaCentral" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
+                    <!-- Cabeçalho da semana -->
+                    <HBox alignment="CENTER" spacing="10" style="-fx-padding: 0 0 10 0;">
+                        <Button fx:id="todayBtn" text="Today" onAction="#handleToday" 
+                                style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <Button fx:id="semanaAnteriorBtn" text="◀" onAction="#semanaAnterior" 
+                                style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <Button fx:id="proximaSemanaBtn" text="▶" onAction="#proximaSemana" 
+                                style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="semanaLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <ToggleButton fx:id="diaToggle" text="Dia"/>
+                        <ToggleButton fx:id="semanaToggle" text="Semana" selected="true"/>
+                        <ToggleButton fx:id="mesToggle" text="Mês"/>
+                    </HBox>
                 
-                <!-- Cabeçalho da semana -->
-                <HBox alignment="CENTER" spacing="10" style="-fx-padding: 0 0 10 0;">
-                    <Button fx:id="todayBtn" text="Today" onAction="#handleToday" 
-                            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                    <Button fx:id="semanaAnteriorBtn" text="◀" onAction="#semanaAnterior" 
-                            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                    <Button fx:id="proximaSemanaBtn" text="▶" onAction="#proximaSemana" 
-                            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="semanaLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <ToggleButton fx:id="diaToggle" text="Dia"/>
-                    <ToggleButton fx:id="semanaToggle" text="Semana" selected="true"/>
-                    <ToggleButton fx:id="mesToggle" text="Mês"/>
-                </HBox>
-                
-                <!-- Grade do calendário -->
-                <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
-                    <GridPane fx:id="calendarioGrid" hgap="1" vgap="1" 
-                              style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7;"/>
-                </ScrollPane>
-                
-            </VBox>
-            
+                    <!-- Grade do calendário -->
+                    <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+                        <GridPane fx:id="calendarioGrid" hgap="1" vgap="1" 
+                                  style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7;"/>
+                    </ScrollPane>                
+                </VBox>
+                <StackPane fx:id="areaClientes" visible="false" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
+                    <VBox fx:id="clientesContent" alignment="CENTER" spacing="16" StackPane.alignment="CENTER"/>
+                </StackPane>
+            </StackPane>
+
             <!-- Área Lateral Direita -->
             <VBox prefWidth="200" spacing="24" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
                 <Label text="Clientes Pendentes" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-alignment: center;"/>

@@ -3,6 +3,12 @@ package controller;
 import com.sun.jdi.VMCannotBeModifiedException;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.Parent;
+import javafx.geometry.Bounds;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.Pos;
@@ -31,7 +37,12 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private ToggleButton semanaToggle;
     @FXML private ToggleButton mesToggle;
     @FXML private ToggleButton diaToggle;
+    @FXML private ToggleButton calendarioToggle;
+    @FXML private ToggleButton clientesToggle;
     @FXML private Label relogioLabel;
+    @FXML private VBox areaCentral;
+    @FXML private StackPane areaClientes;
+    @FXML private VBox clientesContent;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -215,6 +226,38 @@ public class PaginaPrincipalController implements Initializable {
         }
         atualizarCalendario();
     }
+
+    @FXML
+    private void mostrarCalendario() {
+        calendarioToggle.setSelected(true);
+        clientesToggle.setSelected(false);
+        areaCentral.setVisible(true);
+        areaClientes.setVisible(false);
+    }
+
+    @FXML
+    private void mostrarClientes() {
+        calendarioToggle.setSelected(false);
+        clientesToggle.setSelected(true);
+        areaCentral.setVisible(false);
+        areaClientes.setVisible(true);
+
+        clientesContent.getChildren().clear();
+
+        if (appController != null && (appController.getClientesMap() == null || appController.getClientesMap().isEmpty())) {
+            Label msg = new Label("Não tem nenhum cliente salvo, deseja adicionar um?");
+            msg.setStyle("-fx-font-size: 18px; -fx-text-fill: #888; -fx-font-weight: bold;");
+            Button adicionarBtn = new Button("Adicionar");
+            adicionarBtn.setStyle("-fx-font-size: 16px; -fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24 8 24;");
+        
+            clientesContent.getChildren().addAll(msg, adicionarBtn);
+        } else {
+            Label criado = new Label("CRIADO");
+            criado.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #3498db;");
+            clientesContent.getChildren().add(criado);
+        }
+    }
+
     
     private void atualizarCalendario() {
         // Limpar grid anterior
