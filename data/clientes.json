@@ -1,7 +1,7 @@
 [
   {
     "nome": "Marco Silva",
-    "numeroTelefone": "96513183",
+    "numeroTelefone": "965131863",
     "tipoCliente": "SEMANAL",
     "faltas": 0,
     "diaSemana": "saturday",
@@ -9,10 +9,11 @@
   },
   {
     "nome": "Nuno",
-    "numeroTelefone": "987654321",
-    "tipoCliente": "SEMANAL",
+    "numeroTelefone": "913332902",
+    "tipoCliente": "NORMAL",
     "faltas": 0,
-    "diaSemana": "saturday",
-    "horaCorte": "10:00"
+    "diaSemana": "",
+    "horaCorte": ""
   }
+  
 ]

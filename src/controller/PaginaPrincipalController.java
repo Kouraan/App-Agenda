@@ -25,6 +25,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.DayOfWeek;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PaginaPrincipalController implements Initializable {
     
@@ -47,6 +49,8 @@ public class PaginaPrincipalController implements Initializable {
     private Utilizador utilizador;
     private Controller appController;
     private LocalDate semanaAtual;
+    private Map<LocalTime, Pane> celulasDia = new HashMap<>();
+    private Map<LocalTime, Map<Integer, Pane>> celulasSemana = new HashMap<>();
     
     // Horários de funcionamento
     private static final LocalTime HORA_ABERTURA = LocalTime.of(7, 0);
@@ -155,7 +159,14 @@ public class PaginaPrincipalController implements Initializable {
         atualizarCalendario();
 
         Timeline timeline = new Timeline(
-            new KeyFrame(Duration.seconds(0), e -> atualizarRelogio()),
+            new KeyFrame(Duration.seconds(0), e ->{
+                atualizarRelogio();
+                if (modoAtual == ModoVisualizacao.DIA) {
+                    destacarBlocoAtual();
+                } else if (modoAtual == ModoVisualizacao.SEMANA) {
+                    destacarBlocoAtualSemana();
+                }
+            }),
             new KeyFrame(Duration.seconds(1))
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -252,9 +263,83 @@ public class PaginaPrincipalController implements Initializable {
         
             clientesContent.getChildren().addAll(msg, adicionarBtn);
         } else {
-            Label criado = new Label("CRIADO");
-            criado.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #3498db;");
-            clientesContent.getChildren().add(criado);
+            HBox barraTopo = new HBox(10);
+            barraTopo.setAlignment(Pos.TOP_LEFT);
+            barraTopo.setPadding(new Insets(10, 10, 10, 10));
+
+            double alturaBarra = 32;
+            double larguraBotao = 32;
+
+            TextField pesquisaField = new TextField();
+            pesquisaField.setPromptText("Pesquisar cliente...");
+            pesquisaField.setPrefHeight(alturaBarra);
+
+            HBox.setHgrow(pesquisaField, Priority.ALWAYS);
+
+            Button btnAdicionar = new Button("+");
+            btnAdicionar.setPrefWidth(larguraBotao);
+            btnAdicionar.setPrefHeight(alturaBarra);
+            btnAdicionar.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0;");
+
+            Button btnRemover = new Button("-");
+            btnRemover.setPrefWidth(larguraBotao);
+            btnRemover.setPrefHeight(alturaBarra);
+            btnRemover.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0;");
+
+            barraTopo.getChildren().addAll(pesquisaField, btnAdicionar, btnRemover);
+            HBox.setHgrow(barraTopo, Priority.ALWAYS);
+            
+            GridPane tabela = new GridPane();
+            tabela.setHgap(8);
+            tabela.setVgap(2);
+            tabela.setStyle("-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+            tabela.setMaxWidth(Double.MAX_VALUE);
+
+            for (int i = 0; i < 6; i++) {
+                ColumnConstraints col = new ColumnConstraints();
+                col.setHgrow(Priority.ALWAYS);
+                col.setMinWidth(100.0 / 6);
+                tabela.getColumnConstraints().add(col);
+            }
+
+            ScrollPane tabelaScroll = new ScrollPane(tabela);
+            tabelaScroll.setFitToWidth(true);
+            tabelaScroll.setFitToHeight(true);
+            tabelaScroll.setStyle("-fx-backgroud-color:transparent;");
+            VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
+
+            String[] cabecalho = {"Nome", "Telefone", "Tipo", "Faltas", "Dia Semana", "Hora Corte"};
+            for (int i = 0; i < cabecalho.length; i++) {
+                Label th = new Label(cabecalho[i]);
+                th.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-background-color: #d6eaf8; -fx-padding: 6 12 6 12; -fx-border-color: #bdc3c7; -fx-border-width: 0 1 1 0;");
+                th.setMaxWidth(Double.MAX_VALUE);
+                th.setAlignment(Pos.CENTER);
+                tabela.add(th, i, 0);
+            }
+
+            java.util.List<models.Cliente> lista = new java.util.ArrayList<>(appController.getClientesMap().values());
+            lista.sort(java.util.Comparator.comparing(models.Cliente::getNome, String.CASE_INSENSITIVE_ORDER));
+
+            int row = 1;
+            for (models.Cliente c : lista) {
+                tabela.add(novoCell(c.getNome()), 0, row);
+                tabela.add(novoCell(c.getNumeroTelefone()), 1, row);
+                tabela.add(novoCell(c.getTipoCliente().toString()), 2, row);
+                tabela.add(novoCell(String.valueOf(c.getFaltas())), 3, row);
+                if (c.getTipoCliente() == models.Cliente.TipoCliente.SEMANAL) {
+                    tabela.add(novoCell(c.getDiaSemana()), 4, row);
+                    tabela.add(novoCell(c.getHoraCorte()), 5, row);
+                } else {
+                    tabela.add(novoCell("—"), 4, row);
+                    tabela.add(novoCell("—"), 5, row);
+                }
+                row++;
+            }
+
+            VBox layout = new VBox(0, barraTopo, tabelaScroll);
+            VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
+
+            clientesContent.getChildren().add(layout);
         }
     }
 
@@ -280,7 +365,7 @@ public class PaginaPrincipalController implements Initializable {
 
     private void atualizarSemana() {
         LocalDate fimSemana = semanaAtual.plusDays(6);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd", Locale.ENGLISH);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM dd", new Locale("pt", "PT"));
         String inicio = semanaAtual.format(formatter);
         String fim = fimSemana.format(formatter);
         semanaLabel.setText(inicio + " - " + fim);
@@ -403,6 +488,8 @@ public class PaginaPrincipalController implements Initializable {
         colConteudo.setHgrow(Priority.ALWAYS);
         calendarioGrid.getColumnConstraints().addAll(colHora, colConteudo);
         
+        celulasDia.clear();
+
         // Preencher linhas com horas e células vazias para conteúdos futuros
         LocalTime horaAtual = HORA_ABERTURA;
         int linha = 0;
@@ -419,6 +506,8 @@ public class PaginaPrincipalController implements Initializable {
 
             calendarioGrid.add(horaLabel, 0, linha);
             calendarioGrid.add(celula, 1, linha);
+
+            celulasDia.put(horaAtual, celula);
 
             linha++;
             horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
@@ -479,9 +568,9 @@ public class PaginaPrincipalController implements Initializable {
     }
 
     private void atualizarCabecalho() {
-        DateTimeFormatter semanaFmt = DateTimeFormatter.ofPattern("MMMM dd", Locale.ENGLISH);
-        DateTimeFormatter mesFmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
-        DateTimeFormatter diaFmt = DateTimeFormatter.ofPattern("EEEE MMMM dd", Locale.ENGLISH);
+        DateTimeFormatter semanaFmt = DateTimeFormatter.ofPattern("MMMM dd", new Locale("pt", "PT"));
+        DateTimeFormatter mesFmt = DateTimeFormatter.ofPattern("MMMM yyyy", new Locale("pt", "PT"));
+        DateTimeFormatter diaFmt = DateTimeFormatter.ofPattern("EEEE MMMM dd", new Locale("pt", "PT"));
     
         switch (modoAtual) {
             case SEMANA:
@@ -508,6 +597,8 @@ public class PaginaPrincipalController implements Initializable {
     private void criarGradeHorarios() {
         LocalTime horaAtual = HORA_ABERTURA;
         int linha = 1;
+
+        celulasSemana.clear();
         
         while (!horaAtual.isAfter(HORA_FECHO)) {
             // Criar label da hora
@@ -520,6 +611,8 @@ public class PaginaPrincipalController implements Initializable {
             horaLabel.setAlignment(Pos.CENTER);
             
             calendarioGrid.add(horaLabel, 0, linha);
+
+            Map<Integer, Pane> linhaSemana = new HashMap<>();
             
             // Criar células para cada dia da semana
             for (int dia = 0; dia < 7; dia++) {
@@ -541,7 +634,11 @@ public class PaginaPrincipalController implements Initializable {
                 // Por enquanto, deixamos as células vazias
                 
                 calendarioGrid.add(celula, dia + 1, linha);
+
+                linhaSemana.put(dia, celula);
             }
+
+            celulasSemana.put(horaAtual, linhaSemana);
             
             linha++;
             horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
@@ -563,5 +660,57 @@ public class PaginaPrincipalController implements Initializable {
     private void atualizarRelogio() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         relogioLabel.setText(java.time.LocalTime.now().format(formatter));
+    }
+
+    private void destacarBlocoAtual() {
+        LocalTime agora = LocalTime.now();
+        if (agora.isBefore(HORA_ABERTURA) || agora.isAfter(HORA_FECHO.plusMinutes(INTERVALO_MINUTOS - 1))) {
+            celulasDia.values().forEach(p -> p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
+            return;
+        }
+        int minuto = agora.getMinute() < 30 ? 0 : 30;
+        LocalTime blocoAtual = LocalTime.of(agora.getHour(), minuto);
+
+        celulasDia.forEach((hora, pane) -> {
+            if (hora.equals(blocoAtual)) {
+                pane.setStyle("-fx-background-color: #ffe0b2; -fx-border-color: #ff9800; -fx-border-width: 2; -fx-min-height: 40;");
+            } else {
+                pane.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
+            }
+        });
+    }
+
+    private void destacarBlocoAtualSemana() {
+        LocalDate hoje = LocalDate.now();
+        LocalTime agora = LocalTime.now();
+
+        if (agora.isBefore(HORA_ABERTURA) || agora.isAfter(HORA_FECHO.plusMinutes(INTERVALO_MINUTOS - 1))) {
+            celulasSemana.values().forEach(map -> map.values().forEach(p ->
+                p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;")));
+            return;
+        }
+
+        int minuto = agora.getMinute() < 30 ? 0 : 30;
+        LocalTime blocoAtual = LocalTime.of(agora.getHour(), minuto);
+
+        int diaSemana = hoje.getDayOfWeek().getValue() - 1;
+
+        celulasSemana.forEach((hora, map) -> {
+            map.forEach((dia, pane) -> {
+                if (hora.equals(blocoAtual) && dia == diaSemana) {
+                    pane.setStyle("-fx-background-color: #ffe0b2; -fx-border-color: #ff9800; -fx-border-width: 2; -fx-min-height: 40;");
+                } else {
+                    pane.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
+                }
+            });
+        });
+    }
+
+    private Label novoCell(String texto) {
+        Label l = new Label(texto == null ? "—" : texto);
+        l.setStyle("-fx-font-size: 14px; -fx-padding: 4 8 4 8; -fx-border-color: #e0e0e0; -fx-border-width: 0 1 1 0;");
+        l.setMaxWidth(Double.MAX_VALUE);
+        l.setAlignment(Pos.CENTER);
+        return l;
     }
 }
