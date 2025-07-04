@@ -45,6 +45,7 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private VBox areaCentral;
     @FXML private StackPane areaClientes;
     @FXML private VBox clientesContent;
+    @FXML private ScrollPane scrollPaneCalendario;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -81,6 +82,18 @@ public class PaginaPrincipalController implements Initializable {
         mesToggle.setToggleGroup(group);
         diaToggle.setToggleGroup(group);
         semanaToggle.setSelected(true);
+
+        // Remover o foco visual dos botoes
+        todayBtn.setFocusTraversable(false);
+        semanaAnteriorBtn.setFocusTraversable(false);
+        proximaSemanaBtn.setFocusTraversable(false);
+        semanaToggle.setFocusTraversable(false);
+        mesToggle.setFocusTraversable(false);
+        diaToggle.setFocusTraversable(false);
+        calendarioToggle.setFocusTraversable(false);
+        clientesToggle.setFocusTraversable(false);
+        calendarioGrid.setFocusTraversable(false);
+        scrollPaneCalendario.setFocusTraversable(false);
 
         group.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
             LocalDate hoje = LocalDate.now();
@@ -273,6 +286,7 @@ public class PaginaPrincipalController implements Initializable {
             TextField pesquisaField = new TextField();
             pesquisaField.setPromptText("Pesquisar cliente...");
             pesquisaField.setPrefHeight(alturaBarra);
+            pesquisaField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;");
 
             HBox.setHgrow(pesquisaField, Priority.ALWAYS);
 
@@ -286,13 +300,26 @@ public class PaginaPrincipalController implements Initializable {
             btnRemover.setPrefHeight(alturaBarra);
             btnRemover.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0;");
 
+            pesquisaField.setFocusTraversable(false);
+            btnAdicionar.setFocusTraversable(false);
+            btnRemover.setFocusTraversable(false);
+
             barraTopo.getChildren().addAll(pesquisaField, btnAdicionar, btnRemover);
+            
+            areaClientes.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+                if (!pesquisaField.isFocused()) return;
+                if(!pesquisaField.localToScene(pesquisaField.getBoundsInLocal()).contains(
+                    e.getSceneX(), e.getSceneY())) {
+                    pesquisaField.getParent().requestFocus();
+                }
+            });
+
             HBox.setHgrow(barraTopo, Priority.ALWAYS);
             
             GridPane tabela = new GridPane();
             tabela.setHgap(8);
             tabela.setVgap(2);
-            tabela.setStyle("-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+            tabela.setStyle("-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
             tabela.setMaxWidth(Double.MAX_VALUE);
 
             for (int i = 0; i < 6; i++) {
@@ -305,7 +332,8 @@ public class PaginaPrincipalController implements Initializable {
             ScrollPane tabelaScroll = new ScrollPane(tabela);
             tabelaScroll.setFitToWidth(true);
             tabelaScroll.setFitToHeight(true);
-            tabelaScroll.setStyle("-fx-backgroud-color:transparent;");
+            tabelaScroll.setFocusTraversable(false);
+            tabelaScroll.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;");
             VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
 
             String[] cabecalho = {"Nome", "Telefone", "Tipo", "Faltas", "Dia Semana", "Hora Corte"};

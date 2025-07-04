@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.RegistoController"
+<StackPane fx:id="stackPaneRoot" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.RegistoController"
            style="-fx-background-color: lightskyblue;" alignment="CENTER">
     <VBox spacing="12" alignment="CENTER" style="-fx-padding: 40 0 40 0;">
         <Label text="REGISTO"
@@ -18,7 +18,7 @@
             <Label text="Password:" minWidth="80" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
             <PasswordField fx:id="passwordField" prefWidth="160" maxWidth="160" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
         </HBox>
-        <Button text="Registar" onAction="#handleRegisto" maxWidth="120"
+        <Button fx:id="registoBtn" text="Registar" onAction="#handleRegisto" maxWidth="120"
                 style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
     </VBox>
 </StackPane>

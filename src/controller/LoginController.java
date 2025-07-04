@@ -6,6 +6,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import models.Utilizador;
 import queries.UtilizadorQueries;
 import controller.Controller;
@@ -15,6 +16,8 @@ public class LoginController {
     @FXML private TextField usernameField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
+    @FXML private Button entrarBtn;
+    @FXML private StackPane stackPaneRoot;
 
     private Utilizador utilizador;
     private Controller appController;
@@ -29,11 +32,25 @@ public class LoginController {
     @FXML
     private void initialize() {
         // ENTER ativa login
+        entrarBtn.setFocusTraversable(false);
+
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) handleLogin();
         });
         usernameField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) handleLogin();
+        });
+
+        usernameField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        passwordField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        
+        stackPaneRoot.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            if (usernameField.isFocused() && !usernameField.localToScene(usernameField.getBoundsInLocal()).contains(e.getSceneX(), e.getSceneY())) {
+                usernameField.getParent().requestFocus();
+            }
+            if (passwordField.isFocused() && !passwordField.localToScene(passwordField.getBoundsInLocal()).contains(e.getSceneX(), e.getSceneY())) {
+                passwordField.getParent().requestFocus();
+            }
         });
     }
 

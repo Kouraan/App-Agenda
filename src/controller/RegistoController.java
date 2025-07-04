@@ -2,6 +2,7 @@ package controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
 import javafx.scene.input.KeyCode;
 import models.Utilizador;
 import utils.Persistencia;
@@ -11,6 +12,9 @@ public class RegistoController {
     @FXML private TextField nomeField;
     @FXML private PasswordField passwordField;
     @FXML private Label errorLabel;
+    @FXML private Button registoBtn;
+    @FXML private StackPane stackPaneRoot;
+
 
     private Controller appController;
 
@@ -20,11 +24,25 @@ public class RegistoController {
 
     @FXML
     private void initialize() {
+        registoBtn.setFocusTraversable(false);
+
         nomeField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) handleRegisto();
         });
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) handleRegisto();
+        });
+
+        nomeField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        passwordField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        
+        stackPaneRoot.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            if (nomeField.isFocused() && !nomeField.localToScene(nomeField.getBoundsInLocal()).contains(e.getSceneX(), e.getSceneY())) {
+                nomeField.getParent().requestFocus();
+            }
+            if (passwordField.isFocused() && !passwordField.localToScene(passwordField.getBoundsInLocal()).contains(e.getSceneX(), e.getSceneY())) {
+                passwordField.getParent().requestFocus();
+            }
         });
     }
 
