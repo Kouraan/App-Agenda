@@ -270,11 +270,48 @@ public class PaginaPrincipalController implements Initializable {
 
         if (appController != null && (appController.getClientesMap() == null || appController.getClientesMap().isEmpty())) {
             Label msg = new Label("Não tem nenhum cliente salvo, deseja adicionar um?");
-            msg.setStyle("-fx-font-size: 18px; -fx-text-fill: #888; -fx-font-weight: bold;");
+            msg.setStyle("-fx-font-size: 22px; -fx-text-fill: #222; -fx-font-weight: bold;");
             Button adicionarBtn = new Button("Adicionar");
             adicionarBtn.setStyle("-fx-font-size: 16px; -fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24 8 24;");
-        
-            clientesContent.getChildren().addAll(msg, adicionarBtn);
+            
+            adicionarBtn.setOnAction(e -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AdicionarCliente.fxml"));
+                    Parent root = loader.load();
+                    AdicionarClienteController adicionarClienteController = loader.getController();
+                    adicionarClienteController.setAppController(appController);
+
+                    Stage stage = new Stage();
+                    stage.setTitle("Adicionar Cliente");
+                    stage.setScene(new Scene(root));
+                    stage.initOwner(adicionarBtn.getScene().getWindow());
+                    stage.initModality(Modality.WINDOW_MODAL);
+                    stage.setResizable(false);
+
+                    double largura = areaCentral.getWidth() * 0.25;
+                    double altura = areaCentral.getHeight();
+                    if (largura < 320) largura = 320;
+                    stage.setWidth(largura);
+                    stage.setHeight(altura);
+                    stage.setX(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinX() + (areaCentral.getWidth() - largura) / 2);
+                    stage.setY(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinY());
+
+                    stage.showAndWait();
+
+                    mostrarClientes();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+            VBox box = new VBox(18, msg, adicionarBtn);
+            box.setAlignment(Pos.CENTER);
+            box.setPrefHeight(clientesContent.getHeight());
+            box.setPrefWidth(clientesContent.getWidth());
+            box.setStyle("-fx-alignment: center; -fx-padding: 0;");
+
+            clientesContent.setAlignment(Pos.CENTER);
+            clientesContent.getChildren().add(box);
         } else {
             HBox barraTopo = new HBox(10);
             barraTopo.setAlignment(Pos.TOP_LEFT);
@@ -286,7 +323,7 @@ public class PaginaPrincipalController implements Initializable {
             TextField pesquisaField = new TextField();
             pesquisaField.setPromptText("Pesquisar cliente...");
             pesquisaField.setPrefHeight(alturaBarra);
-            pesquisaField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;");
+            pesquisaField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
 
             HBox.setHgrow(pesquisaField, Priority.ALWAYS);
 
@@ -294,17 +331,40 @@ public class PaginaPrincipalController implements Initializable {
             btnAdicionar.setPrefWidth(larguraBotao);
             btnAdicionar.setPrefHeight(alturaBarra);
             btnAdicionar.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0;");
+            btnAdicionar.setOnAction(e -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AdicionarCliente.fxml"));
+                    Parent root = loader.load();
+                    AdicionarClienteController adicionarClienteController = loader.getController();
+                    adicionarClienteController.setAppController(appController);
 
-            Button btnRemover = new Button("-");
-            btnRemover.setPrefWidth(larguraBotao);
-            btnRemover.setPrefHeight(alturaBarra);
-            btnRemover.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0;");
+                    Stage stage = new Stage();
+                    stage.setTitle("Adicionar Cliente");
+                    stage.setScene(new Scene(root));
+                    stage.initOwner(btnAdicionar.getScene().getWindow());
+                    stage.initModality(Modality.WINDOW_MODAL);
+                    stage.setResizable(false);
+
+                    double largura = areaCentral.getWidth() * 0.25;
+                    double altura = areaCentral.getHeight();
+                    if (largura < 320) largura = 320;
+                    stage.setWidth(largura);
+                    stage.setHeight(altura);
+                    stage.setX(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinX() + (areaCentral.getWidth() - largura) / 2);
+                    stage.setY(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinY());
+
+                    stage.showAndWait();
+
+                    mostrarClientes();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
 
             pesquisaField.setFocusTraversable(false);
             btnAdicionar.setFocusTraversable(false);
-            btnRemover.setFocusTraversable(false);
 
-            barraTopo.getChildren().addAll(pesquisaField, btnAdicionar, btnRemover);
+            barraTopo.getChildren().addAll(pesquisaField, btnAdicionar);
             
             areaClientes.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
                 if (!pesquisaField.isFocused()) return;
@@ -367,6 +427,7 @@ public class PaginaPrincipalController implements Initializable {
             VBox layout = new VBox(0, barraTopo, tabelaScroll);
             VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
 
+            clientesContent.setAlignment(Pos.TOP_LEFT);
             clientesContent.getChildren().add(layout);
         }
     }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.AdicionarClienteController"
+            prefWidth="400" prefHeight="500"
+            style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2;">
+    <center>
+        <VBox fx:id="rootVBox" spacing="18" alignment="TOP_LEFT" style="-fx-padding: 32 32 32 32;">
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <CheckBox fx:id="semanalCheck" text="" />
+                <Label text="Cliente Semanal" style="-fx-font-size: 15px;"/>
+            </HBox>
+
+            <Label text="Nome:" style="-fx-font-size: 14px;"/>
+            <TextField fx:id="nomeField" promptText="Nome" maxWidth="Infinity"/>
+
+            <Label text="Telefone:" style="-fx-font-size: 14px;"/>
+            <TextField fx:id="telefoneField" promptText="Telefone" maxWidth="Infinity"/>
+
+            <Label text="Dia da Semana:" style="-fx-font-size: 14px;"/>
+            <ComboBox fx:id="diaSemanaCombo" promptText="Dia da Semana" maxWidth="Infinity" disable="true"/>
+
+            <Label text="Hora do Corte:" style="-fx-font-size: 14px;"/>
+            <ComboBox fx:id="horaCorteCombo" promptText="Hora do Corte" maxWidth="Infinity" disable="true"/>
+
+            <HBox spacing="12" alignment="CENTER">
+                <Button fx:id="btnSalvar" text="Salvar" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#salvarCliente" defaultButton="true"/>
+                <Button fx:id="btnCancelar" text="Cancelar" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#cancelar"/>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

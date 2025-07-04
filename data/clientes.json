@@ -4,16 +4,13 @@
     "numeroTelefone": "965131863",
     "tipoCliente": "SEMANAL",
     "faltas": 0,
-    "diaSemana": "saturday",
+    "diaSemana": "Sábado",
     "horaCorte": "11:00"
   },
   {
-    "nome": "Nuno",
+    "nome": "Nuno Silva",
     "numeroTelefone": "913332902",
     "tipoCliente": "NORMAL",
-    "faltas": 0,
-    "diaSemana": "",
-    "horaCorte": ""
+    "faltas": 0
   }
-  
 ]
