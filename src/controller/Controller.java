@@ -49,10 +49,13 @@ public class Controller {
         loginController.setAppController(this); // Para navegação futura
         Scene scene = new Scene(root);
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setX(screenBounds.getMinX());
+        stage.setY(screenBounds.getMinY());
         stage.setWidth(screenBounds.getWidth());
         stage.setHeight(screenBounds.getHeight());
         stage.setScene(scene);
         stage.setTitle("Login");
+        stage.setResizable(false);
         stage.show();
     }
 
@@ -64,10 +67,13 @@ public class Controller {
         paginaPrincipalController.setAppController(this);
         Scene scene = new Scene(root);
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setX(screenBounds.getMinX());
+        stage.setY(screenBounds.getMinY());
         stage.setWidth(screenBounds.getWidth());
         stage.setHeight(screenBounds.getHeight());
         stage.setScene(scene);
         stage.setTitle("App Agenda - Principal");
+        stage.setResizable(false);
         stage.show();
     }
 
@@ -78,10 +84,13 @@ public class Controller {
         registoController.setAppController(this);
         Scene scene = new Scene(root);
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setX(screenBounds.getMinX());
+        stage.setY(screenBounds.getMinY());
         stage.setWidth(screenBounds.getWidth());
         stage.setHeight(screenBounds.getHeight());
         stage.setScene(scene);
         stage.setTitle("Registo");
+        stage.setResizable(false);
         stage.show();
     }
 }

@@ -44,6 +44,19 @@ public class RegistoController {
                 passwordField.getParent().requestFocus();
             }
         });
+        stackPaneRoot.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.windowProperty().addListener((obsWin, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.focusedProperty().addListener((obsFocus, wasFocused, isFocused) -> {
+                            if (isFocused) {
+                                stackPaneRoot.requestFocus();
+                            }
+                        });
+                    }
+                });
+            }
+        });
     }
 
     @FXML

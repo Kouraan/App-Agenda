@@ -92,6 +92,20 @@ public class AdicionarClienteController {
                 });
             }
         });
+
+        rootVBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.windowProperty().addListener((obsWin, oldWin, newWin) -> {
+                    if (newWin != null) {
+                        newWin.focusedProperty().addListener((obsFocus, wasFocused, isFocused) -> {
+                            if (isFocused) {
+                                rootVBox.requestFocus();
+                            }   
+                        });
+                    }
+                });
+            }
+        });
     }
 
     @FXML

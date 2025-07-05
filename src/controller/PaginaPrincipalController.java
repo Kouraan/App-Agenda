@@ -260,7 +260,7 @@ public class PaginaPrincipalController implements Initializable {
     }
 
     @FXML
-    private void mostrarClientes() {
+    public void mostrarClientes() {
         calendarioToggle.setSelected(false);
         clientesToggle.setSelected(true);
         areaCentral.setVisible(false);
@@ -410,7 +410,13 @@ public class PaginaPrincipalController implements Initializable {
 
             int row = 1;
             for (models.Cliente c : lista) {
-                tabela.add(novoCell(c.getNome()), 0, row);
+                Label nomeLabel = novoCell(c.getNome());
+                nomeLabel.setStyle(nomeLabel.getStyle() + "; -fx-cursor: hand;");
+                nomeLabel.setOnMouseClicked(event -> {
+                    abrirDetalhesCliente(c);
+                });
+                tabela.add(nomeLabel, 0, row);
+
                 tabela.add(novoCell(c.getNumeroTelefone()), 1, row);
                 tabela.add(novoCell(c.getTipoCliente().toString()), 2, row);
                 tabela.add(novoCell(String.valueOf(c.getFaltas())), 3, row);
@@ -752,6 +758,10 @@ public class PaginaPrincipalController implements Initializable {
     }
 
     private void destacarBlocoAtual() {
+        if (!diaSelecionado.equals(LocalDate.now())) {
+            celulasDia.values().forEach(p -> p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
+            return;
+        }
         LocalTime agora = LocalTime.now();
         if (agora.isBefore(HORA_ABERTURA) || agora.isAfter(HORA_FECHO.plusMinutes(INTERVALO_MINUTOS - 1))) {
             celulasDia.values().forEach(p -> p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
@@ -771,8 +781,16 @@ public class PaginaPrincipalController implements Initializable {
 
     private void destacarBlocoAtualSemana() {
         LocalDate hoje = LocalDate.now();
-        LocalTime agora = LocalTime.now();
+        LocalDate inicioSemanaVisivel = semanaAtual;
+        LocalDate fimSemanaVisivel = semanaAtual.plusDays(6);
 
+        if (hoje.isBefore(inicioSemanaVisivel) || hoje.isAfter(fimSemanaVisivel)) {
+            celulasSemana.values().forEach(map -> map.values().forEach(p ->
+                p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;")));
+            return;
+        }
+
+        LocalTime agora = LocalTime.now();
         if (agora.isBefore(HORA_ABERTURA) || agora.isAfter(HORA_FECHO.plusMinutes(INTERVALO_MINUTOS - 1))) {
             celulasSemana.values().forEach(map -> map.values().forEach(p ->
                 p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;")));
@@ -781,7 +799,6 @@ public class PaginaPrincipalController implements Initializable {
 
         int minuto = agora.getMinute() < 30 ? 0 : 30;
         LocalTime blocoAtual = LocalTime.of(agora.getHour(), minuto);
-
         int diaSemana = hoje.getDayOfWeek().getValue() - 1;
 
         celulasSemana.forEach((hora, map) -> {
@@ -801,5 +818,38 @@ public class PaginaPrincipalController implements Initializable {
         l.setMaxWidth(Double.MAX_VALUE);
         l.setAlignment(Pos.CENTER);
         return l;
+    }
+
+    private void abrirDetalhesCliente(models.Cliente cliente) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/DetalheCliente.fxml"));
+            Parent root = loader.load();
+            DetalheClienteController controller = loader.getController();
+            controller.setCliente(cliente);
+            controller.setOnClienteAlterado(this::mostrarClientes);
+
+            Stage stage = new Stage();
+            stage.setTitle("Detalhes do Cliente");
+            stage.setScene(new Scene(root));
+            stage.initOwner(clientesContent.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setResizable(false);
+
+            double largura = areaCentral.getWidth() * 0.75;
+            double altura = areaCentral.getHeight();
+            if (largura < 320) largura = 320;
+            stage.setWidth(largura);
+            stage.setHeight(altura);
+            stage.setX(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinX() + (areaCentral.getWidth() - largura) / 2);
+            stage.setY(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinY());
+
+            stage.showAndWait();
+
+            if (controller.isClienteAlterado()) {
+                mostrarClientes();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
