@@ -72,6 +72,10 @@ public class PaginaPrincipalController implements Initializable {
     public void setAppController(Controller appController) {
         this.appController = appController;
     }
+
+    public Controller getAppController() {
+        return appController;
+    }
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -826,7 +830,7 @@ public class PaginaPrincipalController implements Initializable {
             Parent root = loader.load();
             DetalheClienteController controller = loader.getController();
             controller.setCliente(cliente);
-            controller.setOnClienteAlterado(this::mostrarClientes);
+            controller.setPaginaPrincipalController(this);
 
             Stage stage = new Stage();
             stage.setTitle("Detalhes do Cliente");
@@ -845,9 +849,6 @@ public class PaginaPrincipalController implements Initializable {
 
             stage.showAndWait();
 
-            if (controller.isClienteAlterado()) {
-                mostrarClientes();
-            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }

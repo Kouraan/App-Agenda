@@ -3,6 +3,7 @@ package controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import models.Cliente;
@@ -11,58 +12,29 @@ import java.util.Map;
 
 public class DetalheClienteController {
 
-    @FXML private ToggleButton btnEditar;
-    @FXML private Button btnSalvar, btnSair, btnRemover,editNomeBtn, editTelefoneBtn, btnMaisFalta, btnMenosFalta;
-    @FXML private TextField nomeField, telefoneField;
-    @FXML private CheckBox semanalCheck;
-    @FXML private ComboBox<String> diaSemanaCombo, horaCorteCombo;
-    @FXML private Label faltasLabel;
-    @FXML private VBox editBox;
+    @FXML private Button btnSair, btnApagar;
     @FXML private GridPane gridVisual;
-    @FXML private HBox semanaBox;
 
     private Cliente cliente;
-    private Runnable onClienteAlterado;
-    private boolean clienteAlterado = false;
-    private boolean editandoNome = false, editandoTelefone = false;
+    private controller.PaginaPrincipalController paginaPrincipalController;
 
-    public void setOnClienteAlterado(Runnable callback) { this.onClienteAlterado = callback; }
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
         mostrarVisual();
     }
 
-    public boolean isClienteAlterado() {
-        return clienteAlterado;
+    public void setPaginaPrincipalController(controller.PaginaPrincipalController controller) {
+        this.paginaPrincipalController = controller;
     }
 
     @FXML
     public void initialize() {
-        btnEditar.setOnAction(e -> alternarModoEdicao(btnEditar.isSelected()));
         btnSair.setOnAction(e -> fechar());
-        btnSalvar.setOnAction(e -> confirmarSalvar());
-        btnRemover.setOnAction(e -> removerCliente());
-        editNomeBtn.setOnAction(e -> liberarEdicaoNome());
-        editTelefoneBtn.setOnAction(e -> liberarEdicaoTelefone());
-        btnMaisFalta.setOnAction(e -> alterarFaltas(1));
-        btnMenosFalta.setOnAction(e -> alterarFaltas(-1));
-        semanalCheck.selectedProperty().addListener((obs, oldVal, newVal) -> atualizarCamposSemanal(newVal));
-        diaSemanaCombo.valueProperty().addListener((obs, oldVal, newVal) -> atualizarHorasDisponiveis());
-
-        editBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
-            if (newScene != null) {
-                newScene.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
-                    if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) fechar();
-                });
-            }
-        });
+        btnApagar.setOnAction(e -> mostrarConfirmacaoApagar());
     }
 
     private void mostrarVisual() {
-        editBox.setVisible(false); editBox.setManaged(false);
         gridVisual.setVisible(true); gridVisual.setManaged(true);
-        btnSalvar.setVisible(false); btnSalvar.setManaged(false);
-        btnEditar.setSelected(false);
 
         gridVisual.getChildren().clear();
         int row = 0;
@@ -93,128 +65,62 @@ public class DetalheClienteController {
         gridVisual.add(val, 1, row);
     }
 
-    private void alternarModoEdicao(boolean editar) {
-        if (editar) {
-            gridVisual.setVisible(false); gridVisual.setManaged(false);
-            editBox.setVisible(true); editBox.setManaged(true);
-            btnSalvar.setVisible(true); btnSalvar.setManaged(true);
+    
+    private void mostrarConfirmacaoApagar() {
+        Stage parentStage = (Stage) btnApagar.getScene().getWindow();
 
-            semanalCheck.setSelected(cliente.getTipoCliente() == Cliente.TipoCliente.SEMANAL);
-            nomeField.setText(cliente.getNome());
-            nomeField.setEditable(false);
-            telefoneField.setText(cliente.getNumeroTelefone());
-            telefoneField.setEditable(false);
-            faltasLabel.setText(String.valueOf(cliente.getFaltas()));
+        VBox box = new VBox(24);
+        box.setStyle("-fx-background-color: white; -fx-padding: 32 24 24 24; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-background-radius: 8;");
+        box.setAlignment(javafx.geometry.Pos.CENTER);
 
-            diaSemanaCombo.getItems().setAll("Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo");
-            if (cliente.getTipoCliente() == Cliente.TipoCliente.SEMANAL) {
-                semanaBox.setVisible(true); semanaBox.setManaged(true);
-                diaSemanaCombo.setValue(cliente.getDiaSemana());
-                horaCorteCombo.setValue(cliente.getHoraCorte());
-            } else {
-                semanaBox.setVisible(false); semanaBox.setManaged(false);
-            }
-        } else {
-            mostrarVisual();
-        }
-    }
+        Label msg = new Label("Deseja apagar o Cliente? Esta ação é irreversível");
+        msg.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #c0392b; -fx-alignment: center;");
+        msg.setWrapText(true);
 
-    private void liberarEdicaoNome() {
-        nomeField.setEditable(true);
-        nomeField.requestFocus();
-        nomeField.selectAll();
-        nomeField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) nomeField.setEditable(false);
+        HBox botoes = new HBox(24);
+        botoes.setAlignment(javafx.geometry.Pos.CENTER);
+
+        Button btnNao = new Button("Não");
+        btnNao.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
+        Button btnSim = new Button("Sim");
+        btnSim.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
+
+        botoes.getChildren().addAll(btnNao, btnSim);
+        box.getChildren().addAll(msg, botoes);
+
+        Stage dialog = new Stage();
+        dialog.initOwner(parentStage);
+        dialog.initModality(javafx.stage.Modality.WINDOW_MODAL);
+        dialog.setResizable(false);
+
+        double largura = parentStage.getWidth() * 0.8;
+        double altura = parentStage.getHeight() * 0.25;
+        dialog.setWidth(largura);
+        dialog.setHeight(altura);
+
+        dialog.setX(parentStage.getX() + (parentStage.getWidth() - largura) / 2);
+        dialog.setY(parentStage.getY() + (parentStage.getHeight() - altura) / 2);
+
+        Scene scene = new Scene(box);
+        dialog.setScene(scene);
+
+        btnNao.setOnAction(ev -> dialog.close());
+        btnSim.setOnAction(ev -> {
+            dialog.close();
+            apagarCliente();
         });
+
+        dialog.showAndWait();
     }
 
-    private void liberarEdicaoTelefone() {
-        telefoneField.setEditable(true);
-        telefoneField.requestFocus();
-        telefoneField.selectAll();
-        telefoneField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) telefoneField.setEditable(false);
-        });
-    }
+    private void apagarCliente() {
+        Map<String, Cliente> clientes = paginaPrincipalController.getAppController().getClientesMap();
+        clientes.remove(cliente.getNome());
+        utils.Persistencia.guardarClientes(clientes);
 
-    private void atualizarCamposSemanal(boolean semanal) {
-        semanaBox.setVisible(semanal); semanaBox.setManaged(semanal);
-        if (!semanal) {
-            diaSemanaCombo.setValue(null);
-            horaCorteCombo.setValue(null);
-        }
-    }
+        fechar();
 
-    private void atualizarHorasDisponiveis() {
-        horaCorteCombo.getItems().clear();
-        String dia = diaSemanaCombo.getValue();
-        if (dia != null) {
-            LocalTime hora = LocalTime.of(7, 0);
-            while (!hora.isAfter(LocalTime.of(21, 0))) {
-                horaCorteCombo.getItems().add(hora.toString());
-                hora = hora.plusMinutes(30);
-            }
-        }
-    }
-
-    private void alterarFaltas(int delta) {
-        int faltas = Integer.parseInt(faltasLabel.getText());
-        faltas = Math.max(0, faltas + delta);
-        faltasLabel.setText(String.valueOf(faltas));
-    }
-
-    private void confirmarSalvar() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Deseja realmente alterar os dados do cliente?", ButtonType.YES, ButtonType.NO);
-        alert.setHeaderText("Confirmar alteração");
-        alert.showAndWait().ifPresent(resp -> {
-            if (resp == ButtonType.YES) salvar();
-        });
-    }
-
-    private void salvar() {
-        cliente.setNome(nomeField.getText());
-        cliente.setNumeroTelefone(telefoneField.getText());
-        cliente.setFaltas(Integer.parseInt(faltasLabel.getText()));
-        if (semanalCheck.isSelected()) {
-            cliente.setTipoCliente(Cliente.TipoCliente.SEMANAL);
-            cliente.setDiaSemana(diaSemanaCombo.getValue());
-            cliente.setHoraCorte(horaCorteCombo.getValue());
-        } else {
-            cliente.setTipoCliente(Cliente.TipoCliente.NORMAL);
-            cliente.setDiaSemana(null);
-            cliente.setHoraCorte(null);
-        }
-        if (onClienteAlterado != null) onClienteAlterado.run();
-        clienteAlterado = true;
-        mostrarVisual();
-    }
-
-    private void removerCliente() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
-            "Remover este cliente? Esta ação é irreversível.",
-            ButtonType.YES, ButtonType.NO);
-        alert.setHeaderText(null);
-        alert.setGraphic(null);
-
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.setMinHeight(120);
-        dialogPane.setPrefHeight(120);
-        dialogPane.setPrefWidth(450);
-        dialogPane.setMinWidth(450);
-        dialogPane.setStyle("-fx-font-size: 14px; -fx-padding: 8 24 8 24;");
-
-        alert.showAndWait().ifPresent(resp -> {
-            if (resp == ButtonType.YES) {
-                Map<String, models.Cliente> clientes = utils.Persistencia.lerClientes();
-                clientes.remove(cliente.getNome());
-                utils.Persistencia.guardarClientes(clientes);
-                if (onClienteAlterado != null) {
-                    onClienteAlterado.run();
-                }
-                clienteAlterado = true;
-                fechar();
-            }
-        });
+        paginaPrincipalController.mostrarClientes();
     }
 
     private void fechar() {

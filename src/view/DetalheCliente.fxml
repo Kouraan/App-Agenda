@@ -10,10 +10,6 @@
         <StackPane>
             <!-- VISUALIZAÇÃO -->
             <VBox fx:id="visualBox" alignment="TOP_CENTER" spacing="4" style="-fx-padding: 48 32 32 32;">
-                <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 8 0;">
-                    <ToggleButton fx:id="btnEditar" text="Editar"
-                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 6 32 6 32;"/>
-                </HBox>
                 <GridPane fx:id="gridVisual"
                         style="-fx-background-color: #f8fafd; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-padding: 6 6 6 6; -fx-background-radius: 6;"
                         prefWidth="Infinity" maxWidth="Infinity">
@@ -24,45 +20,11 @@
                     <!-- Linhas preenchidas dinamicamente pelo controller -->
                 </GridPane>
             </VBox>
-            <!-- EDIÇÃO -->
-            <VBox fx:id="editBox" spacing="18" alignment="TOP_LEFT" style="-fx-padding: 32 32 32 32;" visible="false" managed="false">
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <CheckBox fx:id="semanalCheck" text="Cliente Semanal"/>
-                </HBox>
-                <Label text="Nome:"/>
-                <HBox spacing="6" alignment="CENTER_LEFT">
-                    <TextField fx:id="nomeField" promptText="Nome" editable="false" maxWidth="Infinity"/>
-                    <Button fx:id="editNomeBtn" style="-fx-background-color: transparent;">
-                        <graphic><Label text="✏️"/></graphic>
-                    </Button>
-                </HBox>
-                <Label text="Telefone:"/>
-                <HBox spacing="6" alignment="CENTER_LEFT">
-                    <TextField fx:id="telefoneField" promptText="Telefone" editable="false" maxWidth="Infinity"/>
-                    <Button fx:id="editTelefoneBtn" style="-fx-background-color: transparent;">
-                        <graphic><Label text="✏️"/></graphic>
-                    </Button>
-                </HBox>
-                <HBox spacing="8" alignment="CENTER_LEFT" fx:id="semanaBox" visible="false" managed="false">
-                    <Label text="Dia da Semana:"/>
-                    <ComboBox fx:id="diaSemanaCombo" promptText="Dia da Semana"/>
-                    <Label text="Hora Corte:"/>
-                    <ComboBox fx:id="horaCorteCombo" promptText="Hora do Corte"/>
-                </HBox>
-                <HBox spacing="12" alignment="CENTER_LEFT">
-                    <Label text="Faltas:"/>
-                    <Button fx:id="btnMenosFalta" text="-" minWidth="32"/>
-                    <Label fx:id="faltasLabel" text="0" style="-fx-font-size: 16px;"/>
-                    <Button fx:id="btnMaisFalta" text="+" minWidth="32"/>
-                </HBox>
-            </VBox>
         </StackPane>
     </center>
     <bottom>
         <HBox alignment="BOTTOM_RIGHT" spacing="16" style="-fx-padding: 0 32 32 32;">
-            <Button fx:id="btnSalvar" text="Salvar" 
-                style="-fx-background-color: #27ae60; -fx-text-fill: white;" visible="false" managed="false"/>
-            <Button fx:id="btnRemover" text="Remover"
+            <Button fx:id="btnApagar" text="Apagar"
                 style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"/>
             <Button fx:id="btnSair" text="Sair"
                 style="-fx-background-color: #bdc3c7; -fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"/>
