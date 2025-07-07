@@ -16,6 +16,7 @@ import javafx.geometry.Insets;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import javafx.scene.effect.GaussianBlur;
 import models.Utilizador;
 
 import java.net.URL;
@@ -49,6 +50,7 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private VBox anotacoesBox;
     @FXML private BorderPane rootPane;
     @FXML private TextArea anotacoesArea;
+    @FXML private Button blurToggleBtn;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -64,6 +66,7 @@ public class PaginaPrincipalController implements Initializable {
     private enum ModoVisualizacao { SEMANA, MES, DIA }
     private ModoVisualizacao modoAtual = ModoVisualizacao.SEMANA;
     private LocalDate diaSelecionado = LocalDate.now();
+    private boolean anotacoesBlurred = false;
     
     public void setUtilizador(Utilizador utilizador) {
         this.utilizador = utilizador;
@@ -206,6 +209,25 @@ public class PaginaPrincipalController implements Initializable {
             rootPane.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
                 if (event.getTarget() != anotacoesArea && anotacoesArea.isFocused()) {
                     rootPane.requestFocus(); // tira o foco do TextArea
+                }
+            });
+        }
+
+        if (blurToggleBtn != null && anotacoesArea != null) {
+            blurToggleBtn.setOnAction(e -> {
+                String texto = anotacoesArea.getText();
+                if (texto == null || texto.trim().isEmpty()) {
+                    return;
+                }
+                anotacoesBlurred = !anotacoesBlurred;
+                if (anotacoesBlurred) {
+                    anotacoesArea.setEffect(new GaussianBlur(10));
+                    blurToggleBtn.setText("👁");
+                    anotacoesArea.setEditable(false);
+                } else {
+                    anotacoesArea.setEffect(null);
+                    blurToggleBtn.setText("🔒");
+                    anotacoesArea.setEditable(true);
                 }
             });
         }
