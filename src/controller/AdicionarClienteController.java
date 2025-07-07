@@ -11,11 +11,15 @@ import java.util.Map;
 
 public class AdicionarClienteController {
     @FXML public TextField nomeField;
+    @FXML public Label nomeErrorLabel;
     @FXML public TextField telefoneField;
+    @FXML public Label telefoneErrorLabel;
     @FXML public ComboBox<String> diaSemanaCombo;
     @FXML public ComboBox<String> horaCorteCombo;
+    @FXML public Label horaCorteErrorLabel;
     @FXML public Button btnSalvar;
     @FXML public Button btnCancelar;
+    @FXML public Label geralErrorLabel;
     @FXML public CheckBox semanalCheck;
     @FXML public VBox rootVBox;
 
@@ -110,6 +114,11 @@ public class AdicionarClienteController {
 
     @FXML
     private void salvarCliente() {
+        nomeErrorLabel.setVisible(false); nomeErrorLabel.setManaged(false);
+        telefoneErrorLabel.setVisible(false); telefoneErrorLabel.setManaged(false);
+        horaCorteErrorLabel.setVisible(false); horaCorteErrorLabel.setManaged(false);
+        geralErrorLabel.setVisible(false); geralErrorLabel.setManaged(false);
+
         boolean erro = false;
         String nome = nomeField.getText().trim();
         String telefone = telefoneField.getText().trim();
@@ -122,58 +131,45 @@ public class AdicionarClienteController {
         diaSemanaCombo.setStyle("");
         horaCorteCombo.setStyle("");
 
+        boolean semanal = semanalCheck.isSelected();
+
         // Campos obrigatórios
-        if (nome.isEmpty()) {
-            nomeField.setStyle("-fx-border-color: red;");
-            erro = true;
-        }
-        if (telefone.isEmpty()) {
-            telefoneField.setStyle("-fx-border-color: red;");
-            erro = true;
-        }
-        if (erro) {
-            mostrarAlerta("Preencha todos os campos obrigatórios.");
+        boolean camposObrigatoriosFaltando = nome.isEmpty() || telefone.isEmpty() ||
+            (semanal && (diaSemana == null || horaCorte == null));
+        if (camposObrigatoriosFaltando) {
+            geralErrorLabel.setText("Preencha todos os campos obrigatórios");
+            geralErrorLabel.setVisible(true); geralErrorLabel.setManaged(true);
             return;
         }
 
         // Cliente Duplicado
         Map<String, models.Cliente> clientes = appController.getClientesMap();
+        
         if (clientes.values().stream().anyMatch(c -> c.getNome().equalsIgnoreCase(nome))) {
-            nomeField.setStyle("-fx-border-color: red;");
-            mostrarAlerta("Já existe um cliente com esse nome.");
+            nomeErrorLabel.setText("Já existe um cliente com esse nome.");
+            nomeErrorLabel.setVisible(true); nomeErrorLabel.setManaged(true);
             return;
         }
         if (clientes.values().stream().anyMatch(c -> c.getNumeroTelefone().equals(telefone))) {
-            telefoneField.setStyle("-fx-border-color: red;");
-            mostrarAlerta("Já existe um cliente com esse número de telefone.");
+            telefoneErrorLabel.setText("Já existe um cliente com esse número.");
+            telefoneErrorLabel.setVisible(true); telefoneErrorLabel.setManaged(true);
             return;
         }
 
         // Validação de formato
         if (!utils.Validation.nomeValido(nome)) {
-            nomeField.setStyle("-fx-border-color: red;");
-            mostrarAlerta("Nome inválido.");
+            nomeErrorLabel.setText("Nome inválido.");
+            nomeErrorLabel.setVisible(true); nomeErrorLabel.setManaged(true);
             return;
         }
         if (!utils.Validation.numeroTelefoneValido(telefone)) {
-            telefoneField.setStyle("-fx-border-color: red;");
-            mostrarAlerta("Telefone inválido.");
+            telefoneErrorLabel.setText("Telefone inválido.");
+            telefoneErrorLabel.setVisible(true); telefoneErrorLabel.setManaged(true);
             return;
         }
 
         // Cliente semanal
-        boolean semanal = semanalCheck.isSelected();
         if (semanal) {
-            if (diaSemana == null || diaSemana.isEmpty()) {
-                diaSemanaCombo.setStyle("-fx-border-color: red;");
-                mostrarAlerta("Selecione um dia da semana.");
-                return;
-            }
-            if (horaCorte == null || horaCorte.isEmpty()) {
-                horaCorteCombo.setStyle("-fx-border-color: red;");
-                mostrarAlerta("Selecione uma hora de corte.");
-                return;
-            }
             // Verifica se a hora já está ocupada
             boolean ocupado = clientes.values().stream().anyMatch(c -> 
                 c.getTipoCliente() == models.Cliente.TipoCliente.SEMANAL &&
@@ -181,8 +177,8 @@ public class AdicionarClienteController {
                 horaCorte.equals(c.getHoraCorte())
             );
             if (ocupado) {
-                horaCorteCombo.setStyle("-fx-border-color: red;");
-                mostrarAlerta("Já existe um cliente semanal nesse horário.");
+                horaCorteErrorLabel.setText("Já existe um cliente semanal nesse horário.");
+                horaCorteErrorLabel.setVisible(true); horaCorteErrorLabel.setManaged(true);
                 return;
             }
         }
@@ -195,7 +191,8 @@ public class AdicionarClienteController {
             novoCliente = new models.Cliente(nome, telefone, models.Cliente.TipoCliente.NORMAL);
         }
         if (!utils.Validation.clienteValido(novoCliente, clientes)) {
-            mostrarAlerta("Dados do cliente inválidos.");
+            geralErrorLabel.setText("Dados do cliente inválidos.");
+            geralErrorLabel.setVisible(true); geralErrorLabel.setManaged(true);
             return;
         }
 
@@ -209,10 +206,5 @@ public class AdicionarClienteController {
     @FXML
     private void cancelar() {
         ((Stage) btnCancelar.getScene().getWindow()).close();
-    }
-
-    private void mostrarAlerta(String msg) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.showAndWait();
     }
 }

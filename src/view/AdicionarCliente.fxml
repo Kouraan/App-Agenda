@@ -16,20 +16,24 @@
 
             <Label text="Nome:" style="-fx-font-size: 14px;"/>
             <TextField fx:id="nomeField" promptText="Nome" maxWidth="Infinity"/>
+            <Label fx:id="nomeErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 12px;" visible="false" managed="false"/>
 
             <Label text="Telefone:" style="-fx-font-size: 14px;"/>
             <TextField fx:id="telefoneField" promptText="Telefone" maxWidth="Infinity"/>
+            <Label fx:id="telefoneErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 12px;" visible="false" managed="false"/>
 
             <Label text="Dia da Semana:" style="-fx-font-size: 14px;"/>
             <ComboBox fx:id="diaSemanaCombo" promptText="Dia da Semana" maxWidth="Infinity" disable="true"/>
 
             <Label text="Hora do Corte:" style="-fx-font-size: 14px;"/>
             <ComboBox fx:id="horaCorteCombo" promptText="Hora do Corte" maxWidth="Infinity" disable="true"/>
+            <Label fx:id="horaCorteErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 12px;" visible="false" managed="false"/>
 
             <HBox spacing="12" alignment="CENTER">
                 <Button fx:id="btnSalvar" text="Salvar" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#salvarCliente" defaultButton="true"/>
                 <Button fx:id="btnCancelar" text="Cancelar" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#cancelar"/>
             </HBox>
+            <Label fx:id="geralErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 13px;" visible="false" managed="false"/>
         </VBox>
     </center>
 </BorderPane>
