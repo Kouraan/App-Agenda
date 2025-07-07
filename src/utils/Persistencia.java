@@ -105,4 +105,24 @@ public class Persistencia {
             return false;
         }
     }
+
+    // Ler anotações do ficheiro JSON
+    public static String lerAnotacoes() {
+        try (FileReader reader = new FileReader("data/anotacoes.json")) {
+            String anotacoes = gson.fromJson(reader, String.class);
+            return anotacoes != null ? anotacoes : "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    // Guardar anotações no ficheiro JSON
+    public static boolean guardarAnotacoes(String anotacoes) {
+        try (FileWriter writer = new FileWriter("data/anotacoes.json")) {
+            gson.toJson(anotacoes != null ? anotacoes : "", writer);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

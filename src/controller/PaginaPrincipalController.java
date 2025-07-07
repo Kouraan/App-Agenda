@@ -46,6 +46,9 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private StackPane areaClientes;
     @FXML private VBox clientesContent;
     @FXML private ScrollPane scrollPaneCalendario;
+    @FXML private VBox anotacoesBox;
+    @FXML private BorderPane rootPane;
+    @FXML private TextArea anotacoesArea;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -188,6 +191,24 @@ public class PaginaPrincipalController implements Initializable {
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+
+        if (anotacoesArea != null) {
+            anotacoesArea.setText(utils.Persistencia.lerAnotacoes());
+            anotacoesArea.focusedProperty().addListener((obs, oldVal, newVal) -> {
+                if (!newVal) {
+                    utils.Persistencia.guardarAnotacoes(anotacoesArea.getText());
+                }
+            });
+        }
+
+        // Remover foco do TextArea ao clicar em qualquer lado do ecrã
+        if (rootPane != null && anotacoesArea != null) {
+            rootPane.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
+                if (event.getTarget() != anotacoesArea && anotacoesArea.isFocused()) {
+                    rootPane.requestFocus(); // tira o foco do TextArea
+                }
+            });
+        }
     }
     
     @FXML
@@ -226,6 +247,10 @@ public class PaginaPrincipalController implements Initializable {
     
     @FXML
     private void handleLogout() {
+        // Guardar anotações antes de sair
+        if (anotacoesArea != null) {
+            utils.Persistencia.guardarAnotacoes(anotacoesArea.getText());
+        }
         try {
             if (appController != null) {
                 appController.mostrarLogin();
@@ -328,6 +353,13 @@ public class PaginaPrincipalController implements Initializable {
             pesquisaField.setPromptText("Pesquisar cliente...");
             pesquisaField.setPrefHeight(alturaBarra);
             pesquisaField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+            pesquisaField.setOnKeyPressed(event -> {
+                switch (event.getCode()) {
+                    case ENTER:
+                        pesquisaField.getParent().requestFocus();
+                        break;
+                }
+            });
 
             HBox.setHgrow(pesquisaField, Priority.ALWAYS);
 
@@ -369,51 +401,60 @@ public class PaginaPrincipalController implements Initializable {
             btnAdicionar.setFocusTraversable(false);
 
             barraTopo.getChildren().addAll(pesquisaField, btnAdicionar);
-            
-            areaClientes.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
-                if (!pesquisaField.isFocused()) return;
-                if(!pesquisaField.localToScene(pesquisaField.getBoundsInLocal()).contains(
-                    e.getSceneX(), e.getSceneY())) {
-                    pesquisaField.getParent().requestFocus();
+           
+            HBox.setHgrow(barraTopo, Priority.ALWAYS);
+
+            VBox layout = new VBox(0, barraTopo);
+            layout.setOnMouseClicked(event -> {
+                if (event.getTarget() != pesquisaField) {
+                    layout.requestFocus();
                 }
             });
+            clientesContent.setAlignment(Pos.TOP_LEFT);
+            clientesContent.getChildren().add(layout);
 
-            HBox.setHgrow(barraTopo, Priority.ALWAYS);
-            
-            GridPane tabela = new GridPane();
-            tabela.setHgap(8);
-            tabela.setVgap(2);
-            tabela.setStyle("-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
-            tabela.setMaxWidth(Double.MAX_VALUE);
+            pesquisaField.textProperty().addListener((obs, oldText, newText) -> {
+                atualizarTabelaClientes(layout, newText);
+            });
 
-            for (int i = 0; i < 6; i++) {
-                ColumnConstraints col = new ColumnConstraints();
-                col.setHgrow(Priority.ALWAYS);
-                col.setMinWidth(100.0 / 6);
-                tabela.getColumnConstraints().add(col);
-            }
+            atualizarTabelaClientes(layout, "");
+        }
+    }
 
-            ScrollPane tabelaScroll = new ScrollPane(tabela);
-            tabelaScroll.setFitToWidth(true);
-            tabelaScroll.setFitToHeight(true);
-            tabelaScroll.setFocusTraversable(false);
-            tabelaScroll.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;");
-            VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
+    private void atualizarTabelaClientes(VBox layout, String filtro) {
+        if (layout.getChildren().size() > 1) {
+            layout.getChildren().remove(1);
+        }
 
-            String[] cabecalho = {"Nome", "Telefone", "Tipo", "Faltas", "Dia Semana", "Hora Corte"};
-            for (int i = 0; i < cabecalho.length; i++) {
-                Label th = new Label(cabecalho[i]);
-                th.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-background-color: #d6eaf8; -fx-padding: 6 12 6 12; -fx-border-color: #bdc3c7; -fx-border-width: 0 1 1 0;");
-                th.setMaxWidth(Double.MAX_VALUE);
-                th.setAlignment(Pos.CENTER);
-                tabela.add(th, i, 0);
-            }
+        GridPane tabela = new GridPane();
+        tabela.setHgap(8);
+        tabela.setVgap(2);
+        tabela.setStyle("-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        tabela.setMaxWidth(Double.MAX_VALUE);
 
-            java.util.List<models.Cliente> lista = new java.util.ArrayList<>(appController.getClientesMap().values());
-            lista.sort(java.util.Comparator.comparing(models.Cliente::getNome, String.CASE_INSENSITIVE_ORDER));
+        for (int i = 0; i < 6; i++) {
+            ColumnConstraints col = new ColumnConstraints();
+            col.setHgrow(Priority.ALWAYS);
+            col.setMinWidth(100.0 / 6);
+            tabela.getColumnConstraints().add(col);
+        }
 
-            int row = 1;
-            for (models.Cliente c : lista) {
+        String[] cabecalho = {"Nome", "Telefone", "Tipo", "Faltas", "Dia Semana", "Hora Corte"};
+        for (int i = 0; i < cabecalho.length; i++) {
+            Label th = new Label(cabecalho[i]);
+            th.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-background-color: #d6eaf8; -fx-padding: 6 12 6 12; -fx-border-color: #bdc3c7; -fx-border-width: 0 1 1 0;");
+            th.setMaxWidth(Double.MAX_VALUE);
+            th.setAlignment(Pos.CENTER);
+            tabela.add(th, i, 0);
+        }
+
+        java.util.List<models.Cliente> lista = new java.util.ArrayList<>(appController.getClientesMap().values());
+        lista.sort(java.util.Comparator.comparing(models.Cliente::getNome, String.CASE_INSENSITIVE_ORDER));
+
+        String filtroLower = filtro.toLowerCase();
+        int row = 1;
+        for (models.Cliente c : lista) {
+            if (c.getNome().toLowerCase().contains(filtroLower) || c.getNumeroTelefone().contains(filtroLower)) {
                 Label nomeLabel = novoCell(c.getNome());
                 nomeLabel.setStyle(nomeLabel.getStyle() + "; -fx-cursor: hand;");
                 nomeLabel.setOnMouseClicked(event -> {
@@ -433,13 +474,16 @@ public class PaginaPrincipalController implements Initializable {
                 }
                 row++;
             }
-
-            VBox layout = new VBox(0, barraTopo, tabelaScroll);
-            VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
-
-            clientesContent.setAlignment(Pos.TOP_LEFT);
-            clientesContent.getChildren().add(layout);
         }
+
+        ScrollPane tabelaScroll = new ScrollPane(tabela);
+        tabelaScroll.setFitToWidth(true);
+        tabelaScroll.setFitToHeight(true);
+        tabelaScroll.setFocusTraversable(false);
+        tabelaScroll.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;");
+        VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
+
+        layout.getChildren().add(tabelaScroll);
     }
 
     

@@ -37,6 +37,7 @@ initdata:
 	@test -f $(DATA_DIR)/utilizador.json || echo "[]" > $(DATA_DIR)/utilizador.json
 	@test -f $(DATA_DIR)/clientes.json || echo "[]" > $(DATA_DIR)/clientes.json
 	@test -f $(DATA_DIR)/marcacoes.json || echo "[]" > $(DATA_DIR)/marcacoes.json
+	@test -f $(DATA_DIR)/anotacoes.json || echo "\"\"" > $(DATA_DIR)/anotacoes.json
 	@mkdir -p $(LOG_DIR)
 	@test -f $(LOG_DIR)/logsUtilizador.json || echo "[]" > $(LOG_DIR)/logsUtilizador.json
 	@test -f $(LOG_DIR)/logsClientes.json || echo "[]" > $(LOG_DIR)/logsClientes.json

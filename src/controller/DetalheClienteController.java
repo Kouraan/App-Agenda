@@ -163,7 +163,7 @@ public class DetalheClienteController {
         Button btnSim = new Button("Sim");
         btnSim.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
 
-        botoes.getChildren().addAll(btnNao, btnSim);
+        botoes.getChildren().addAll(btnSim, btnNao);
         box.getChildren().addAll(msg, botoes);
 
         Stage dialog = new Stage();
@@ -384,7 +384,7 @@ public class DetalheClienteController {
         box.setStyle("-fx-background-color: white; -fx-padding: 32 24 24 24; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-background-radius: 8;");
         box.setAlignment(javafx.geometry.Pos.CENTER);
     
-        Label msg = new Label("Deseja salvar as alterações?\nEsta ação é irreversível");
+        Label msg = new Label("Deseja salvar as alterações?");
         msg.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #27ae60; -fx-alignment: center;");
         msg.setWrapText(true);
     

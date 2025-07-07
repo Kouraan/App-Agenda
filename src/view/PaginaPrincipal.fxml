@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.PaginaPrincipalController"
+<BorderPane fx:id="rootPane" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.PaginaPrincipalController"
             style="-fx-background-color: #f0f0f0;">
     
     <!-- Área Superior com informações do usuário e navegação -->
@@ -31,6 +31,34 @@
                 <ToggleButton fx:id="clientesToggle" text="Clientes" onAction="#mostrarClientes"
                               maxWidth="Infinity" minHeight="40"
                               style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                <VBox 
+                    fx:id="anotacoesBox"
+                    spacing="8"
+                    style="
+                        -fx-background-color: white;
+                        -fx-border-color: #bdc3c7;
+                        -fx-border-width: 2;
+                        -fx-background-radius: 12;
+                        -fx-border-radius: 12;
+                        -fx-padding: 16;
+                        -fx-effect: dropshadow(gaussian, #bbb, 8, 0.2, 0, 2);"
+                    VBox.vgrow="ALWAYS">
+                    <Label text="Anotações"
+                           style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-alignment: center;"/>
+                    <Separator
+                        prefHeight="1"
+                        style="-fx-background-color: #e0e0e0;"
+                        maxWidth="Infinity"
+                        prefWidth="Infinity"/>
+                    <TextArea
+                        fx:id="anotacoesArea"
+                        promptText="Escreva suas anotações aqui..."
+                        wrapText="true"
+                        style="-fx-font-size: 14px; -fx-background-radius: 12; -fx-border-radius: 8; -fx-background-insets: 0; -fx-border-width: 0; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;"
+                        VBox.vgrow="ALWAYS"
+                        maxWidth="Infinity"
+                        prefWidth="Infinity"/>
+                </VBox>
             </VBox>
             
             <!-- Área Central - Calendário Semanal -->
