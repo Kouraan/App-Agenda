@@ -1,6 +1,5 @@
 package controller;
 
-import com.sun.jdi.VMCannotBeModifiedException;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.stage.Modality;
@@ -8,7 +7,6 @@ import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.Parent;
-import javafx.geometry.Bounds;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.Pos;
@@ -51,6 +49,7 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private BorderPane rootPane;
     @FXML private TextArea anotacoesArea;
     @FXML private Button blurToggleBtn;
+    @FXML private Pane caixaClientesPendentes;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -226,10 +225,17 @@ public class PaginaPrincipalController implements Initializable {
                     anotacoesArea.setEditable(false);
                 } else {
                     anotacoesArea.setEffect(null);
-                    blurToggleBtn.setText("🔒");
+                    blurToggleBtn.setText("🚫");
                     anotacoesArea.setEditable(true);
                 }
             });
+        }
+
+        if (caixaClientesPendentes != null) {
+            caixaClientesPendentes.setStyle("-fx-cursor: hand;");
+            caixaClientesPendentes.setOnMouseEntered(e -> caixaClientesPendentes.setStyle("-fx-cursor: hand;"));
+            caixaClientesPendentes.setOnMouseExited(e -> caixaClientesPendentes.setStyle("-fx-cursor: hand;"));
+            caixaClientesPendentes.setOnMouseClicked(e -> abrirGestaoPendentes());
         }
     }
     
@@ -915,6 +921,35 @@ public class PaginaPrincipalController implements Initializable {
 
             stage.showAndWait();
 
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void abrirGestaoPendentes() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Pendentes.fxml"));
+            Parent root = loader.load();
+            PendentesController controller = loader.getController();
+            controller.setPendentes(appController.getPendentes());
+            controller.setAppController(appController);
+
+            Stage stage = new Stage();
+            stage.setTitle("Clientes Pendentes");
+            stage.setScene(new Scene(root));
+            stage.initOwner(rootPane.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setResizable(false);
+
+            double largura = areaCentral.getWidth() * 0.75;
+            double altura = areaCentral.getHeight();
+            if (largura < 400) largura = 400;
+            stage.setWidth(largura);
+            stage.setHeight(altura);
+            stage.setX(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinX() + (areaCentral.getWidth() - largura) / 2);
+            stage.setY(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinY());
+
+            stage.showAndWait();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

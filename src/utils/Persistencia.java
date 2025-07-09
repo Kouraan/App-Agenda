@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import models.*;
@@ -72,6 +73,31 @@ public class Persistencia {
         }
     }
 
+    // Ler anotações do ficheiro JSON
+    public static String lerAnotacoes() {
+        try (FileReader reader = new FileReader("data/anotacoes.json")) {
+            String anotacoes = gson.fromJson(reader, String.class);
+            return anotacoes != null ? anotacoes : "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    // Parsing e criação de uma List de Pendentes de um ficheiro JSON
+    public static List<Pendente> lerPendentes() {
+        Type pendenteListType = new TypeToken<List<Pendente>>(){}.getType();
+        try (FileReader reader = new FileReader("data/pendentes.json")) {
+            List<Pendente> pendentes = gson.fromJson(reader, pendenteListType);
+            if (pendentes != null) {
+                return new ArrayList<>(pendentes);
+            } else {
+                return new ArrayList<>();
+            }
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+
     // Guarda utilizador no ficheiro JSON
     public static boolean guardarUtilizador(Utilizador utilizador) {
         try (FileWriter writer = new FileWriter("data/utilizador.json")) {
@@ -106,20 +132,20 @@ public class Persistencia {
         }
     }
 
-    // Ler anotações do ficheiro JSON
-    public static String lerAnotacoes() {
-        try (FileReader reader = new FileReader("data/anotacoes.json")) {
-            String anotacoes = gson.fromJson(reader, String.class);
-            return anotacoes != null ? anotacoes : "";
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
     // Guardar anotações no ficheiro JSON
     public static boolean guardarAnotacoes(String anotacoes) {
         try (FileWriter writer = new FileWriter("data/anotacoes.json")) {
             gson.toJson(anotacoes != null ? anotacoes : "", writer);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    // Guarda pendentes no ficheiro JSON
+    public static boolean guardarPendentes(List<Pendente> pendentes) {
+        try (FileWriter writer = new FileWriter("data/pendentes.json")) {
+            gson.toJson(pendentes, writer);
             return true;
         } catch (Exception e) {
             return false;

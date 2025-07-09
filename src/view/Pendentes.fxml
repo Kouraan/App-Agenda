@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.PendentesController"
+            prefWidth="600" prefHeight="500"
+            style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2;">
+    <center>
+        <VBox fx:id="rootVBox" spacing="18" alignment="TOP_CENTER" style="-fx-padding: 32 32 32 32;">
+            <!-- Conteúdo dinâmico será adicionado pelo controller -->
+        </VBox>
+    </center>
+</BorderPane>

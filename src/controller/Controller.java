@@ -2,6 +2,7 @@ package controller;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.List;
 import models.*;
 import utils.*;
 
@@ -17,12 +18,15 @@ public class Controller {
     private Utilizador utilizador;
     private Map<String, Cliente> clientesMap;
     private Map<LocalDateTime, Marcacao> marcacoesMap;
+    private List<Pendente> pendentes;
+
 
     public Controller(Stage stage) {
         this.stage = stage;
         utilizador = Persistencia.lerUtilizador();
         clientesMap = Persistencia.lerClientes();
         marcacoesMap = Persistencia.lerMarcacoes();
+        pendentes = Persistencia.lerPendentes();
     }
 
     public Map<String, Cliente> getClientesMap() {
@@ -39,6 +43,10 @@ public class Controller {
 
     public void setUtilizador(Utilizador utilizador) {
         this.utilizador = utilizador;
+    }
+
+    public List<Pendente> getPendentes() {
+        return pendentes;
     }
 
     public void mostrarLogin() throws Exception {
