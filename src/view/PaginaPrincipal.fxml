@@ -101,8 +101,10 @@
             <!-- Área Lateral Direita -->
             <VBox prefWidth="200" spacing="24" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
                 <Label text="Clientes Pendentes" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-alignment: center;"/>
-                <Pane
+                <VBox
                     fx:id="caixaClientesPendentes"
+                    spacing="0"
+                    alignment="TOP_LEFT"
                     prefHeight="350"
                     style="
                         -fx-background-color: white;
@@ -113,7 +115,7 @@
                         -fx-padding: 16;
                         -fx-effect: dropshadow(gaussian, #bbb, 8, 0.2, 0, 2);
                         "
-                    VBox.vgrow="NEVER"
+                    VBox.vgrow="ALWAYS"
                 />
                 <Region VBox.vgrow="ALWAYS"/>
                 <Label fx:id="relogioLabel"

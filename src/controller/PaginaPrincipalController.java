@@ -49,7 +49,7 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private BorderPane rootPane;
     @FXML private TextArea anotacoesArea;
     @FXML private Button blurToggleBtn;
-    @FXML private Pane caixaClientesPendentes;
+    @FXML private VBox caixaClientesPendentes;
     
     private Utilizador utilizador;
     private Controller appController;
@@ -76,6 +76,7 @@ public class PaginaPrincipalController implements Initializable {
     
     public void setAppController(Controller appController) {
         this.appController = appController;
+        atualizarBoxClientesPendentes();
     }
 
     public Controller getAppController() {
@@ -237,6 +238,7 @@ public class PaginaPrincipalController implements Initializable {
             caixaClientesPendentes.setOnMouseExited(e -> caixaClientesPendentes.setStyle("-fx-cursor: hand;"));
             caixaClientesPendentes.setOnMouseClicked(e -> abrirGestaoPendentes());
         }
+        atualizarBoxClientesPendentes();
     }
     
     @FXML
@@ -950,8 +952,36 @@ public class PaginaPrincipalController implements Initializable {
             stage.setY(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinY());
 
             stage.showAndWait();
+            atualizarBoxClientesPendentes();
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    private void atualizarBoxClientesPendentes() {
+        caixaClientesPendentes.getChildren().clear();
+
+        java.util.List<models.Pendente> pendentes = appController != null ? appController.getPendentes() : null;
+
+        if (pendentes == null || pendentes.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < pendentes.size(); i++) {
+            models.Pendente p = pendentes.get(i);
+
+            Label nome = new Label(p.getNome());
+            nome.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #34495e; -fx-padding: 8 0 8 0;");
+            nome.setMaxWidth(Double.MAX_VALUE);
+
+            caixaClientesPendentes.getChildren().add(nome);
+
+            if (i < pendentes.size() - 1) {
+                Separator sep = new Separator();
+                sep.setStyle("-fx-background-color: #e0e0e0;");
+                sep.setMaxWidth(Double.MAX_VALUE);
+                caixaClientesPendentes.getChildren().add(sep);
+            }
         }
     }
 }
