@@ -13,6 +13,7 @@ public class Cliente {
     private int faltas;
     private String diaSemana;
     private String horaCorte;
+    private boolean rapido;
 
     // Construtores
     public Cliente() {
@@ -22,6 +23,7 @@ public class Cliente {
         this.faltas = 0;
         this.diaSemana = null;
         this.horaCorte = null;
+        this.rapido = false;
     }
 
     // Construtor para NORMAL e DESCONHECIDO
@@ -32,16 +34,18 @@ public class Cliente {
         this.faltas = 0;
         this.diaSemana = null;
         this.horaCorte = null;
+        this.rapido = false;
     }
 
     // Construtor para SEMANAL
-    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente, String diaSemana, String horaCorte) {
+    public Cliente(String nome, String numeroTelefone, TipoCliente tipoCliente, String diaSemana, String horaCorte, boolean rapido) {
         this.nome = nome;
         this.numeroTelefone = numeroTelefone;
         this.tipoCliente = tipoCliente;
         this.faltas = 0;
         this.diaSemana = diaSemana;
         this.horaCorte = horaCorte;
+        this.rapido = rapido;
     }
 
     public Cliente(Cliente outro) {
@@ -51,6 +55,7 @@ public class Cliente {
         this.faltas = outro.faltas;
         this.diaSemana = outro.diaSemana;
         this.horaCorte = outro.horaCorte;
+        this.rapido = outro.rapido;
     }
 
     // Getters e Setters
@@ -102,6 +107,14 @@ public class Cliente {
         this.horaCorte = horaCorte;
     }
 
+    public boolean isRapido() {
+        return rapido;
+    }
+
+    public void setRapido(boolean rapido) {
+        this.rapido = rapido;
+    }
+
     public boolean isTemporario() {
         return this.tipoCliente == TipoCliente.DESCONHECIDO;
     }
@@ -122,6 +135,7 @@ public class Cliente {
                  ? ", diaSemana='" + diaSemana + '\'' +
                   ", horaCorte='" + horaCorte + '\''
                   : "") +
+                ", rapido=" + rapido +
                 '}';
     }
 }

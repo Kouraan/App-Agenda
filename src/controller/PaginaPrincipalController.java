@@ -677,6 +677,15 @@ public class PaginaPrincipalController implements Initializable {
             celula.setPrefHeight(40);
             celula.setMaxWidth(Double.MAX_VALUE);
 
+            LocalDate dataSelecionada = diaSelecionado;
+            LocalTime horaSelecionada = horaAtual;
+            celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+
+            celula.setOnMouseEntered(e -> 
+                celula.setStyle("-fx-background-color: #ecf0f1; -fx-border-color: #3498db; -fx-border-width: 2; -fx-min-height: 40;"));
+            celula.setOnMouseExited(e -> 
+                celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
+
             calendarioGrid.add(horaLabel, 0, linha);
             calendarioGrid.add(celula, 1, linha);
 
@@ -803,8 +812,9 @@ public class PaginaPrincipalController implements Initializable {
                     celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; " +
                                    "-fx-border-width: 1; -fx-min-height: 40;"));
                 
-                // TODO: Aqui será onde vamos adicionar as marcações
-                // Por enquanto, deixamos as células vazias
+                LocalDate dataSelecionada = semanaAtual.plusDays(dia);
+                LocalTime horaSelecionada = horaAtual;
+                celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                 
                 calendarioGrid.add(celula, dia + 1, linha);
 
@@ -817,17 +827,15 @@ public class PaginaPrincipalController implements Initializable {
             horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
         }
         
-        // Configurar constraints das linhas
+        calendarioGrid.getRowConstraints().clear();
         for (int i = 0; i < linha; i++) {
             RowConstraints rowConstraints = new RowConstraints();
-            if (i == 0) {
-                rowConstraints.setPrefHeight(60); // Cabeçalho mais alto
-            } else {
-                rowConstraints.setPrefHeight(40);
-            }
+            rowConstraints.setPrefHeight(40);
             rowConstraints.setVgrow(Priority.NEVER);
             calendarioGrid.getRowConstraints().add(rowConstraints);
         }
+
+        atualizarCabecalho();
     }
 
     private void atualizarRelogio() {
@@ -982,6 +990,37 @@ public class PaginaPrincipalController implements Initializable {
                 sep.setMaxWidth(Double.MAX_VALUE);
                 caixaClientesPendentes.getChildren().add(sep);
             }
+        }
+    }
+
+    private void abrirCriarMarcacao(LocalDate data, LocalTime hora) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AdicionarMarcacao.fxml"));
+            Parent root = loader.load();
+
+            AdicionarMarcacaoController controller = loader.getController();
+            controller.setDataHora(data, hora);
+            controller.setAppController(appController);
+
+            Stage stage = new Stage();
+            stage.setTitle("Nova Marcação");
+            stage.setScene(new Scene(root));
+
+            double largura = areaCentral.getWidth() * 0.25;
+            double altura = areaCentral.getHeight();
+            if (largura < 320) largura = 320;
+            stage.setWidth(largura);
+            stage.setHeight(altura);
+            stage.setX(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinX() + (areaCentral.getWidth() - largura) / 2);
+            stage.setY(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinY());
+
+            stage.initOwner(areaCentral.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setResizable(false);
+
+            stage.showAndWait();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }

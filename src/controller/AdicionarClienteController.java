@@ -21,6 +21,7 @@ public class AdicionarClienteController {
     @FXML public Button btnCancelar;
     @FXML public Label geralErrorLabel;
     @FXML public CheckBox semanalCheck;
+    @FXML public CheckBox rapidoCheck;
     @FXML public VBox rootVBox;
 
     private controller.Controller appController;
@@ -40,6 +41,8 @@ public class AdicionarClienteController {
             diaSemanaCombo.setDisable(!newVal);
             horaCorteCombo.setDisable(true);
             horaCorteCombo.getItems().clear();
+            rapidoCheck.setDisable(!newVal);
+            if (!newVal) rapidoCheck.setSelected(false);
         });
 
         diaSemanaCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -86,6 +89,7 @@ public class AdicionarClienteController {
         horaCorteCombo.setFocusTraversable(false);
         btnSalvar.setFocusTraversable(false);
         btnCancelar.setFocusTraversable(false);
+        rapidoCheck.setFocusTraversable(false);
 
         rootVBox.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
@@ -186,9 +190,11 @@ public class AdicionarClienteController {
         // Validação final
         models.Cliente novoCliente;
         if (semanal) {
-            novoCliente = new models.Cliente(nome, telefone, models.Cliente.TipoCliente.SEMANAL, diaSemana, horaCorte);
+            boolean rapido = rapidoCheck.isSelected();
+            novoCliente = new models.Cliente(nome, telefone, models.Cliente.TipoCliente.SEMANAL, diaSemana, horaCorte, rapido);
         } else {
             novoCliente = new models.Cliente(nome, telefone, models.Cliente.TipoCliente.NORMAL);
+            novoCliente.setRapido(false);
         }
         if (!utils.Validation.clienteValido(novoCliente, clientes)) {
             geralErrorLabel.setText("Dados do cliente inválidos.");

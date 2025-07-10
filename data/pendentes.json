@@ -1,14 +1,14 @@
 [
   {
-    "nome": "teste1",
-    "numeroTelefone": "-"
-  },
-  {
     "nome": "teste2",
-    "numeroTelefone": "912345678"
+    "numeroTelefone": "-"
   },
   {
     "nome": "Nuno Silva",
     "numeroTelefone": "913332902"
+  },
+  {
+    "nome": "teste1",
+    "numeroTelefone": "901234567"
   }
 ]

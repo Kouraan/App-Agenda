@@ -29,6 +29,8 @@
             <ComboBox fx:id="horaCorteCombo" promptText="Hora do Corte" maxWidth="Infinity" disable="true"/>
             <Label fx:id="horaCorteErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 12px;" visible="false" managed="false"/>
 
+            <CheckBox fx:id="rapidoCheck" text="Corte Rápido" style="-fx-font-size: 15px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;" disable="true"/>
+
             <HBox spacing="12" alignment="CENTER">
                 <Button fx:id="btnSalvar" text="Salvar" style="-fx-background-color: #27ae60; -fx-text-fill: white;" onAction="#salvarCliente" defaultButton="true"/>
                 <Button fx:id="btnCancelar" text="Cancelar" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" onAction="#cancelar"/>

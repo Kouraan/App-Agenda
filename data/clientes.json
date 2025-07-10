@@ -5,12 +5,14 @@
     "tipoCliente": "SEMANAL",
     "faltas": 0,
     "diaSemana": "Sábado",
-    "horaCorte": "11:00"
+    "horaCorte": "11:00",
+    "rapido": false
   },
   {
     "nome": "Nuno Silva",
     "numeroTelefone": "913332902",
     "tipoCliente": "NORMAL",
-    "faltas": 0
+    "faltas": 0,
+    "rapido": false
   }
 ]
