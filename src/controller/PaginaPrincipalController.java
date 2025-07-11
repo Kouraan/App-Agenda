@@ -15,7 +15,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import javafx.scene.effect.GaussianBlur;
-import models.Utilizador;
+import models.*;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -77,6 +77,7 @@ public class PaginaPrincipalController implements Initializable {
     public void setAppController(Controller appController) {
         this.appController = appController;
         atualizarBoxClientesPendentes();
+        atualizarCalendario();
     }
 
     public Controller getAppController() {
@@ -106,73 +107,44 @@ public class PaginaPrincipalController implements Initializable {
         scrollPaneCalendario.setFocusTraversable(false);
 
         group.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
-            LocalDate hoje = LocalDate.now();
-            
             if (newToggle == semanaToggle) {
                 modoAtual = ModoVisualizacao.SEMANA;
                 if (oldToggle == mesToggle) {
-                    if (semanaAtual.getMonth() == hoje.getMonth() && semanaAtual.getYear() == hoje.getYear()) {
-                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
-                        diaSelecionado = hoje;
-                    } else {
-                        semanaAtual = semanaAtual.withDayOfMonth(1).with(DayOfWeek.MONDAY);
-                        diaSelecionado = semanaAtual;
-                    }
-                }
-                else if (oldToggle == diaToggle) {
-                    if (diaSelecionado.equals(hoje)) {
-                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
-                        diaSelecionado = hoje;
-                    } else {
-                        semanaAtual = diaSelecionado.with(DayOfWeek.MONDAY);
-                        diaSelecionado = semanaAtual;
-                    }
+                    // Se não está no mês atual, mostrar a primeira semana do mês visível
+                    LocalDate primeiroDiaMes = semanaAtual.withDayOfMonth(1);
+                    semanaAtual = primeiroDiaMes.with(DayOfWeek.MONDAY);
+                    diaSelecionado = primeiroDiaMes;
+                } else if (oldToggle == diaToggle) {
+                    // Se o dia selecionado não pertence à semana atual, mostrar a semana correspondente ao dia selecionado
+                    semanaAtual = diaSelecionado.with(DayOfWeek.MONDAY);
                 }
                 atualizarCalendario();
             } else if (newToggle == mesToggle) {
-                modoAtual = ModoVisualizacao.MES;
-                if (oldToggle == semanaToggle) {
-                    LocalDate inicioSemana = semanaAtual;
-                    LocalDate fimSemana = semanaAtual.plusDays(6);
-                    if (!hoje.isBefore(inicioSemana) && !hoje.isAfter(fimSemana)) {
-                        semanaAtual = hoje.withDayOfMonth(1);
-                        diaSelecionado = hoje;
-                    } else {
-                        semanaAtual = semanaAtual.withDayOfMonth(1);
-                        diaSelecionado = semanaAtual;
-                    }
+            modoAtual = ModoVisualizacao.MES;
+            if (oldToggle == semanaToggle) {
+                // Mostra o mês do primeiro dia da semana visível
+                LocalDate primeiroDiaSemana = semanaAtual;
+                LocalDate primeiroDiaMes = primeiroDiaSemana.withDayOfMonth(1);
+                // Se a semana começa num mês diferente, mostra esse mês
+                if (primeiroDiaSemana.getMonth() != semanaAtual.getMonth()) {
+                    primeiroDiaMes = primeiroDiaSemana.withDayOfMonth(1);
                 }
-                else if (oldToggle == diaToggle) {
-                    if (diaSelecionado.equals(hoje)) {
-                        semanaAtual = hoje.withDayOfMonth(1);
-                        diaSelecionado = hoje;
-                    } else {
-                        semanaAtual = diaSelecionado.withDayOfMonth(1);
-                        diaSelecionado = diaSelecionado;
-                    }
-                }
-                atualizarCalendario();
+                semanaAtual = primeiroDiaSemana.withDayOfMonth(1);
+                diaSelecionado = primeiroDiaSemana;
+            } else if (oldToggle == diaToggle) {
+                // Mostra o mês do dia selecionado
+                LocalDate primeiroDiaMes = diaSelecionado.withDayOfMonth(1);
+                semanaAtual = primeiroDiaMes;
+            }
+            atualizarCalendario();
             } else if (newToggle == diaToggle) {
                 modoAtual = ModoVisualizacao.DIA;
-                if (oldToggle == semanaToggle) {
-                    LocalDate inicioSemana = semanaAtual;
-                    LocalDate fimSemana = semanaAtual.plusDays(6);
-                    if (!hoje.isBefore(inicioSemana) && !hoje.isAfter(fimSemana)) {
-                        diaSelecionado = hoje;
-                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
-                    } else {
+                if (oldToggle == mesToggle) {
+                    semanaAtual = diaSelecionado.with(DayOfWeek.MONDAY);
+                } else if (oldToggle == semanaToggle) {
+                    // Se o dia selecionado não pertence à semana atual, mostrar o primeiro dia da semana
+                    if (!diaSelecionado.with(DayOfWeek.MONDAY).equals(semanaAtual)) {
                         diaSelecionado = semanaAtual;
-                    }
-                }
-                else if (oldToggle == mesToggle) {
-                    LocalDate primeiroDiaMes = semanaAtual.withDayOfMonth(1);
-                    LocalDate ultimoDiaMes = primeiroDiaMes.plusMonths(1).minusDays(1);
-                    if (!hoje.isBefore(primeiroDiaMes) && !hoje.isAfter(ultimoDiaMes)) {
-                        diaSelecionado = hoje;
-                        semanaAtual = hoje.with(DayOfWeek.MONDAY);
-                } else {
-                        diaSelecionado = primeiroDiaMes;
-                        semanaAtual = primeiroDiaMes.with(DayOfWeek.MONDAY);
                     }
                 }
                 atualizarCalendario();
@@ -623,6 +595,7 @@ public class PaginaPrincipalController implements Initializable {
                     final LocalDate diaClicado = data;
                     cell.setOnMouseClicked(e -> {
                         diaSelecionado = diaClicado;
+                        semanaAtual = diaClicado.with(DayOfWeek.MONDAY);
                         modoAtual = ModoVisualizacao.DIA;
                         diaToggle.setSelected(true);
                         atualizarCalendario();
@@ -637,11 +610,12 @@ public class PaginaPrincipalController implements Initializable {
                     cell.setStyle("-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-cursor: hand;");
                     final LocalDate diaClicado = data;
                     cell.setOnMouseClicked(e -> {
-                        diaSelecionado = diaClicado;
-                        modoAtual = ModoVisualizacao.DIA;
-                        diaToggle.setSelected(true);
-                        atualizarCalendario();
-                    });
+    diaSelecionado = diaClicado;
+    semanaAtual = diaClicado.with(DayOfWeek.MONDAY);
+    modoAtual = ModoVisualizacao.DIA;
+    diaToggle.setSelected(true);
+    atualizarCalendario();
+});
                 }
                 calendarioGrid.add(cell, col, row);
                 data = data.plusDays(1);
@@ -672,14 +646,23 @@ public class PaginaPrincipalController implements Initializable {
             horaLabel.setMaxWidth(Double.MAX_VALUE);
             horaLabel.setAlignment(Pos.CENTER);
 
-            Pane celula = new Pane();
+            StackPane celula = new StackPane();
             celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
             celula.setPrefHeight(40);
             celula.setMaxWidth(Double.MAX_VALUE);
 
             LocalDate dataSelecionada = diaSelecionado;
             LocalTime horaSelecionada = horaAtual;
-            celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+
+            boolean isPassado = dataSelecionada.isBefore(LocalDate.now()) ||
+                (dataSelecionada.isEqual(LocalDate.now()) && horaSelecionada.isBefore(LocalTime.now().withSecond(0).withNano(0)));
+
+            if (!isPassado) {
+                celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
+            } else {
+                celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+            }
 
             celula.setOnMouseEntered(e -> 
                 celula.setStyle("-fx-background-color: #ecf0f1; -fx-border-color: #3498db; -fx-border-width: 2; -fx-min-height: 40;"));
@@ -693,6 +676,58 @@ public class PaginaPrincipalController implements Initializable {
 
             linha++;
             horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
+            
+            java.time.LocalDateTime dataHora = dataSelecionada.atTime(horaSelecionada);
+            Map<java.time.LocalDateTime, Marcacao> marcacoesMap = 
+                (appController != null && appController.getMarcacoesMap() != null)
+                ? appController.getMarcacoesMap()
+                : java.util.Collections.emptyMap();
+
+            Marcacao marcacao1 = marcacoesMap.get(dataHora);
+            Marcacao marcacao2 = marcacoesMap.get(dataHora.plusMinutes(15));
+
+            boolean is15min1 = marcacao1 != null && marcacao1.getDuracao() == 15;
+            boolean is15min2 = marcacao2 != null && marcacao2.getDuracao() == 15;
+
+            if (is15min1 || is15min2) {
+                HBox hbox = new HBox(2);
+
+                if (is15min1) {
+                    Pane box1 = criarBoxMarcacao(marcacao1);
+                    HBox.setHgrow(box1, Priority.ALWAYS);
+                    hbox.getChildren().add(box1);
+                } else {
+                    Region espaco1 = new Region();
+                    HBox.setHgrow(espaco1, Priority.ALWAYS);
+                    espaco1.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                    hbox.getChildren().add(espaco1);
+                }
+
+                if (is15min2) {
+                    Pane box2 = criarBoxMarcacao(marcacao2);
+                    HBox.setHgrow(box2, Priority.ALWAYS);
+                    hbox.getChildren().add(box2);
+                } else {
+                    Region espaco2 = new Region();
+                    HBox.setHgrow(espaco2, Priority.ALWAYS);
+                    espaco2.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada.plusMinutes(15)));
+                    hbox.getChildren().add(espaco2);
+                }
+
+                celula.getChildren().add(hbox);
+                celula.setOnMouseClicked(null);
+                celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
+            } else if (marcacao1 != null && marcacao1.getDuracao() >= 30) {
+                Pane box = criarBoxMarcacao(marcacao1);
+                celula.getChildren().add(box);
+                celula.setOnMouseClicked(null);
+                celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
+            } else if (!isPassado) {
+                celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
+            } else {
+                celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+            }
         }
 
         calendarioGrid.getRowConstraints().clear();
@@ -734,6 +769,7 @@ public class PaginaPrincipalController implements Initializable {
             vbox.setAlignment(Pos.CENTER);
             vbox.setOnMouseClicked(e -> {
                 diaSelecionado = dataAtual;
+                semanaAtual = dataAtual.with(DayOfWeek.MONDAY);
                 modoAtual = ModoVisualizacao.DIA;
                 diaToggle.setSelected(true);
                 atualizarCalendario();
@@ -798,7 +834,7 @@ public class PaginaPrincipalController implements Initializable {
             
             // Criar células para cada dia da semana
             for (int dia = 0; dia < 7; dia++) {
-                Pane celula = new Pane();
+                StackPane celula = new StackPane();
                 celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; " +
                                "-fx-border-width: 1; -fx-min-height: 40;");
                 celula.setPrefHeight(40);
@@ -814,11 +850,72 @@ public class PaginaPrincipalController implements Initializable {
                 
                 LocalDate dataSelecionada = semanaAtual.plusDays(dia);
                 LocalTime horaSelecionada = horaAtual;
-                celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+
+                boolean isPassado = dataSelecionada.isBefore(LocalDate.now()) ||
+                    (dataSelecionada.isEqual(LocalDate.now()) && horaSelecionada.isBefore(LocalTime.now().withSecond(0).withNano(0)));
+
+                if (!isPassado) {
+                    celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                    celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
+                } else {
+                    celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+                }
                 
                 calendarioGrid.add(celula, dia + 1, linha);
 
                 linhaSemana.put(dia, celula);
+
+                java.time.LocalDateTime dataHora = dataSelecionada.atTime(horaSelecionada);
+                Map<java.time.LocalDateTime, Marcacao> marcacoesMap = 
+                    (appController != null && appController.getMarcacoesMap() != null)
+                    ? appController.getMarcacoesMap()
+                    : java.util.Collections.emptyMap();
+
+                Marcacao marcacao1 = marcacoesMap.get(dataHora); // 1ª metade
+                Marcacao marcacao2 = marcacoesMap.get(dataHora.plusMinutes(15)); // 2ª metade
+
+                boolean is15min1 = marcacao1 != null && marcacao1.getDuracao() == 15;
+                boolean is15min2 = marcacao2 != null && marcacao2.getDuracao() == 15;
+
+                if (is15min1 || is15min2) {
+                    HBox hbox = new HBox(2);
+
+                    if (is15min1) {
+                        Pane box1 = criarBoxMarcacao(marcacao1);
+                        HBox.setHgrow(box1, Priority.ALWAYS);
+                        hbox.getChildren().add(box1);
+                    } else {
+                        Region espaco1 = new Region();
+                        HBox.setHgrow(espaco1, Priority.ALWAYS);
+                        espaco1.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                        hbox.getChildren().add(espaco1);
+                    }
+
+                    if (is15min2) {
+                        Pane box2 = criarBoxMarcacao(marcacao2);
+                        HBox.setHgrow(box2, Priority.ALWAYS);
+                        hbox.getChildren().add(box2);
+                    } else {
+                        Region espaco2 = new Region();
+                        HBox.setHgrow(espaco2, Priority.ALWAYS);
+                        espaco2.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada.plusMinutes(15)));
+                        hbox.getChildren().add(espaco2);
+                    }
+
+                    celula.getChildren().add(hbox);
+                    celula.setOnMouseClicked(null);
+                    celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
+                } else if (marcacao1 != null && marcacao1.getDuracao() >= 30) {
+                    Pane box = criarBoxMarcacao(marcacao1);
+                    celula.getChildren().add(box);
+                    celula.setOnMouseClicked(null);
+                    celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
+                } else if (!isPassado) {
+                    celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                    celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
+                } else {
+                    celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+                }
             }
 
             celulasSemana.put(horaAtual, linhaSemana);
@@ -1019,8 +1116,25 @@ public class PaginaPrincipalController implements Initializable {
             stage.setResizable(false);
 
             stage.showAndWait();
+            atualizarCalendario();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private Pane criarBoxMarcacao(Marcacao marcacao) {
+        Label nome = new Label(marcacao.getCliente().getNome());
+        nome.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
+        nome.setMaxWidth(Double.MAX_VALUE);
+        nome.setMaxHeight(Double.MAX_VALUE);
+        nome.setAlignment(Pos.CENTER_LEFT);
+
+        StackPane box = new StackPane(nome);
+        box.setStyle("-fx-background-color: #A020F0; -fx-background-radius: 12; -fx-border-radius: 12;");
+        box.setPrefHeight(36); 
+        StackPane.setAlignment(nome, Pos.CENTER_LEFT);
+        StackPane.setMargin(nome, new Insets(0, 10, 0, 10));
+
+        return box;
     }
 }

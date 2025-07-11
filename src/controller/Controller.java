@@ -45,6 +45,10 @@ public class Controller {
         this.utilizador = utilizador;
     }
 
+    public Map<java.time.LocalDateTime, Marcacao> getMarcacoesMap() {
+        return marcacoesMap;
+    }
+
     public List<Pendente> getPendentes() {
         return pendentes;
     }

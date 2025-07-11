@@ -204,12 +204,11 @@ public class AdicionarMarcacaoController implements Initializable {
 
         String observacoes = observacoesArea.getText() == null ? "" : observacoesArea.getText().trim();
 
-        // Aqui podes adicionar lógica para verificar conflitos de marcação, etc.
+        java.time.LocalDateTime dataHoraMarcacao = java.time.LocalDateTime.of(data, hora);
+        Marcacao novaMarcacao = new Marcacao(dataHoraMarcacao, cliente, duracao, observacoes);
 
-        // Salvar marcação (exemplo, depende da tua lógica)
-        // Marcacao novaMarcacao = new Marcacao(LocalDateTime.of(data, hora), cliente, duracao, observacoes);
-        // appController.getMarcacoesMap().put(novaMarcacao.getDataHora(), novaMarcacao);
-        // utils.Persistencia.guardarMarcacoes(appController.getMarcacoesMap());
+        appController.getMarcacoesMap().put(novaMarcacao.getDataHora(), novaMarcacao);
+        utils.Persistencia.guardarMarcacoes(appController.getMarcacoesMap());
 
         fechar();
     }
