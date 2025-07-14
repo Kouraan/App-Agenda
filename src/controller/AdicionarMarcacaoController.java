@@ -12,6 +12,7 @@ import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -55,7 +56,18 @@ public class AdicionarMarcacaoController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Inicializa combos
-        duracaoCombo.setItems(FXCollections.observableArrayList(15, 30, 45, 60, 75, 90));
+        Platform.runLater(() -> {
+            if (appController != null && data != null && hora != null) {
+                Map<java.time.LocalDateTime, Marcacao> marcacoesMap = appController.getMarcacoesMap();
+                List<Integer> duracoesPossiveis = calcularDuracoesPossiveis(data, hora, marcacoesMap);
+                duracaoCombo.setItems(FXCollections.observableArrayList(duracoesPossiveis));
+                if (duracoesPossiveis.contains(30)) {
+                    duracaoCombo.setValue(30);
+                } else if (duracoesPossiveis.size() == 1 && duracoesPossiveis.contains(15)) {
+                    duracaoCombo.setValue(15);
+                }
+            }
+        });
 
         // Pesquisa dinâmica de clientes
         pesquisaClienteField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -205,15 +217,85 @@ public class AdicionarMarcacaoController implements Initializable {
         String observacoes = observacoesArea.getText() == null ? "" : observacoesArea.getText().trim();
 
         java.time.LocalDateTime dataHoraMarcacao = java.time.LocalDateTime.of(data, hora);
-        Marcacao novaMarcacao = new Marcacao(dataHoraMarcacao, cliente, duracao, observacoes);
 
-        appController.getMarcacoesMap().put(novaMarcacao.getDataHora(), novaMarcacao);
-        utils.Persistencia.guardarMarcacoes(appController.getMarcacoesMap());
+        Map<java.time.LocalDateTime, Marcacao> marcacoesMap = appController.getMarcacoesMap();
+        int minutosRestantes = duracao;
+        LocalDateTime blocoAtual = dataHoraMarcacao;
+
+        while (minutosRestantes > 0) {
+            Marcacao mExistente = marcacoesMap.get(blocoAtual);
+            int blocoDuracao = 15;
+
+            // Se existe marcação de 15min neste bloco, salta para o próximo bloco
+            if (mExistente != null && mExistente.getDuracao() == 15) {
+                blocoAtual = blocoAtual.plusMinutes(15);
+                continue;
+            }
+
+            // Se o próximo bloco está ocupado por uma marcação de 15min, só pode fazer 15min neste bloco
+            Marcacao proximo = marcacoesMap.get(blocoAtual.plusMinutes(15));
+            if (proximo != null && proximo.getDuracao() == 15) {
+                blocoDuracao = 15;
+            } else if (minutosRestantes >= 30) {
+                blocoDuracao = 30;
+            } else if (minutosRestantes >= 15) {
+                blocoDuracao = 15;
+            }
+
+            // Não criar marcação se já existe uma de 30min ou mais neste bloco
+            Marcacao jaExiste = marcacoesMap.get(blocoAtual);
+            if (jaExiste != null && jaExiste.getDuracao() >= 30) {
+                blocoAtual = blocoAtual.plusMinutes(blocoDuracao);
+                continue;
+            }
+
+            Marcacao novaMarcacao = new Marcacao(blocoAtual, cliente, blocoDuracao, observacoes);
+            marcacoesMap.put(novaMarcacao.getDataHora(), novaMarcacao);
+
+            minutosRestantes -= blocoDuracao;
+            blocoAtual = blocoAtual.plusMinutes(blocoDuracao);
+        }
+
+        utils.Persistencia.guardarMarcacoes(marcacoesMap);
 
         fechar();
     }
 
     private void fechar() {
         ((Stage) btnSair.getScene().getWindow()).close();
+    }
+
+    private List<Integer> calcularDuracoesPossiveis(LocalDate data, LocalTime hora, Map<java.time.LocalDateTime, Marcacao> marcacoesMap) {
+        List<Integer> opcoes = Arrays.asList(15, 30, 45, 60, 75, 90);
+        List<Integer> disponiveis = new ArrayList<>();
+        LocalDateTime inicio = LocalDateTime.of(data, hora);
+
+        // Se não for múltiplo de 30 minutos, só permite 15 minutos
+        if (hora.getMinute() % 30 != 0) {
+            Marcacao m = marcacoesMap.get(inicio);
+            if (m == null) {
+                disponiveis.add(15);
+            }
+            return disponiveis;
+        }
+
+        // Lógica normal: só permite durações que não colidam com marcações existentes
+        outer:
+        for (int dur : opcoes) {
+            LocalDateTime bloco = inicio;
+            int blocos = dur / 15;
+            for (int i = 0; i < blocos; i++) {
+                Marcacao m = marcacoesMap.get(bloco);
+                if (m != null) {
+                    // Só permite se for de 15min e for exatamente o último bloco do intervalo
+                    if (!(m.getDuracao() == 15 && i == blocos - 1)) {
+                        continue outer;
+                    }
+                }
+                bloco = bloco.plusMinutes(15);
+            }
+            disponiveis.add(dur);
+        }
+        return disponiveis;
     }
 }

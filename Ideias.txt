@@ -37,26 +37,34 @@ Estrutura do projeto:
 App-Agenda:
 |
 |--data/
+|  |--anotacoes.json
 |  |--clientes.json
 |  |--marcacoes.json
+|  |--pendentes.json
 |  |--utilizador.json
 |--lib/
 |  |--gson-2.10.1.jar
 |--logs/
 |  |--logsClientes.json
 |  |--logsMarcacoes.json
+|  |--logsPendentes.json
 |  |--logsUtilizador.json
 |--resources/
 |--src/
 |  |--controller/
+|     |--AdicionarClienteController.java
+|     |--AdicionarMarcacaoController.java
 |     |--Controller.java
+|     |--DetalheClienteController.java
 |     |--LoginController.java
-|     |--RegistoController.java
 |     |--PaginaPrincipalController.java
+|     |--PendentesController.java
+|     |--RegistoController.java
 |  |--models/
 |     |--Cliente.java
 |     |--Log.java
 |     |--Marcacao.java
+|     |--Pendente.java
 |     |--Utilizador.java
 |  |--queries/
 |     |--ClientesQueries.java
@@ -67,8 +75,12 @@ App-Agenda:
 |     |--Persistencia.java
 |     |--Validation.java
 |  |--view/
+|     |--AdicionarCliente.fxml
+|     |--AdicionarMarcacao.fxml
+|     |--DetalheCliente.fxml
 |     |--Login.fxml
-|     |--Resgisto.fxml
 |     |--PaginaPrincipal.fxml
+|     |--Pendentes.fxml
+|     |--Resgisto.fxml
 |  |--Main.java
 |--Makefile
