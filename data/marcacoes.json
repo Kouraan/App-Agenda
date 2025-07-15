@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "dataHora": "2025-07-17T09:30",
+    "cliente": {
+      "nome": "Nuno Silva",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "NORMAL",
+      "faltas": 0,
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": ""
+  },
+  {
+    "dataHora": "2025-07-17T10:00",
+    "cliente": {
+      "nome": "j",
+      "numeroTelefone": "",
+      "tipoCliente": "DESCONHECIDO",
+      "faltas": 0,
+      "rapido": false
+    },
+    "duracao": 15,
+    "observacoes": ""
+  }
+]

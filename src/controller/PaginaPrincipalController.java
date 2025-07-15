@@ -1135,6 +1135,36 @@ public class PaginaPrincipalController implements Initializable {
         StackPane.setAlignment(nome, Pos.CENTER_LEFT);
         StackPane.setMargin(nome, new Insets(0, 10, 0, 10));
 
+        box.setOnMouseClicked(e -> abrirDetalheMarcacao(marcacao));
+
         return box;
+    }
+
+    private void abrirDetalheMarcacao(Marcacao marcacao) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/DetalheMarcacao.fxml"));
+            Parent root = loader.load();
+            DetalheMarcacaoController controller = loader.getController();
+            controller.setMarcacao(marcacao);
+
+            Stage stage = new Stage();
+            stage.setTitle("Detalhe da Marcação");
+            stage.setScene(new Scene(root));
+            stage.initOwner(areaCentral.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.setResizable(false);
+
+            double largura = areaCentral.getWidth() * 0.25;
+            double altura = areaCentral.getHeight();
+            if (largura < 320) largura = 320;
+            stage.setWidth(largura);
+            stage.setHeight(altura);
+            stage.setX(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinX() + (areaCentral.getWidth() - largura) / 2);
+            stage.setY(areaCentral.localToScreen(areaCentral.getBoundsInLocal()).getMinY());
+
+            stage.showAndWait();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

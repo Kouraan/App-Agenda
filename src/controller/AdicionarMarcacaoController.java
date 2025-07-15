@@ -128,10 +128,10 @@ public class AdicionarMarcacaoController implements Initializable {
             if (newScene != null) {
                 newScene.setOnKeyPressed(event -> {
                     if (event.getCode() == KeyCode.ESCAPE) fechar();
-                    if (event.getCode() == KeyCode.ENTER) salvarMarcacao();
                 });
             }
         });
+        btnSalvar.setDefaultButton(true);
 
         Platform.runLater(() -> {
             pesquisaClienteField.setFocusTraversable(false);
@@ -271,7 +271,7 @@ public class AdicionarMarcacaoController implements Initializable {
         LocalDateTime inicio = LocalDateTime.of(data, hora);
 
         // Se não for múltiplo de 30 minutos, só permite 15 minutos
-        if (hora.getMinute() % 30 != 0) {
+        if (hora.getMinute() == 45) {
             Marcacao m = marcacoesMap.get(inicio);
             if (m == null) {
                 disponiveis.add(15);
