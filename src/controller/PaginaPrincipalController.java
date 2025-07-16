@@ -1146,6 +1146,7 @@ public class PaginaPrincipalController implements Initializable {
             Parent root = loader.load();
             DetalheMarcacaoController controller = loader.getController();
             controller.setMarcacao(marcacao);
+            controller.setAppController(appController);
 
             Stage stage = new Stage();
             stage.setTitle("Detalhe da Marcação");
