@@ -19,6 +19,7 @@ public class Controller {
     private Map<String, Cliente> clientesMap;
     private Map<LocalDateTime, Marcacao> marcacoesMap;
     private List<Pendente> pendentes;
+    private PaginaPrincipalController paginaPrincipalController;
 
 
     public Controller(Stage stage) {
@@ -53,6 +54,14 @@ public class Controller {
         return pendentes;
     }
 
+    public PaginaPrincipalController getPaginaPrincipalController() {
+        return paginaPrincipalController;
+    }
+
+    public queries.ClientesQueries getClientesQueries() {
+        return new queries.ClientesQueries(clientesMap);
+    }
+
     public void mostrarLogin() throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Login.fxml"));
         Parent root = loader.load();
@@ -74,7 +83,7 @@ public class Controller {
     public void mostrarPaginaPrincipal() throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/PaginaPrincipal.fxml"));
         Parent root = loader.load();
-        PaginaPrincipalController paginaPrincipalController = loader.getController();
+        paginaPrincipalController = loader.getController(); // Guarde a referência
         paginaPrincipalController.setUtilizador(utilizador);
         paginaPrincipalController.setAppController(this);
         Scene scene = new Scene(root);

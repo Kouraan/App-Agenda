@@ -93,6 +93,7 @@ Feriados em Portugal:
 25 de abril - Dia da liberdade
 1 de maio - Dia do trabalhador
 10 de junho - Dia de Portugal
+24 de junho - Batalha de sao Mamede
 15 de agosto - Assuncao de nossa senhora
 5 de outubro - Implantacao da republica
 1 de novembro - todos os santos

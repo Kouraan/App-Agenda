@@ -7,6 +7,7 @@ public class Marcacao {
     private Cliente cliente;
     private int duracao;
     private String observacoes;
+    private boolean falta;
     
     // Construtores
     public Marcacao() {
@@ -14,6 +15,7 @@ public class Marcacao {
         this.cliente = new Cliente();
         this.duracao = 0;
         this.observacoes = "";
+        this.falta = false;
     }
 
     public Marcacao(LocalDateTime dataHora, Cliente cliente, int duracao, String observacoes) {
@@ -21,6 +23,7 @@ public class Marcacao {
         this.cliente = cliente.clone();
         this.duracao = duracao;
         this.observacoes = observacoes;
+        this.falta = false;
     }
 
     public Marcacao(Marcacao outra) {
@@ -28,6 +31,7 @@ public class Marcacao {
         this.cliente = outra.cliente.clone();
         this.duracao = outra.duracao;
         this.observacoes = outra.observacoes;
+        this.falta = outra.falta;
     }
 
     // Getters e Setters
@@ -63,6 +67,14 @@ public class Marcacao {
         this.observacoes = observacoes;
     }
 
+    public boolean isFalta() {
+        return falta;
+    }
+
+    public void setFalta(boolean falta) {
+        this.falta = falta;
+    }
+
     @Override
     public Marcacao clone() {
         return new Marcacao(this);
@@ -75,6 +87,7 @@ public class Marcacao {
                 ", cliente=" + cliente +
                 ", duracao=" + duracao +
                 ", observacoes=" + observacoes +
+                ", falta=" + falta +
                 '}';
     }
 }

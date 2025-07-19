@@ -271,7 +271,7 @@ public class AdicionarMarcacaoController implements Initializable {
         LocalDateTime inicio = LocalDateTime.of(data, hora);
 
         // Se não for múltiplo de 30 minutos, só permite 15 minutos
-        if (hora.getMinute() == 45) {
+        if (hora.getMinute() == 45 || hora.getMinute() == 15) {
             Marcacao m = marcacoesMap.get(inicio);
             if (m == null) {
                 disponiveis.add(15);
@@ -289,6 +289,12 @@ public class AdicionarMarcacaoController implements Initializable {
                 if (m != null) {
                     // Só permite se for de 15min e for exatamente o último bloco do intervalo
                     if (!(m.getDuracao() == 15 && i == blocos - 1)) {
+                        continue outer;
+                    }
+                }
+                if (i == 1 && dur >= 30) {
+                    Marcacao proximo = marcacoesMap.get(inicio.plusMinutes(15));
+                    if (proximo != null && proximo.getDuracao() == 15) {
                         continue outer;
                     }
                 }

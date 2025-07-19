@@ -20,9 +20,14 @@ public class DetalheMarcacaoController {
     @FXML private Button btnSalvar;
     @FXML private ComboBox<String> diaCombo;
     @FXML private ComboBox<String> horaCombo;
+    @FXML private HBox botoesBox;
+    @FXML private Label alterarHoraLabel;
+    @FXML private Label diaLabel;
+    @FXML private Label horaLabel;
 
     private Marcacao marcacao;
     private String observacoesOriginais;
+    private Button btnFaltou;
     private controller.Controller appController;
     private static final String[] DIAS_SEMANA = {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"};
 
@@ -69,30 +74,64 @@ public class DetalheMarcacaoController {
             });
         });
     }
-
+    
     private void atualizarDetalhes() {
         if (marcacao == null) return;
-
+    
         var dataHora = marcacao.getDataHora();
         String diaSemana = DIAS_SEMANA[dataHora.getDayOfWeek().getValue() - 1];
         String hora = dataHora.toLocalTime().toString();
         String titulo = String.format("%s dia %02d às %s", diaSemana, dataHora.getDayOfMonth(), hora);
         tituloLabel.setText(titulo);
-
+    
         nomeField.setText(marcacao.getCliente().getNome());
         telefoneField.setText(marcacao.getCliente().getNumeroTelefone());
         duracaoField.setText(marcacao.getDuracao() + " minutos");
         observacoesOriginais = marcacao.getObservacoes() == null ? "" : marcacao.getObservacoes();
         observacoesArea.setText(observacoesOriginais);
-
+    
         diaCombo.getItems().setAll(DIAS_SEMANA);
         diaCombo.setValue(diaSemana);
-
+    
+        boolean passou = dataHora.isBefore(java.time.LocalDateTime.now());
+    
+        diaCombo.setVisible(!passou);
+        horaCombo.setVisible(!passou);
+        alterarHoraLabel.setVisible(!passou);
+        diaLabel.setVisible(!passou);
+        horaLabel.setVisible(!passou);
+    
+        btnApagar.setVisible(!passou);
+    
+        if (passou) {
+            if (btnFaltou == null) {
+                btnFaltou = new Button("Faltou");
+                btnFaltou.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;");
+                btnFaltou.setOnAction(e -> marcarFalta());
+            }
+    // NOVO: Se já está marcada falta, desabilita e muda o estilo
+            if (marcacao.isFalta()) {
+                btnFaltou.setDisable(true);
+            } else {
+                btnFaltou.setDisable(false);
+                btnFaltou.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;");
+            }
+            if (!botoesBox.getChildren().contains(btnFaltou)) {
+                int idx = botoesBox.getChildren().indexOf(btnApagar);
+                if (idx >= 0) {
+                    botoesBox.getChildren().remove(btnApagar);
+                    botoesBox.getChildren().add(idx, btnFaltou);
+                } else {
+                    botoesBox.getChildren().add(btnFaltou);
+                }
+            }
+        }
+    
         Platform.runLater(() -> {
             atualizarHorasDisponiveis();
             horaCombo.setValue(hora);
         });
-
+    
         btnSalvar.setDisable(true);
     }
 
@@ -100,30 +139,58 @@ public class DetalheMarcacaoController {
         if (marcacao == null || appController == null) return;
         String diaSelecionado = diaCombo.getValue();
         if (diaSelecionado == null) return;
-
+    
         int diaSemanaIdx = java.util.Arrays.asList(DIAS_SEMANA).indexOf(diaSelecionado);
         java.time.LocalDate novaData = marcacao.getDataHora().toLocalDate().with(java.time.DayOfWeek.of(diaSemanaIdx + 1));
         int duracao = marcacao.getDuracao();
-
+    
         Map<java.time.LocalDateTime, Marcacao> marcacoesMap = appController.getMarcacoesMap();
-
+    
         java.util.List<String> horasDisponiveis = new java.util.ArrayList<>();
-        for (int h = 7; h <= 21; h++) {
-            for (int m = 0; m < 60; m += 30) {
-                java.time.LocalTime hora = java.time.LocalTime.of(h, m);
-                java.time.LocalDateTime dt = novaData.atTime(hora);
-
-                // Só adiciona se não houver conflito com outras marcações (exceto a própria)
-                boolean livre = true;
-                for (int i = 0; i < duracao; i += 15) {
-                    Marcacao mMarc = marcacoesMap.get(dt.plusMinutes(i));
+        if (duracao == 15) {
+            // Blocos de 15 em 15 minutos
+            for (int h = 7; h <= 21; h++) {
+                for (int m = 0; m < 60; m += 15) {
+                    java.time.LocalTime hora = java.time.LocalTime.of(h, m);
+                    java.time.LocalDateTime dt = novaData.atTime(hora);
+    
+                    boolean livre = true;
+    
+                    Marcacao mMarc = marcacoesMap.get(dt);
                     if (mMarc != null && mMarc != marcacao) {
+                        // Se já existe marcação de 30min ou 15min, não pode
                         livre = false;
-                        break;
+                    } else if (m == 15 || m == 45) {
+                        // Só permite xx:15 ou xx:45 se o bloco anterior for ocupado por 15min e este estiver livre
+                        java.time.LocalDateTime blocoAnterior = dt.minusMinutes(15);
+                        Marcacao mMarcAnterior = marcacoesMap.get(blocoAnterior);
+                        if (mMarcAnterior == null || mMarcAnterior == marcacao || mMarcAnterior.getDuracao() != 15) {
+                            livre = false;
+                        }
+                    }
+                    if (livre) {
+                        horasDisponiveis.add(hora.toString());
                     }
                 }
-                if (livre) {
-                    horasDisponiveis.add(hora.toString());
+            }
+        } else {
+            // Para marcações de 30 minutos, lógica normal
+            for (int h = 7; h <= 21; h++) {
+                for (int m = 0; m < 60; m += 30) {
+                    java.time.LocalTime hora = java.time.LocalTime.of(h, m);
+                    java.time.LocalDateTime dt = novaData.atTime(hora);
+    
+                    boolean livre = true;
+                    for (int i = 0; i < duracao; i += 15) {
+                        Marcacao mMarcAux = marcacoesMap.get(dt.plusMinutes(i));
+                        if (mMarcAux != null && mMarcAux != marcacao) {
+                            livre = false;
+                            break;
+                        }
+                    }
+                    if (livre) {
+                        horasDisponiveis.add(hora.toString());
+                    }
                 }
             }
         }
@@ -166,7 +233,9 @@ public class DetalheMarcacaoController {
         utils.Persistencia.guardarMarcacoes(marcacoesMap);
 
         try {
-            appController.mostrarPaginaPrincipal();
+            if (appController.getPaginaPrincipalController() != null) {
+                appController.getPaginaPrincipalController().atualizarCalendario();
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -182,7 +251,9 @@ public class DetalheMarcacaoController {
         utils.Persistencia.guardarMarcacoes(marcacoesMap);
 
         try {
-            appController.mostrarPaginaPrincipal();
+            if (appController.getPaginaPrincipalController() != null) {
+                appController.getPaginaPrincipalController().atualizarCalendario();
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -190,8 +261,22 @@ public class DetalheMarcacaoController {
         fechar();
     }
 
+    private void marcarFalta() {
+        if (marcacao == null) return;
+        marcacao.setFalta(true);
+        if (marcacao.getCliente().isTemporario()) {
+            appController.getClientesQueries().addFaltas(marcacao.getCliente().getNome());
+            utils.Persistencia.guardarMarcacoes(appController.getMarcacoesMap());
+            utils.Persistencia.guardarClientes(appController.getClientesMap());
+        }
+        if (appController.getPaginaPrincipalController() != null) {
+            appController.getPaginaPrincipalController().atualizarCalendario();
+        }
+        fechar();
+    }
+
     private void fechar() {
-        Stage stage = (Stage) btnApagar.getScene().getWindow();
+        Stage stage = (Stage) tituloLabel.getScene().getWindow();
         stage.close();
     }
 }

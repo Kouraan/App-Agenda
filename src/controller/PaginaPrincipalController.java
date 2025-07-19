@@ -15,7 +15,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import javafx.scene.effect.GaussianBlur;
+
 import models.*;
+import utils.Feriados;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -489,7 +491,7 @@ public class PaginaPrincipalController implements Initializable {
     }
 
     
-    private void atualizarCalendario() {
+    public void atualizarCalendario() {
         // Limpar grid anterior
         calendarioGrid.getChildren().clear();
         calendarioGrid.getRowConstraints().clear();
@@ -577,21 +579,34 @@ public class PaginaPrincipalController implements Initializable {
         LocalDate inicioGrid = primeiroDiaMes.minusDays(diaSemanaPrimeiro - 1);
 
         LocalDate data = inicioGrid;
-        for (int row = 1; row <= 5; row++) {
-            for (int col = 0; col < 7; col++) {
-                StackPane cell = new StackPane();
-                cell.setMaxWidth(Double.MAX_VALUE);
-                cell.setMaxHeight(Double.MAX_VALUE);
+            for (int row = 1; row <= 5; row++) {
+                for (int col = 0; col < 7; col++) {
+                    StackPane cell = new StackPane();
+                    cell.setMaxWidth(Double.MAX_VALUE);
+                    cell.setMaxHeight(Double.MAX_VALUE);
 
-                Label diaLabel = new Label(String.format("%02d", data.getDayOfMonth()));
-                diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #222; -fx-font-weight: bold;");
-                StackPane.setAlignment(diaLabel, Pos.TOP_LEFT);
-                diaLabel.setPadding(new Insets(4, 0, 0, 6));
-                cell.getChildren().add(diaLabel);
+                    Label diaLabel = new Label(String.format("%02d", data.getDayOfMonth()));
+                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #222; -fx-font-weight: bold;");
+                    StackPane.setAlignment(diaLabel, Pos.TOP_LEFT);
+                    diaLabel.setPadding(new Insets(4, 0, 0, 6));
+                    cell.getChildren().add(diaLabel);
 
-                if (data.equals(LocalDate.now())) {
-                    cell.setStyle("-fx-background-color: #ffb366; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
-                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: normal;");
+                    if (data.equals(LocalDate.now())) {
+                        cell.setStyle("-fx-background-color: #ffb366; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+                        diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: normal;");
+                    } else if (utils.Feriados.isFeriado(data)) {
+                        cell.setStyle("-fx-background-color: #f78fb3; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+                        diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold;");
+                    } else if (col == 6) { // Domingo
+                        cell.setStyle("-fx-background-color: #145a32; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+                        diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold;");
+                    } else if (data.getMonth() != primeiroDiaMes.getMonth()) {
+                        cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+                        diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #bbb; -fx-font-weight: normal;");
+                    } else {
+                        cell.setStyle("-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-cursor: hand;");
+                    }
+
                     final LocalDate diaClicado = data;
                     cell.setOnMouseClicked(e -> {
                         diaSelecionado = diaClicado;
@@ -600,28 +615,11 @@ public class PaginaPrincipalController implements Initializable {
                         diaToggle.setSelected(true);
                         atualizarCalendario();
                     });
-                } else if (data.getMonth() != primeiroDiaMes.getMonth() && data.isBefore(primeiroDiaMes)) {
-                    cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
-                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #bbb; -fx-font-weight: normal;");
-                } else if (data.getMonth() != primeiroDiaMes.getMonth()) {
-                    cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
-                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #bbb; -fx-font-weight: normal;");
-                } else {
-                    cell.setStyle("-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-cursor: hand;");
-                    final LocalDate diaClicado = data;
-                    cell.setOnMouseClicked(e -> {
-    diaSelecionado = diaClicado;
-    semanaAtual = diaClicado.with(DayOfWeek.MONDAY);
-    modoAtual = ModoVisualizacao.DIA;
-    diaToggle.setSelected(true);
-    atualizarCalendario();
-});
-                }
-                calendarioGrid.add(cell, col, row);
-                data = data.plusDays(1);
-            }
-        }
 
+                    calendarioGrid.add(cell, col, row);
+                    data = data.plusDays(1);
+                }
+            }
         atualizarCabecalho();
     }
 
@@ -777,6 +775,10 @@ public class PaginaPrincipalController implements Initializable {
 
             if (dataAtual.equals(hoje)) {
                 vbox.setStyle("-fx-background-color: #ffb366; -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8;");
+            } else if (utils.Feriados.isFeriado(dataAtual)) {
+                vbox.setStyle("-fx-background-color: #f78fb3; -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8;");
+            } else if (dia == 6) { // Domingo
+                vbox.setStyle("-fx-background-color: #145a32; -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8;");
             } else {
                 vbox.setStyle("-fx-background-color: #3498db; -fx-border-color: white; -fx-border-width: 1; -fx-padding: 8;");
             }
@@ -1130,7 +1132,12 @@ public class PaginaPrincipalController implements Initializable {
         nome.setAlignment(Pos.CENTER_LEFT);
 
         StackPane box = new StackPane(nome);
-        box.setStyle("-fx-background-color: #A020F0; -fx-background-radius: 12; -fx-border-radius: 12;");
+        
+        if (marcacao.isFalta()) {
+            box.setStyle("-fx-background-color: #e74c3c; -fx-background-radius: 12; -fx-border-radius: 12;");
+        } else {
+            box.setStyle("-fx-background-color: #A020F0; -fx-background-radius: 12; -fx-border-radius: 12;");
+        }
         box.setPrefHeight(36); 
         StackPane.setAlignment(nome, Pos.CENTER_LEFT);
         StackPane.setMargin(nome, new Insets(0, 10, 0, 10));
