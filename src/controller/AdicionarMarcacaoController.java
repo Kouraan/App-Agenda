@@ -270,6 +270,9 @@ public class AdicionarMarcacaoController implements Initializable {
         List<Integer> disponiveis = new ArrayList<>();
         LocalDateTime inicio = LocalDateTime.of(data, hora);
 
+        // Hora máxima
+        LocalTime horaMaxima = LocalTime.of(21,30);
+
         // Se não for múltiplo de 30 minutos, só permite 15 minutos
         if (hora.getMinute() == 45 || hora.getMinute() == 15) {
             Marcacao m = marcacoesMap.get(inicio);
@@ -282,6 +285,9 @@ public class AdicionarMarcacaoController implements Initializable {
         // Lógica normal: só permite durações que não colidam com marcações existentes
         outer:
         for (int dur : opcoes) {
+            LocalTime fim = hora.plusMinutes(dur);
+            if (fim.isAfter(horaMaxima)) continue;
+            
             LocalDateTime bloco = inicio;
             int blocos = dur / 15;
             for (int i = 0; i < blocos; i++) {

@@ -120,6 +120,19 @@ public class Cliente {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Cliente other = (Cliente) obj;
+        return numeroTelefone != null && numeroTelefone.equals(other.numeroTelefone);
+    }
+
+    @Override
+    public int hashCode() {
+        return numeroTelefone != null ? numeroTelefone.hashCode() : 0;
+    }
+
+    @Override
     public Cliente clone() {
         return new Cliente(this);
     }

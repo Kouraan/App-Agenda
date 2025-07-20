@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import models.Cliente;
+
 import java.time.LocalTime;
 import java.util.Map;
 
@@ -206,6 +207,16 @@ public class DetalheClienteController {
 
     private void apagarCliente() {
         Map<String, Cliente> clientes = paginaPrincipalController.getAppController().getClientesMap();
+        
+        // Remover marcações futuras
+        Map<java.time.LocalDateTime, models.Marcacao> marcacoes = paginaPrincipalController.getAppController().getMarcacoesMap();
+        java.time.LocalDate hoje = java.time.LocalDate.now();
+        marcacoes.entrySet().removeIf(entry ->
+            entry.getValue().getCliente().equals(cliente) &&
+            !entry.getKey().toLocalDate().isBefore(hoje)
+        );
+        utils.Persistencia.guardarMarcacoes(marcacoes);
+
         clientes.remove(cliente.getNome());
         utils.Persistencia.guardarClientes(clientes);
 
@@ -337,14 +348,19 @@ public class DetalheClienteController {
                 return;
             }
         }
+
+        // Guarda estado antigo para comparação
+        Cliente.TipoCliente tipoAntigo = cliente.getTipoCliente();
+        String diaSemanaAntigo = cliente.getDiaSemana();
+        String horaCorteAntigo = cliente.getHoraCorte();
     
         // Se nada mudou, não faz nada
         boolean igual = nome.equals(cliente.getNome()) &&
                         telefone.equals(cliente.getNumeroTelefone()) &&
                         faltas == cliente.getFaltas() &&
-                        ((cliente.getTipoCliente() == Cliente.TipoCliente.SEMANAL && semanal &&
-                          diaSemana.equals(cliente.getDiaSemana()) && horaCorte.equals(cliente.getHoraCorte())) ||
-                         (cliente.getTipoCliente() != Cliente.TipoCliente.SEMANAL && !semanal));
+                        ((tipoAntigo == Cliente.TipoCliente.SEMANAL && semanal &&
+                          diaSemana.equals(diaSemanaAntigo) && horaCorte.equals(horaCorteAntigo)) ||
+                         (tipoAntigo != Cliente.TipoCliente.SEMANAL && !semanal));
         if (igual) {
             alternarModoEdicao(false);
             return;
@@ -367,6 +383,48 @@ public class DetalheClienteController {
             }
             // Atualiza mapa e persiste
             utils.Persistencia.guardarClientes(clientes);
+
+            // Marcacoes semanais (caso seja preciso)
+            Map<java.time.LocalDateTime, models.Marcacao> marcacoes = paginaPrincipalController.getAppController().getMarcacoesMap();
+            java.time.LocalDate hoje = java.time.LocalDate.now();
+
+            // Se passou a ser semanal (antes não era)
+            if (tipoAntigo != Cliente.TipoCliente.SEMANAL && semanal) {
+                java.util.List<models.Marcacao> novasMarcacoes = utils.MarcacoesSemanais.gerarMarcacoesSemanais(
+                    cliente, marcacoes, hoje
+                );
+                for (models.Marcacao m : novasMarcacoes) {
+                    marcacoes.put(m.getDataHora(), m);
+                }
+                utils.Persistencia.guardarMarcacoes(marcacoes);
+            }
+
+            // Se já era semanal e mudou o dia ou hora
+            if (tipoAntigo == Cliente.TipoCliente.SEMANAL && semanal &&
+                (!diaSemana.equals(diaSemanaAntigo) || !horaCorte.equals(horaCorteAntigo))) {
+                // Remover marcações futuras do cliente
+                marcacoes.entrySet().removeIf(entry ->
+                    entry.getValue().getCliente().equals(cliente) &&
+                    !entry.getKey().toLocalDate().isBefore(hoje)
+                );
+                // Gerar novas marcações para o novo horário
+                java.util.List<models.Marcacao> novasMarcacoes = utils.MarcacoesSemanais.gerarMarcacoesSemanais(
+                    cliente, marcacoes, hoje
+                );
+                for (models.Marcacao m : novasMarcacoes) {
+                    marcacoes.put(m.getDataHora(), m);
+                }
+                utils.Persistencia.guardarMarcacoes(marcacoes);
+            }
+
+            // Se deixou de ser semanal, remove marcações futuras
+            if (tipoAntigo == Cliente.TipoCliente.SEMANAL && !semanal) {
+                marcacoes.entrySet().removeIf(entry ->
+                    entry.getValue().getCliente().equals(cliente) &&
+                    !entry.getKey().toLocalDate().isBefore(hoje)
+                );
+                utils.Persistencia.guardarMarcacoes(marcacoes);
+            }
     
             // Atualiza área de clientes
             paginaPrincipalController.mostrarClientes();

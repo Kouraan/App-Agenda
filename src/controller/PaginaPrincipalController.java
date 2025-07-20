@@ -78,6 +78,7 @@ public class PaginaPrincipalController implements Initializable {
     
     public void setAppController(Controller appController) {
         this.appController = appController;
+        atualizarMarcacoesSemanaisSeNecessario();
         atualizarBoxClientesPendentes();
         atualizarCalendario();
     }
@@ -290,6 +291,7 @@ public class PaginaPrincipalController implements Initializable {
         clientesToggle.setSelected(false);
         areaCentral.setVisible(true);
         areaClientes.setVisible(false);
+        atualizarCalendario();
     }
 
     @FXML
@@ -1174,5 +1176,37 @@ public class PaginaPrincipalController implements Initializable {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void atualizarMarcacoesSemanaisSeNecessario() {
+        Map<String, Cliente> clientes = appController.getClientesMap();
+        Map<java.time.LocalDateTime, Marcacao> marcacoes = appController.getMarcacoesMap();
+        java.time.LocalDate hoje = java.time.LocalDate.now();
+    
+        for (Cliente cliente : clientes.values()) {
+            if (cliente.getTipoCliente() == Cliente.TipoCliente.SEMANAL) {
+                // Encontrar a última marcação futura deste cliente
+                java.time.LocalDateTime ultima = marcacoes.values().stream()
+                    .filter(m -> m.getCliente().equals(cliente) && !m.getDataHora().toLocalDate().isBefore(hoje))
+                    .map(Marcacao::getDataHora)
+                    .max(java.time.LocalDateTime::compareTo)
+                    .orElse(null);
+    
+                if (ultima == null) {
+                    // Não tem marcações futuras, gera a partir de hoje
+                    var novas = utils.MarcacoesSemanais.gerarMarcacoesSemanais(cliente, marcacoes, hoje);
+                    for (Marcacao m : novas) marcacoes.put(m.getDataHora(), m);
+                } else {
+                    java.time.LocalDate dataUltima = ultima.toLocalDate();
+                    java.time.LocalDate limite = dataUltima.minusMonths(3);
+                    if (!hoje.isBefore(limite)) {
+                        // Faltam menos de 3 meses, gera mais 6 meses a partir da última marcação
+                        var novas = utils.MarcacoesSemanais.gerarMarcacoesSemanais(cliente, marcacoes, dataUltima.plusWeeks(1));
+                        for (Marcacao m : novas) marcacoes.put(m.getDataHora(), m);
+                    }
+                }
+            }
+        }
+        utils.Persistencia.guardarMarcacoes(marcacoes);
     }
 }

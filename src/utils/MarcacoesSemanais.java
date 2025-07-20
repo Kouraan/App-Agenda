@@ -1,9 +1,9 @@
 package utils;
 
-import models.Cliente;
-import models.Marcacao;
 import java.time.*;
 import java.util.*;
+import models.Cliente;
+import models.Marcacao;
 
 public class MarcacoesSemanais {
     public static List<Marcacao> gerarMarcacoesSemanais(Cliente cliente, Map<LocalDateTime, Marcacao> marcacoesMap, LocalDate dataInicio) {
@@ -11,7 +11,7 @@ public class MarcacoesSemanais {
         if (cliente.getTipoCliente() != Cliente.TipoCliente.SEMANAL) return novas;
         if (cliente.getDiaSemana() == null || cliente.getHoraCorte() == null) return novas;
 
-        DayOfWeek diaSemana = DayOfWeek.valueOf(cliente.getDiaSemana().toUpperCase());
+        DayOfWeek diaSemana = traduzirDiaSemana(cliente.getDiaSemana());
         LocalTime hora = LocalTime.parse(cliente.getHoraCorte());
         LocalDate data = dataInicio;
 
@@ -34,5 +34,18 @@ public class MarcacoesSemanais {
             data = data.plusWeeks(1);
         }
         return novas;
+    }
+
+    private static DayOfWeek traduzirDiaSemana(String diaSemanaPt) {
+        switch (diaSemanaPt.toLowerCase()) {
+            case "segunda": return DayOfWeek.MONDAY;
+            case "terça":   return DayOfWeek.TUESDAY;
+            case "quarta":  return DayOfWeek.WEDNESDAY;
+            case "quinta":  return DayOfWeek.THURSDAY;
+            case "sexta":   return DayOfWeek.FRIDAY;
+            case "sábado":  return DayOfWeek.SATURDAY;
+            case "domingo": return DayOfWeek.SUNDAY;
+            default: throw new IllegalArgumentException("Dia da semana inválido: " + diaSemanaPt);
+        }
     }
 }

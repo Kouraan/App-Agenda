@@ -6,8 +6,15 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
+
+import models.Marcacao;
+import utils.MarcacoesSemanais;
 
 public class AdicionarClienteController {
     @FXML public TextField nomeField;
@@ -205,6 +212,22 @@ public class AdicionarClienteController {
         // Adiciona e salva novo Cliente
         clientes.put(novoCliente.getNome(), novoCliente);
         utils.Persistencia.guardarClientes(clientes);
+
+        if (novoCliente.getTipoCliente() == models.Cliente.TipoCliente.SEMANAL) {
+            Map<LocalDateTime, models.Marcacao> marcacoes = appController.getMarcacoesMap();
+        
+            List<models.Marcacao> novasMarcacoes = MarcacoesSemanais.gerarMarcacoesSemanais(
+                novoCliente,
+                marcacoes,
+                LocalDate.now()
+            );
+        
+            for (models.Marcacao m : novasMarcacoes) {
+                marcacoes.put(m.getDataHora(), m);
+            }
+        
+            utils.Persistencia.guardarMarcacoes(marcacoes);
+        }
 
         ((Stage) btnSalvar.getScene().getWindow()).close();
     }
