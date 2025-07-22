@@ -82,6 +82,7 @@ public class RegistoController {
             // Voltar ao login
             try {
                 appController.mostrarLogin();
+                utils.Logger.logRegisto(novo.getNome());
             } catch (Exception e) {
                 errorLabel.setText("Erro ao abrir login.");
                 errorLabel.setVisible(true);

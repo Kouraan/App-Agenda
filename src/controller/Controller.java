@@ -35,6 +35,7 @@ public class Controller {
     }
 
     public void startApp() throws Exception {
+        utils.Logger.logAppIniciada();
         if (utilizador != null) {
             mostrarLogin();
         } else {

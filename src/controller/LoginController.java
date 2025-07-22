@@ -76,6 +76,7 @@ public class LoginController {
             // Login bem-sucedido, abrir página principal
             try {
                 appController.mostrarPaginaPrincipal();
+                utils.Logger.logLogin(usernameField.getText());
             } catch (Exception e) {
                 errorLabel.setText("Erro ao abrir página principal.");
                 errorLabel.setVisible(true);

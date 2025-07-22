@@ -2,10 +2,8 @@
   {
     "nome": "Marco Silva",
     "numeroTelefone": "965131863",
-    "tipoCliente": "SEMANAL",
+    "tipoCliente": "NORMAL",
     "faltas": 0,
-    "diaSemana": "Sábado",
-    "horaCorte": "10:00",
     "rapido": false
   },
   {

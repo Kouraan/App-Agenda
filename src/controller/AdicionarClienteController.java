@@ -229,6 +229,8 @@ public class AdicionarClienteController {
             utils.Persistencia.guardarMarcacoes(marcacoes);
         }
 
+        utils.Logger.logClienteCriado(novoCliente.getNome());
+
         ((Stage) btnSalvar.getScene().getWindow()).close();
     }
 

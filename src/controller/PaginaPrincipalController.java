@@ -259,6 +259,7 @@ public class PaginaPrincipalController implements Initializable {
         try {
             if (appController != null) {
                 appController.mostrarLogin();
+                utils.Logger.logLogout(utilizador.getNome());
             }
         } catch (Exception e) {
             System.err.println("Erro ao fazer logout: " + e.getMessage());
@@ -526,9 +527,12 @@ public class PaginaPrincipalController implements Initializable {
             if (i == 0) {
                 colConstraints.setPrefWidth(80); // Coluna das horas
                 colConstraints.setMinWidth(80);
+                colConstraints.setMaxWidth(80);
             } else {
-                colConstraints.setHgrow(Priority.ALWAYS);
-                colConstraints.setMinWidth(100);
+                colConstraints.setPrefWidth(110); // Largura fixa para cada dia
+                colConstraints.setMinWidth(110);
+                colConstraints.setMaxWidth(110);
+                colConstraints.setHgrow(Priority.NEVER);
             }
             calendarioGrid.getColumnConstraints().add(colConstraints);
         }
@@ -1140,7 +1144,8 @@ public class PaginaPrincipalController implements Initializable {
         } else {
             box.setStyle("-fx-background-color: #A020F0; -fx-background-radius: 12; -fx-border-radius: 12;");
         }
-        box.setPrefHeight(36); 
+        box.setPrefHeight(36);
+        box.setMaxWidth(Double.MAX_VALUE);
         StackPane.setAlignment(nome, Pos.CENTER_LEFT);
         StackPane.setMargin(nome, new Insets(0, 10, 0, 10));
 

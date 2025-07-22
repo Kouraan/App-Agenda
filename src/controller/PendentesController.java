@@ -57,6 +57,8 @@ public class PendentesController {
             btnRemover.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
             btnRemover.setOnAction(e -> {
                 if (linhaSelecionada >= 0 && linhaSelecionada < pendentes.size()) {
+                    Pendente removido = pendentes.get(linhaSelecionada); // Guarda referência antes de remover
+                    utils.Logger.logPendenteRemovido(removido); // <-- ADICIONA AQUI
                     pendentes.remove(linhaSelecionada);
                     utils.Persistencia.guardarPendentes(pendentes);
                     linhaSelecionada = -1;
@@ -267,6 +269,7 @@ public class PendentesController {
             Pendente novo = new Pendente(nome, numero);
             pendentes.add(novo);
             utils.Persistencia.guardarPendentes(pendentes);
+            utils.Logger.logPendenteAdicionado(novo);
             atualizarConteudo();
         } else {
             String pesquisaNome = pesquisa.getText().trim();
@@ -284,6 +287,7 @@ public class PendentesController {
             Pendente novo = new Pendente(encontrado.getNome(), encontrado.getNumeroTelefone());
             pendentes.add(novo);
             utils.Persistencia.guardarPendentes(pendentes);
+            utils.Logger.logPendenteAdicionado(novo);
             atualizarConteudo();
         }
     });

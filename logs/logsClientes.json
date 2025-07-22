@@ -1,71 +1,15 @@
+[20/07/2025 15:59:07]Cliente 'Marco Silva' alterado de SEMANAL para NORMAL.
+[22/07/2025 14:43:54]Cliente 'blo' apagado.
+[22/07/2025 14:41:41]Cliente 'blo' apagado.
+[22/07/2025 14:41:39]Falta retirada ao Cliente 'blo'.
+[22/07/2025 14:41:38]Cliente 'blo' alterado de NORMAL para SEMANAL, horário de 'Quarta' às '11:00'.
+[22/07/2025 14:41:38]Numero do Cliente 'blo' alterado para '909090909'.
+[22/07/2025 14:41:38]Nome do Cliente 'ble' alterado para 'blo'.
+[22/07/2025 14:41:32]Falta adicionada ao Cliente 'ble'.
+[22/07/2025 14:41:19]Cliente 'ble' criado.
+[22/07/2025 14:40:33]Cliente 'bla' apagado.
+[22/07/2025 14:40:29]Falta adicionada ao Cliente 'bla'.
+[22/07/2025 14:40:29]Falta adicionada ao Cliente 'bla'.
+[22/07/2025 14:40:27]Cliente 'bla' alterado de NORMAL para SEMANAL, horário de 'Terça' às '10:00'.
+[22/07/2025 14:40:19]Cliente 'bla' criado.
 []
-[21/06/2025 17:10:19] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:10:19] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:10:19] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:10:19] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:10:19] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:10:19] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:10:19] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:17:10] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:17:10] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:17:10] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:17:10] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:17:10] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:17:10] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:17:10] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:23:22] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:23:22] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:23:22] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:23:22] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:23:22] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:23:22] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:23:22] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:24:08] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:24:08] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:24:08] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:24:08] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:24:08] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:24:08] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:24:08] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:25:25] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:25:25] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:25:25] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:25:25] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:25:25] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:25:25] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:25:25] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:26:15] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:26:15] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:26:15] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:26:15] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:26:15] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:26:15] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:26:15] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:26:35] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:26:35] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:26:36] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:26:36] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:26:36] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:26:36] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:26:36] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:28:47] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:28:47] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:28:47] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:28:47] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:28:47] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:28:47] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:28:47] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:34:25] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:34:25] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:34:25] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:34:25] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:34:25] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:34:25] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:34:25] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902
-[21/06/2025 17:35:25] Cliente: Marco | Detalhes: Novo cliente +Marco criado
-[21/06/2025 17:35:25] Cliente: Nuno | Detalhes: Novo cliente +Nuno criado
-[21/06/2025 17:35:25] Cliente: Nuno | Detalhes: Cliente +Nuno removido
-[21/06/2025 17:35:25] Cliente: Marco | Detalhes: Cliente +Marco falta adicionada
-[21/06/2025 17:35:25] Cliente: Marco | Detalhes: Falta do cliente +Marco removida
-[21/06/2025 17:35:25] Cliente: Marco | Detalhes: Cliente alterou o nome para +Marco e o seu tipo para NORMAL com dia null e hora null
-[21/06/2025 17:35:25] Cliente: Nuno | Detalhes: Cliente +Nuno teve o telefone alterado para 913332902

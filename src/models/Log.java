@@ -7,6 +7,7 @@ public class Log {
     private Cliente cliente;
     private Utilizador utilizador;
     private Marcacao marcacao;
+    private Pendente pendente;
     private String detalhes;
 
     // Construtores
@@ -15,6 +16,7 @@ public class Log {
         this.cliente = null;
         this.utilizador = null;
         this.marcacao = null;
+        this.pendente = null;
         this.detalhes = "";
     }
 
@@ -24,6 +26,7 @@ public class Log {
         this.cliente = null;
         this.utilizador = utilizador;
         this.marcacao = null;
+        this.pendente = null;
         this.detalhes = detalhes;
     }
 
@@ -33,6 +36,7 @@ public class Log {
         this.cliente = cliente;
         this.utilizador = null;
         this.marcacao = null;
+        this.pendente = null;
         this.detalhes = detalhes;
     }
 
@@ -42,6 +46,17 @@ public class Log {
         this.cliente = marcacao.getCliente();
         this.utilizador = null;
         this.marcacao = marcacao;
+        this.pendente = null;
+        this.detalhes = detalhes;
+    }
+
+    // apenas para pendente
+    public Log(LocalDateTime dataHora, Pendente pendente, String detalhes) {
+        this.dataHora = dataHora;
+        this.cliente = null;
+        this.utilizador = null;
+        this.marcacao = null;
+        this.pendente = pendente;
         this.detalhes = detalhes;
     }
 
@@ -50,6 +65,7 @@ public class Log {
         this.cliente = outro.cliente;
         this.utilizador = outro.utilizador;
         this.marcacao = outro.marcacao;
+        this.pendente = outro.pendente;
         this.detalhes = outro.detalhes;
     }
 
@@ -84,6 +100,14 @@ public class Log {
 
     public void setMarcacao(Marcacao marcacao) {
         this.marcacao = marcacao;
+    }
+
+    public Pendente getPendente() {
+        return pendente;
+    }
+
+    public void setPendente(Pendente pendente) {
+        this.pendente = pendente;
     }
 
     public String getDetalhes() {

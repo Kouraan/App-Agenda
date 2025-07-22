@@ -2,53 +2,226 @@ package utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import models.*;
 
 public class Logger {
-    public static void escreverLogUtilizador(Log log) {
-        try (FileWriter writer = new FileWriter("logs/logsUtilizador.json", true)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            String linha = String.format(
-                "[%s] Utilizador: %s | Detalhes: %s\n",
-                log.getDataHora().format(formatter),
-                log.getUtilizador() != null ? log.getUtilizador().getNome() : "N/A",
-                log.getDetalhes()
-            );
-            writer.write(linha);
+    private static String dataAtual() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+    }
+
+    // Log generico Utilizador
+    public static void logUtilizador(String mensagem) {
+        String data = dataAtual();
+        String linha = "[" + data + "]" + mensagem + "\n";
+        String path = "logs/logsUtilizador.json";
+        try {
+            StringBuilder sb = new StringBuilder();
+            java.io.File file = new java.io.File(path);
+            if (file.exists()) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
+                    String l;
+                    while ((l = reader.readLine()) != null) {
+                        sb.append(l).append("\n");
+                    }
+                }
+            }
+            try (FileWriter writer = new FileWriter(path, false)) {
+                writer.write(linha);
+                writer.write(sb.toString());
+            }
         } catch (IOException e) {
             System.err.println("Erro ao escrever no ficheiro de log: " + e.getMessage());
         }
     }
 
-    public static void escreverLogCliente(Log log) {
-        try (FileWriter writer = new FileWriter("logs/logsClientes.json", true)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            String linha = String.format(
-                "[%s] Cliente: %s | Detalhes: %s\n",
-                log.getDataHora().format(formatter),
-                log.getCliente() != null ? log.getCliente().getNome() : "N/A",
-                log.getDetalhes()
-            );
-            writer.write(linha);
+    // Log Registo
+    public static void logRegisto(String nome) {
+        logUtilizador(" Novo utilizador registado com o nome: '" + nome + "'.");
+    }
+
+    // Log Login
+    public static void logLogin(String nome) {
+        logUtilizador(" Utilizador '" + nome + "' efetuou login na sua conta.");
+    }
+
+    // Log Logout
+    public static void logLogout(String nome) {
+        logUtilizador(" Utilizador '" + nome + "' deu logout da sua conta.");
+    }
+
+    // Log App Iniciada
+    public static void logAppIniciada() {
+        logUtilizador(" Aplicação iniciada.");
+    }
+
+    // Log App Terminada
+    public static void logAppTerminada() {
+        logUtilizador(" Aplicação terminada.");
+    }
+
+    // Log generico Cliete
+    public static void logCliente(String mensagem) {
+        String data = dataAtual();
+        String linha = "[" + data + "]" + mensagem + "\n";
+        String path = "logs/logsClientes.json";
+        try {
+            StringBuilder sb = new StringBuilder();
+            java.io.File file = new java.io.File(path);
+            if (file.exists()) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
+                    String l;
+                    while ((l = reader.readLine()) != null) {
+                        sb.append(l).append("\n");
+                    }
+                }
+            }
+            try (FileWriter writer = new FileWriter(path, false)) {
+                writer.write(linha);
+                writer.write(sb.toString());
+            }
         } catch (IOException e) {
             System.err.println("Erro ao escrever no ficheiro de log: " + e.getMessage());
         }
     }
 
-    public static void escreverLogMarcacao(Log log) {
-        try (FileWriter writer = new FileWriter("logs/logsMarcacoes.json", true)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            String linha = String.format(
-                "[%s] Marcacao: %s de %s | Detalhes: %s\n",
-                log.getDataHora().format(formatter),
-                log.getMarcacao() != null ? log.getMarcacao().getDataHora().toString() : "N/A",
-                log.getMarcacao().getCliente() != null ? log.getMarcacao().getCliente().getNome() : "N/A",
-                log.getDetalhes()
-            );
-            writer.write(linha);
+    // Cliente criado
+    public static void logClienteCriado(String nome) {
+        logCliente("Cliente '" + nome + "' criado.");
+    }
+
+    // Cliente apagado
+    public static void logClienteApagado(String nome) {
+        logCliente("Cliente '" + nome + "' apagado.");
+    }
+
+    // Falta adicionada
+    public static void logFaltaAdicionada(String nome) {
+        logCliente("Falta adicionada ao Cliente '" + nome + "'.");
+    }
+
+    // Falta retirada
+    public static void logFaltaRetirada(String nome) {
+        logCliente("Falta retirada ao Cliente '" + nome + "'.");
+    }
+
+    // Nome alterado
+    public static void logNomeAlterado(String nomeAntigo, String nomeNovo) {
+        logCliente("Nome do Cliente '" + nomeAntigo + "' alterado para '" + nomeNovo + "'.");
+    }
+
+    // Número alterado
+    public static void logNumeroAlterado(String nome, String numeroNovo) {
+        logCliente("Numero do Cliente '" + nome + "' alterado para '" + numeroNovo + "'.");
+    }
+
+    // Tipo alterado de SEMANAL para NORMAL
+    public static void logTipoSemanalParaNormal(String nome) {
+        logCliente("Cliente '" + nome + "' alterado de SEMANAL para NORMAL.");
+    }
+
+    // Tipo alterado de NORMAL para SEMANAL
+    public static void logTipoNormalParaSemanal(String nome, String dia, String hora) {
+        logCliente("Cliente '" + nome + "' alterado de NORMAL para SEMANAL, horário de '" + dia + "' às '" + hora + "'.");
+    }
+
+    // Horário alterado em SEMANAL
+    public static void logHorarioSemanalAlterado(String nome, String dia, String hora) {
+        logCliente("Horas do Cliente SEMANAL '" + nome + "' alteradas para '" + dia + "' às '" + hora + "'.");
+    }
+
+    // Log generico Marcacao
+    public static void logMarcacao(String mensagem) {
+        String data = dataAtual();
+        String linha = "[" + data + "] " + mensagem + "\n";
+        String path = "logs/logsMarcacoes.json";
+        try {
+            StringBuilder sb = new StringBuilder();
+            java.io.File file = new java.io.File(path);
+            if (file.exists()) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
+                    String l;
+                    while ((l = reader.readLine()) != null) {
+                        sb.append(l).append("\n");
+                    }
+                }
+            }
+            try (FileWriter writer = new FileWriter(path, false)) {
+                writer.write(linha);
+                writer.write(sb.toString());
+            }
         } catch (IOException e) {
             System.err.println("Erro ao escrever no ficheiro de log: " + e.getMessage());
         }
+    }
+
+    // Log de marcação criada
+    public static void logMarcacaoCriada(Marcacao marcacao) {
+        String nome = marcacao.getCliente() != null ? marcacao.getCliente().getNome() : "N/A";
+        String dataHora = marcacao.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        logMarcacao("Marcação criada para '" + nome + "' em " + dataHora + ".");
+    }
+
+    // Log de marcação apagada
+    public static void logMarcacaoApagada(Marcacao marcacao) {
+        String nome = marcacao.getCliente() != null ? marcacao.getCliente().getNome() : "N/A";
+        String dataHora = marcacao.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        logMarcacao("Marcação de '" + nome + "' em " + dataHora + " apagada.");
+    }
+
+    // Log de alteração de observações
+    public static void logMarcacaoObsAlterada(Marcacao marcacao, String obsNova) {
+        String nome = marcacao.getCliente() != null ? marcacao.getCliente().getNome() : "N/A";
+        String dataHora = marcacao.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        logMarcacao("Observações da marcação de '" + nome + "' em " + dataHora + " alteradas" + " para '" + obsNova + "'.");
+    }
+
+    // Log de alteração de data/hora
+    public static void logMarcacaoDataHoraAlterada(Marcacao marcacao, String dataHoraAntiga, String dataHoraNova) {
+        String nome = marcacao.getCliente() != null ? marcacao.getCliente().getNome() : "N/A";
+        logMarcacao("Data/hora da marcação de '" + nome + "' alterada de " + dataHoraAntiga + " para " + dataHoraNova + ".");
+    }
+
+    // Log de Falta à Marcacao
+    public static void logMarcacaoFalta(Marcacao marcacao) {
+        String nome = marcacao.getCliente() != null ? marcacao.getCliente().getNome() : "N/A";
+        String dataHora = marcacao.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        logMarcacao("O cliente '" + nome + "' faltou a marcacao na data '" + dataHora + "'.");
+    }
+
+    // Log genérico Pendente
+    public static void logPendente(String mensagem) {
+        String data = dataAtual();
+        String linha = "[" + data + "]" + mensagem + "\n";
+        String path = "logs/logsPendentes.json";
+        try {
+            StringBuilder sb = new StringBuilder();
+            java.io.File file = new java.io.File(path);
+            if (file.exists()) {
+                try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
+                    String l;
+                    while ((l = reader.readLine()) != null) {
+                        sb.append(l).append("\n");
+                    }
+                }
+            }
+            try (FileWriter writer = new FileWriter(path, false)) {
+                writer.write(linha);
+                writer.write(sb.toString());
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao escrever no ficheiro de log: " + e.getMessage());
+        }
+    }
+
+    // Log pendente adicionado
+    public static void logPendenteAdicionado(Pendente pendente) {
+        logPendente("Cliente Pendente adicionado: '" + pendente.getNome() + "'.");
+    }
+
+    // Log pendente removido
+    public static void logPendenteRemovido(Pendente pendente) {
+        logPendente("Cliente Pendente removido: '" + pendente.getNome() + "'.");
     }
 }

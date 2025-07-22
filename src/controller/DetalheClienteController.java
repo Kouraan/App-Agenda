@@ -220,6 +220,8 @@ public class DetalheClienteController {
         clientes.remove(cliente.getNome());
         utils.Persistencia.guardarClientes(clientes);
 
+        utils.Logger.logClienteApagado(cliente.getNome());
+
         fechar();
 
         paginaPrincipalController.mostrarClientes();
@@ -286,9 +288,15 @@ public class DetalheClienteController {
     }
 
     private void alterarFaltas(int delta) {
-        int faltas = Integer.parseInt(faltasLabel.getText());
-        faltas = Math.max(0, faltas + delta);
+        int faltasAntigas = Integer.parseInt(faltasLabel.getText());
+        int faltas = Math.max(0, faltasAntigas + delta);
         faltasLabel.setText(String.valueOf(faltas));
+
+        if (delta > 0) {
+            utils.Logger.logFaltaAdicionada(cliente.getNome());
+        } else if (delta < 0 && faltasAntigas > 0) {
+            utils.Logger.logFaltaRetirada(cliente.getNome());
+        }
     }
 
     private void confirmarSalvar() {
@@ -351,23 +359,25 @@ public class DetalheClienteController {
 
         // Guarda estado antigo para comparação
         Cliente.TipoCliente tipoAntigo = cliente.getTipoCliente();
+        String nomeAntigo = cliente.getNome();
+        String telefoneAntigo = cliente.getNumeroTelefone();
         String diaSemanaAntigo = cliente.getDiaSemana();
         String horaCorteAntigo = cliente.getHoraCorte();
-    
+
         // Se nada mudou, não faz nada
         boolean igual = nome.equals(cliente.getNome()) &&
                         telefone.equals(cliente.getNumeroTelefone()) &&
                         faltas == cliente.getFaltas() &&
                         ((tipoAntigo == Cliente.TipoCliente.SEMANAL && semanal &&
                           diaSemana.equals(diaSemanaAntigo) && horaCorte.equals(horaCorteAntigo)) ||
-                         (tipoAntigo != Cliente.TipoCliente.SEMANAL && !semanal));
+                        (tipoAntigo != Cliente.TipoCliente.SEMANAL && !semanal));
         if (igual) {
             alternarModoEdicao(false);
             return;
         }
     
         // Confirmação
-        mostrarConfirmacaoSalvar(() -> {
+        mostrarConfirmacaoSalvar(() -> {         
             // Atualiza cliente
             cliente.setNome(nome);
             cliente.setNumeroTelefone(telefone);
@@ -383,6 +393,24 @@ public class DetalheClienteController {
             }
             // Atualiza mapa e persiste
             utils.Persistencia.guardarClientes(clientes);
+
+            // LOGS DE ALTERAÇÕES
+            if (!nome.equals(nomeAntigo)) {
+                utils.Logger.logNomeAlterado(nomeAntigo, nome);
+            }
+            if (!telefone.equals(telefoneAntigo)) {
+                utils.Logger.logNumeroAlterado(nome, telefone);
+            }
+            if (tipoAntigo == Cliente.TipoCliente.SEMANAL && !semanal) {
+                utils.Logger.logTipoSemanalParaNormal(nome);
+            }
+            if (tipoAntigo == Cliente.TipoCliente.NORMAL && semanal) {
+                utils.Logger.logTipoNormalParaSemanal(nome, diaSemana, horaCorte);
+            }
+            if (tipoAntigo == Cliente.TipoCliente.SEMANAL && semanal &&
+                (!diaSemana.equals(diaSemanaAntigo) || !horaCorte.equals(horaCorteAntigo))) {
+                utils.Logger.logHorarioSemanalAlterado(nome, diaSemana, horaCorte);
+            }
 
             // Marcacoes semanais (caso seja preciso)
             Map<java.time.LocalDateTime, models.Marcacao> marcacoes = paginaPrincipalController.getAppController().getMarcacoesMap();

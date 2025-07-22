@@ -252,6 +252,8 @@ public class AdicionarMarcacaoController implements Initializable {
             Marcacao novaMarcacao = new Marcacao(blocoAtual, cliente, blocoDuracao, observacoes);
             marcacoesMap.put(novaMarcacao.getDataHora(), novaMarcacao);
 
+            utils.Logger.logMarcacaoCriada(novaMarcacao);
+
             minutosRestantes -= blocoDuracao;
             blocoAtual = blocoAtual.plusMinutes(blocoDuracao);
         }

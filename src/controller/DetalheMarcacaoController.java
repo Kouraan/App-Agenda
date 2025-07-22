@@ -109,7 +109,6 @@ public class DetalheMarcacaoController {
                 btnFaltou.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;");
                 btnFaltou.setOnAction(e -> marcarFalta());
             }
-    // NOVO: Se já está marcada falta, desabilita e muda o estilo
             if (marcacao.isFalta()) {
                 btnFaltou.setDisable(true);
             } else {
@@ -147,6 +146,9 @@ public class DetalheMarcacaoController {
         Map<java.time.LocalDateTime, Marcacao> marcacoesMap = appController.getMarcacoesMap();
     
         java.util.List<String> horasDisponiveis = new java.util.ArrayList<>();
+        java.time.LocalDate hoje = java.time.LocalDate.now();
+        java.time.LocalTime agora = java.time.LocalTime.now();
+
         if (duracao == 15) {
             // Blocos de 15 em 15 minutos
             for (int h = 7; h <= 21; h++) {
@@ -168,7 +170,11 @@ public class DetalheMarcacaoController {
                             livre = false;
                         }
                     }
-                    if (livre) {
+
+                    // Não permite horas passadas no dia de hoje
+                    boolean horaJaPassou = novaData.isEqual(hoje) && hora.isBefore(agora);
+
+                    if (livre && !horaJaPassou) {
                         horasDisponiveis.add(hora.toString());
                     }
                 }
@@ -188,7 +194,11 @@ public class DetalheMarcacaoController {
                             break;
                         }
                     }
-                    if (livre) {
+
+                    // Não permite horas passadas no dia de hoje
+                    boolean horaJaPassou = novaData.isEqual(hoje) && hora.isBefore(agora);
+
+                    if (livre && !horaJaPassou) {
                         horasDisponiveis.add(hora.toString());
                     }
                 }
@@ -213,6 +223,8 @@ public class DetalheMarcacaoController {
 
         Map<java.time.LocalDateTime, Marcacao> marcacoesMap = appController.getMarcacoesMap();
 
+        String dataHoraAntiga = marcacao.getDataHora().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+
         if (alterouHora) {
             marcacoesMap.remove(marcacao.getDataHora());
 
@@ -222,10 +234,18 @@ public class DetalheMarcacaoController {
             java.time.LocalDateTime novaDataHora = novaData.atTime(novaHora);
 
             marcacao.setDataHora(novaDataHora);
+
+            // LOG de alteração de data/hora
+            String dataHoraNova = novaDataHora.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            utils.Logger.logMarcacaoDataHoraAlterada(marcacao, dataHoraAntiga, dataHoraNova);
         }
 
         if (alterouObs) {
             marcacao.setObservacoes(observacoesArea.getText());
+
+            // LOG de alteração de observações
+            utils.Logger.logMarcacaoObsAlterada(marcacao, observacoesArea.getText());
+
             observacoesOriginais = observacoesArea.getText();
         }
 
@@ -250,6 +270,8 @@ public class DetalheMarcacaoController {
         marcacoesMap.remove(marcacao.getDataHora());
         utils.Persistencia.guardarMarcacoes(marcacoesMap);
 
+        utils.Logger.logMarcacaoApagada(marcacao);
+
         try {
             if (appController.getPaginaPrincipalController() != null) {
                 appController.getPaginaPrincipalController().atualizarCalendario();
@@ -264,11 +286,21 @@ public class DetalheMarcacaoController {
     private void marcarFalta() {
         if (marcacao == null) return;
         marcacao.setFalta(true);
+
+        // LOG de falta à marcação
+        utils.Logger.logMarcacaoFalta(marcacao);
+
+        Map<java.time.LocalDateTime, Marcacao> marcacoesMap = appController.getMarcacoesMap();
+        marcacoesMap.put(marcacao.getDataHora(), marcacao);
+
         if (marcacao.getCliente().isTemporario()) {
             appController.getClientesQueries().addFaltas(marcacao.getCliente().getNome());
-            utils.Persistencia.guardarMarcacoes(appController.getMarcacoesMap());
+            utils.Persistencia.guardarMarcacoes(marcacoesMap);
             utils.Persistencia.guardarClientes(appController.getClientesMap());
+        } else {
+            utils.Persistencia.guardarMarcacoes(marcacoesMap);
         }
+
         if (appController.getPaginaPrincipalController() != null) {
             appController.getPaginaPrincipalController().atualizarCalendario();
         }
