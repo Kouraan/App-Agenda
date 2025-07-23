@@ -90,7 +90,9 @@
                     <!-- Grade do calendário -->
                     <ScrollPane fx:id="scrollPaneCalendario" fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" style="-fx-focus-color: transparent; -fx-faint-color: transparent; -fx-background-insets: 0;">
                         <GridPane fx:id="calendarioGrid" hgap="1" vgap="1" 
-                                  style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7;"/>
+                                  style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7;"
+                                  maxWidth="Infinity" maxHeight="Infinity"
+                                  GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
                     </ScrollPane>                
                 </VBox>
                 <StackPane fx:id="areaClientes" visible="false" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">

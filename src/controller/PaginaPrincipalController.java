@@ -521,6 +521,10 @@ public class PaginaPrincipalController implements Initializable {
         semanaLabel.setText(inicio + " - " + fim);
         semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
+        // Limpa colunas e linhas antigas
+        calendarioGrid.getColumnConstraints().clear();
+        calendarioGrid.getRowConstraints().clear();
+
         // Configurar colunas (8 colunas: 1 para horas + 7 para dias)
         for (int i = 0; i < 8; i++) {
             ColumnConstraints colConstraints = new ColumnConstraints();
@@ -528,11 +532,12 @@ public class PaginaPrincipalController implements Initializable {
                 colConstraints.setPrefWidth(80); // Coluna das horas
                 colConstraints.setMinWidth(80);
                 colConstraints.setMaxWidth(80);
-            } else {
-                colConstraints.setPrefWidth(110); // Largura fixa para cada dia
-                colConstraints.setMinWidth(110);
-                colConstraints.setMaxWidth(110);
                 colConstraints.setHgrow(Priority.NEVER);
+            } else {
+                colConstraints.setHgrow(Priority.ALWAYS); // Permite crescer
+                colConstraints.setPrefWidth(110);
+                colConstraints.setMinWidth(110);
+                colConstraints.setMaxWidth(Double.MAX_VALUE);
             }
             calendarioGrid.getColumnConstraints().add(colConstraints);
         }
@@ -542,6 +547,12 @@ public class PaginaPrincipalController implements Initializable {
 
         // Criar grade de horários
         criarGradeHorarios();
+
+        // Força o GridPane a ocupar todo o espaço disponível
+        calendarioGrid.setMaxWidth(Double.MAX_VALUE);
+        calendarioGrid.setMaxHeight(Double.MAX_VALUE);
+        GridPane.setHgrow(calendarioGrid, Priority.ALWAYS);
+        GridPane.setVgrow(calendarioGrid, Priority.ALWAYS);
 
         atualizarCabecalho();
     }
@@ -699,10 +710,13 @@ public class PaginaPrincipalController implements Initializable {
                 if (is15min1) {
                     Pane box1 = criarBoxMarcacao(marcacao1);
                     HBox.setHgrow(box1, Priority.ALWAYS);
+                    box1.setMaxWidth(Double.MAX_VALUE);
                     hbox.getChildren().add(box1);
                 } else {
                     Region espaco1 = new Region();
                     HBox.setHgrow(espaco1, Priority.ALWAYS);
+                    espaco1.setMaxWidth(Double.MAX_VALUE);
+                    espaco1.setPrefWidth(0);
                     espaco1.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                     hbox.getChildren().add(espaco1);
                 }
@@ -710,14 +724,17 @@ public class PaginaPrincipalController implements Initializable {
                 if (is15min2) {
                     Pane box2 = criarBoxMarcacao(marcacao2);
                     HBox.setHgrow(box2, Priority.ALWAYS);
+                    box2.setMaxWidth(Double.MAX_VALUE);
                     hbox.getChildren().add(box2);
                 } else {
                     Region espaco2 = new Region();
                     HBox.setHgrow(espaco2, Priority.ALWAYS);
+                    espaco2.setPrefWidth(0);
                     espaco2.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada.plusMinutes(15)));
                     hbox.getChildren().add(espaco2);
                 }
 
+                celula.getChildren().clear();
                 celula.getChildren().add(hbox);
                 celula.setOnMouseClicked(null);
                 celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
@@ -891,10 +908,13 @@ public class PaginaPrincipalController implements Initializable {
                     if (is15min1) {
                         Pane box1 = criarBoxMarcacao(marcacao1);
                         HBox.setHgrow(box1, Priority.ALWAYS);
+                        box1.setMaxWidth(Double.MAX_VALUE);
                         hbox.getChildren().add(box1);
                     } else {
                         Region espaco1 = new Region();
                         HBox.setHgrow(espaco1, Priority.ALWAYS);
+                        espaco1.setMaxWidth(Double.MAX_VALUE);
+                        espaco1.setPrefWidth(0);
                         espaco1.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                         hbox.getChildren().add(espaco1);
                     }
@@ -902,14 +922,17 @@ public class PaginaPrincipalController implements Initializable {
                     if (is15min2) {
                         Pane box2 = criarBoxMarcacao(marcacao2);
                         HBox.setHgrow(box2, Priority.ALWAYS);
+                        box2.setMaxWidth(Double.MAX_VALUE);
                         hbox.getChildren().add(box2);
                     } else {
                         Region espaco2 = new Region();
                         HBox.setHgrow(espaco2, Priority.ALWAYS);
+                        espaco2.setPrefWidth(0);
                         espaco2.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada.plusMinutes(15)));
                         hbox.getChildren().add(espaco2);
                     }
 
+                    celula.getChildren().clear();
                     celula.getChildren().add(hbox);
                     celula.setOnMouseClicked(null);
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
@@ -936,7 +959,7 @@ public class PaginaPrincipalController implements Initializable {
         for (int i = 0; i < linha; i++) {
             RowConstraints rowConstraints = new RowConstraints();
             rowConstraints.setPrefHeight(40);
-            rowConstraints.setVgrow(Priority.NEVER);
+            rowConstraints.setVgrow(Priority.ALWAYS);
             calendarioGrid.getRowConstraints().add(rowConstraints);
         }
 
@@ -1134,7 +1157,7 @@ public class PaginaPrincipalController implements Initializable {
         Label nome = new Label(marcacao.getCliente().getNome());
         nome.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
         nome.setMaxWidth(Double.MAX_VALUE);
-        nome.setMaxHeight(Double.MAX_VALUE);
+        nome.setPrefWidth(0);
         nome.setAlignment(Pos.CENTER_LEFT);
 
         StackPane box = new StackPane(nome);
@@ -1146,6 +1169,7 @@ public class PaginaPrincipalController implements Initializable {
         }
         box.setPrefHeight(36);
         box.setMaxWidth(Double.MAX_VALUE);
+        nome.setPrefWidth(0);
         StackPane.setAlignment(nome, Pos.CENTER_LEFT);
         StackPane.setMargin(nome, new Insets(0, 10, 0, 10));
 

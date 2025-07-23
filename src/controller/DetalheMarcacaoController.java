@@ -149,11 +149,19 @@ public class DetalheMarcacaoController {
         java.time.LocalDate hoje = java.time.LocalDate.now();
         java.time.LocalTime agora = java.time.LocalTime.now();
 
+        if (novaData.isBefore(hoje)) {
+            horaCombo.getItems().clear();
+            return;
+        }
+
         if (duracao == 15) {
             // Blocos de 15 em 15 minutos
             for (int h = 7; h <= 21; h++) {
                 for (int m = 0; m < 60; m += 15) {
                     java.time.LocalTime hora = java.time.LocalTime.of(h, m);
+
+                    if (hora.plusMinutes(15).isAfter(java.time.LocalTime.of(21, 30))) continue;
+
                     java.time.LocalDateTime dt = novaData.atTime(hora);
     
                     boolean livre = true;
@@ -172,7 +180,8 @@ public class DetalheMarcacaoController {
                     }
 
                     // Não permite horas passadas no dia de hoje
-                    boolean horaJaPassou = novaData.isEqual(hoje) && hora.isBefore(agora);
+                    boolean horaJaPassou = novaData.isBefore(hoje) ||
+                        (novaData.isEqual(hoje) && hora.isBefore(agora));
 
                     if (livre && !horaJaPassou) {
                         horasDisponiveis.add(hora.toString());
@@ -184,6 +193,9 @@ public class DetalheMarcacaoController {
             for (int h = 7; h <= 21; h++) {
                 for (int m = 0; m < 60; m += 30) {
                     java.time.LocalTime hora = java.time.LocalTime.of(h, m);
+
+                    if (hora.plusMinutes(30).isAfter(java.time.LocalTime.of(21, 30))) continue;
+
                     java.time.LocalDateTime dt = novaData.atTime(hora);
     
                     boolean livre = true;
