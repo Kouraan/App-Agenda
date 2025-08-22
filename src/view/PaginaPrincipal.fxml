@@ -13,7 +13,8 @@
             <Label text="App Agenda" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="userLabel" style="-fx-text-fill: white; -fx-font-size: 16px;"/>
-            <Button text="Logout" onAction="#handleLogout" 
+            <Button fx:id="logoutBtn" text="Logout" onAction="#handleLogout" 
+                    focusTraversable="false"
                     style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"/>
         </HBox>
     </top>
@@ -70,27 +71,33 @@
             
             <!-- Área Central - Calendário Semanal -->
             <StackPane fx:id="stackCentral" HBox.hgrow="ALWAYS">
-                <VBox fx:id="areaCentral" minWidth="600" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
+                <VBox fx:id="areaCentral" minWidth="600" HBox.hgrow="ALWAYS" style="-fx-background-color:rgb(15, 14, 14); -fx-border-width: 0; -fx-padding: 10;">
                     <!-- Cabeçalho da semana -->
                     <HBox alignment="CENTER" spacing="10" style="-fx-padding: 0 0 10 0;">
                         <Button fx:id="todayBtn" text="Hoje" onAction="#handleToday" 
-                                style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: rgb(43, 40, 40); -fx-border-width: 0; -fx-background-radius: 12;"/>
                         <Button fx:id="semanaAnteriorBtn" text="◀" onAction="#semanaAnterior" 
-                                style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: rgb(43, 40, 40); -fx-border-width: 0; -fx-background-radius: 12;"/>
                         <Button fx:id="proximaSemanaBtn" text="▶" onAction="#proximaSemana" 
-                                style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: rgb(43, 40, 40); -fx-border-width: 0; -fx-background-radius: 12;"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Label fx:id="semanaLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        <Label fx:id="semanaLabel"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <ToggleButton fx:id="diaToggle" text="Dia"/>
-                        <ToggleButton fx:id="semanaToggle" text="Semana" selected="true"/>
-                        <ToggleButton fx:id="mesToggle" text="Mês"/>
+                        <ToggleButton fx:id="diaToggle" text="Dia"
+                                      style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: rgb(43, 40, 40); -fx-border-width: 0; -fx-background-radius: 12;"/>
+                        <ToggleButton fx:id="semanaToggle" text="Semana" selected="true"
+                                      style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: rgb(43, 40, 40); -fx-border-width: 0; -fx-background-radius: 12;"/>
+                        <ToggleButton fx:id="mesToggle" text="Mês"
+                                      style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: rgb(43, 40, 40); -fx-border-width: 0; -fx-background-radius: 12;"/>
                     </HBox>
                 
                     <!-- Grade do calendário -->
-                    <ScrollPane fx:id="scrollPaneCalendario" fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" style="-fx-focus-color: transparent; -fx-faint-color: transparent; -fx-background-insets: 0;">
-                        <GridPane fx:id="calendarioGrid" hgap="1" vgap="1" 
-                                  style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7;"
+                    <ScrollPane fx:id="scrollPaneCalendario" 
+                            fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" 
+                            style="-fx-focus-color: transparent; -fx-faint-color: transparent; -fx-background-insets: 0; -fx-background-color: transparent;
+                                   -fx-padding: 0; -fx-hbar-policy: never; -fx-vbar-policy: never;">
+                        <GridPane fx:id="calendarioGrid" hgap="6" vgap="6" 
+                                  style="-fx-background-color: rgb(15, 14, 14); -fx-border-width: 0;"
                                   maxWidth="Infinity" maxHeight="Infinity"
                                   GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
                     </ScrollPane>                

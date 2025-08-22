@@ -36,6 +36,7 @@ public class PaginaPrincipalController implements Initializable {
     @FXML private Button todayBtn;
     @FXML private Button semanaAnteriorBtn;
     @FXML private Button proximaSemanaBtn;
+    @FXML private Button logoutBtn;
     @FXML private GridPane calendarioGrid;
     @FXML private ToggleButton semanaToggle;
     @FXML private ToggleButton mesToggle;
@@ -101,6 +102,7 @@ public class PaginaPrincipalController implements Initializable {
         todayBtn.setFocusTraversable(false);
         semanaAnteriorBtn.setFocusTraversable(false);
         proximaSemanaBtn.setFocusTraversable(false);
+        logoutBtn.setFocusTraversable(false);
         semanaToggle.setFocusTraversable(false);
         mesToggle.setFocusTraversable(false);
         diaToggle.setFocusTraversable(false);
@@ -519,7 +521,6 @@ public class PaginaPrincipalController implements Initializable {
         String inicio = semanaAtual.format(formatter);
         String fim = fimSemana.format(formatter);
         semanaLabel.setText(inicio + " - " + fim);
-        semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
 
         // Limpa colunas e linhas antigas
         calendarioGrid.getColumnConstraints().clear();
@@ -613,9 +614,6 @@ public class PaginaPrincipalController implements Initializable {
                         diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: normal;");
                     } else if (utils.Feriados.isFeriado(data)) {
                         cell.setStyle("-fx-background-color: #f78fb3; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
-                        diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold;");
-                    } else if (col == 6) { // Domingo
-                        cell.setStyle("-fx-background-color: #145a32; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
                         diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold;");
                     } else if (data.getMonth() != primeiroDiaMes.getMonth()) {
                         cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
@@ -762,33 +760,24 @@ public class PaginaPrincipalController implements Initializable {
         atualizarCabecalho();
     }
     
-    private void criarCabecalhoDias() {
-        // Célula vazia no canto superior esquerdo
-        Label horaHeader = new Label("");
-        horaHeader.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; " +
-                           "-fx-font-weight: bold; -fx-alignment: center; " +
-                           "-fx-border-color: white; -fx-border-width: 1; -fx-padding: 10;");
-        horaHeader.setMaxWidth(Double.MAX_VALUE);
-        horaHeader.setMaxHeight(Double.MAX_VALUE);
-        calendarioGrid.add(horaHeader, 0, 0);
-        
+    private void criarCabecalhoDias() {        
         // Cabeçalhos dos dias da semana
-        String[] diasSemana = {"Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"};
+        String[] diasSemana = {"Seg.", "Ter.", "Qua.", "Qui.", "Sex.", "Sab.", "Dom."};
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("dd");
         LocalDate hoje = LocalDate.now();
         
         for (int dia = 0; dia < 7; dia++) {
             LocalDate dataAtual = semanaAtual.plusDays(dia);
-            
-            Label diaSemanaLabel = new Label(diasSemana[dia]);
-            diaSemanaLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
+            String textoCabecalho = diasSemana[dia] + " " + dataAtual.format(dayFormatter);
 
-            Label diaNumeroLabel = new Label(dataAtual.format(dayFormatter));
-            diaNumeroLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
-            
-            VBox vbox = new VBox(2, diaSemanaLabel, diaNumeroLabel);
-            vbox.setAlignment(Pos.CENTER);
-            vbox.setOnMouseClicked(e -> {
+            Label cabecalhoLabel = new Label(textoCabecalho);
+            cabecalhoLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;");
+            cabecalhoLabel.setAlignment(Pos.CENTER);
+            cabecalhoLabel.setMaxWidth(Double.MAX_VALUE);
+
+            StackPane cabecalhoPane = new StackPane(cabecalhoLabel);
+            cabecalhoPane.setAlignment(Pos.CENTER);
+            cabecalhoPane.setOnMouseClicked(e -> {
                 diaSelecionado = dataAtual;
                 semanaAtual = dataAtual.with(DayOfWeek.MONDAY);
                 modoAtual = ModoVisualizacao.DIA;
@@ -797,16 +786,14 @@ public class PaginaPrincipalController implements Initializable {
             });
 
             if (dataAtual.equals(hoje)) {
-                vbox.setStyle("-fx-background-color: #ffb366; -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8;");
+                cabecalhoPane.setStyle("-fx-background-color:rgb(255, 215, 0); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
             } else if (utils.Feriados.isFeriado(dataAtual)) {
-                vbox.setStyle("-fx-background-color: #f78fb3; -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8;");
-            } else if (dia == 6) { // Domingo
-                vbox.setStyle("-fx-background-color: #145a32; -fx-border-color: white; -fx-border-width: 2; -fx-padding: 8;");
+                cabecalhoPane.setStyle("-fx-background-color:rgb(36, 43, 141); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
             } else {
-                vbox.setStyle("-fx-background-color: #3498db; -fx-border-color: white; -fx-border-width: 1; -fx-padding: 8;");
+                cabecalhoPane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
             }
 
-            calendarioGrid.add(vbox, dia + 1, 0);
+            calendarioGrid.add(cabecalhoPane, dia + 1, 0);
         }
     }
 
@@ -821,20 +808,21 @@ public class PaginaPrincipalController implements Initializable {
                 String inicio = semanaAtual.format(semanaFmt);
                 String fim = fimSemana.format(semanaFmt);
                 semanaLabel.setText(inicio + " - " + fim);
+                semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
                 break;
             case MES:
                 semanaLabel.setText(semanaAtual.format(mesFmt));
+                semanaLabel.setStyle("-fx-font-size: 20px;-fx-font-weight: bold; -fx-text-fill: white;");
                 break;
             case DIA:
                 semanaLabel.setText(diaSelecionado.format(diaFmt));
                 if (diaSelecionado.equals(LocalDate.now())) {
                     semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #ff8800;");
                 } else {
-                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
                 }
                 break;
         }
-        semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
     }
     
     private void criarGradeHorarios() {
@@ -846,9 +834,10 @@ public class PaginaPrincipalController implements Initializable {
         while (!horaAtual.isAfter(HORA_FECHO)) {
             // Criar label da hora
             Label horaLabel = new Label(horaAtual.format(DateTimeFormatter.ofPattern("HH:mm")));
-            horaLabel.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; " +
+            horaLabel.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-text-fill: white; " +
                               "-fx-font-weight: bold; -fx-alignment: center; " +
-                              "-fx-border-color: white; -fx-border-width: 1; -fx-padding: 8;");
+                              "-fx-border-width: 0; -fx-padding: 8; " +
+                              "-fx-font-size: 15px; -fx-background-radius:12;");
             horaLabel.setMaxWidth(Double.MAX_VALUE);
             horaLabel.setMaxHeight(Double.MAX_VALUE);
             horaLabel.setAlignment(Pos.CENTER);
@@ -860,19 +849,30 @@ public class PaginaPrincipalController implements Initializable {
             // Criar células para cada dia da semana
             for (int dia = 0; dia < 7; dia++) {
                 StackPane celula = new StackPane();
-                celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; " +
-                               "-fx-border-width: 1; -fx-min-height: 40;");
+                if (dia == 6) { // Domingo
+                    celula.setStyle("-fx-background-color: white;" +
+                                    "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; " +
+                                    "-fx-background-radius:12; -fx-border-radius: 12;" +
+                                    "-fx-min-height: 40;");
+                    celula.setOnMouseEntered(e ->
+                        celula.setStyle("-fx-background-color:rgb(221, 233, 236); -fx-background-radius: 12; -fx-min-height: 40;"));
+                    celula.setOnMouseExited(e ->
+                        celula.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); " +
+                                        "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
+                } else {
+                    celula.setStyle("-fx-background-color: rgb(43, 40, 40);" +
+                                    "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; " +
+                                    "-fx-background-radius:12; -fx-border-radius: 12;" +
+                                    "-fx-min-height: 40;");
+                    celula.setOnMouseEntered(e ->
+                        celula.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-min-height: 40;"));
+                    celula.setOnMouseExited(e ->
+                        celula.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); " +
+                                        "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
+                }
                 celula.setPrefHeight(40);
                 celula.setMaxWidth(Double.MAX_VALUE);
-                
-                // Adicionar efeito hover
-                celula.setOnMouseEntered(e -> 
-                    celula.setStyle("-fx-background-color: #ecf0f1; -fx-border-color: #3498db; " +
-                                   "-fx-border-width: 2; -fx-min-height: 40;"));
-                celula.setOnMouseExited(e -> 
-                    celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; " +
-                                   "-fx-border-width: 1; -fx-min-height: 40;"));
-                
+
                 LocalDate dataSelecionada = semanaAtual.plusDays(dia);
                 LocalTime horaSelecionada = horaAtual;
 
@@ -883,7 +883,7 @@ public class PaginaPrincipalController implements Initializable {
                     celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
                 } else {
-                    celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+                    celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
                 }
                 
                 calendarioGrid.add(celula, dia + 1, linha);
@@ -945,7 +945,7 @@ public class PaginaPrincipalController implements Initializable {
                     celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
                 } else {
-                    celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+                    celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
                 }
             }
 
@@ -986,7 +986,7 @@ public class PaginaPrincipalController implements Initializable {
 
         celulasDia.forEach((hora, pane) -> {
             if (hora.equals(blocoAtual)) {
-                pane.setStyle("-fx-background-color: #ffe0b2; -fx-border-color: #ff9800; -fx-border-width: 2; -fx-min-height: 40;");
+                pane.setStyle("-fx-background-color: #ffe0b2; -fx-border-color:rgba(197, 130, 63, 0.86); -fx-border-width: 2; -fx-min-height: 40;");
             } else {
                 pane.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
             }
@@ -999,15 +999,20 @@ public class PaginaPrincipalController implements Initializable {
         LocalDate fimSemanaVisivel = semanaAtual.plusDays(6);
 
         if (hoje.isBefore(inicioSemanaVisivel) || hoje.isAfter(fimSemanaVisivel)) {
-            celulasSemana.values().forEach(map -> map.values().forEach(p ->
-                p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;")));
+            celulasSemana.values().forEach(map -> map.forEach((dia, p) -> {
+                if (dia == 6) {
+                    p.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                } else {
+                    p.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                }
+            }));
             return;
         }
 
         LocalTime agora = LocalTime.now();
         if (agora.isBefore(HORA_ABERTURA) || agora.isAfter(HORA_FECHO.plusMinutes(INTERVALO_MINUTOS - 1))) {
             celulasSemana.values().forEach(map -> map.values().forEach(p ->
-                p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;")));
+                p.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;")));
             return;
         }
 
@@ -1018,9 +1023,11 @@ public class PaginaPrincipalController implements Initializable {
         celulasSemana.forEach((hora, map) -> {
             map.forEach((dia, pane) -> {
                 if (hora.equals(blocoAtual) && dia == diaSemana) {
-                    pane.setStyle("-fx-background-color: #ffe0b2; -fx-border-color: #ff9800; -fx-border-width: 2; -fx-min-height: 40;");
+                    pane.setStyle("-fx-background-color: rgb(255, 215, 0); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                } else if (dia == 6) { // Domingo
+                    pane.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 } else {
-                    pane.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
+                    pane.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 }
             });
         });

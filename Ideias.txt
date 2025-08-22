@@ -84,3 +84,35 @@ App-Agenda:
 |     |--Resgisto.fxml
 |  |--Main.java
 |--Makefile
+
+
+COMO DAR JPACKAGE:
+
+-Compilar as classes e passar para a pasta out
+javac -d out -cp "lib/gson-2.10.1.jar:../javafx-sdk/lib/*" $(find src -name "*.java")
+(no meio colocasses as bibliotecas utilizadas)
+
+-Copiar os .fxml para a pasta out
+cp src/view out/
+
+-Criar o .jar executavel
+jar --create --file AppAgenda.jar --main-class Main -C out .
+
+-Testar se o jar esta funcional
+java --module-path ../javafx-sdk/lib --add-modules javafx.controls,javafx.fxml \
+     -cp "AppAgenda.jar:lib/gson-2.10.1.jar" Main
+
+-Usar o JPACKAGE
+jpackage \
+  --name AppAgenda \
+  --input dist \
+  --main-jar AppAgenda.jar \
+  --main-class Main \
+  --type app-image \
+  --java-options "--module-path ../javafx-sdk/lib --add-modules javafx.controls,javafx.fxml" \
+  --app-version 1.0 \
+  --vendor "Kouraan"
+
+-Executar
+./AppAgenda/bin/AppAgenda
+
