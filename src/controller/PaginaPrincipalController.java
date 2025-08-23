@@ -561,34 +561,55 @@ public class PaginaPrincipalController implements Initializable {
     private void atualizarMes() {
         calendarioGrid.getColumnConstraints().clear();
         calendarioGrid.getRowConstraints().clear();
+        calendarioGrid.getChildren().clear();
+
+        calendarioGrid.setHgap(4);
+        calendarioGrid.setVgap(4);
+        calendarioGrid.setPadding(new Insets(12, 0, 0, 0));
 
         for (int i = 0; i < 7; i++) {
             ColumnConstraints col = new ColumnConstraints();
             col.setHgrow(Priority.ALWAYS);
+            col.setPrefWidth(110);
             calendarioGrid.getColumnConstraints().add(col);
         }
-        for (int i = 0; i < 6; i++) {
+        
+        RowConstraints rowCabecalho = new RowConstraints();
+        rowCabecalho.setPrefHeight(32);
+        rowCabecalho.setMinHeight(32);
+        rowCabecalho.setMaxHeight(32);
+        rowCabecalho.setVgrow(Priority.NEVER);
+        calendarioGrid.getRowConstraints().add(rowCabecalho);
+
+        RowConstraints rowGap = new RowConstraints();
+        rowGap.setPrefHeight(4);
+        rowGap.setMinHeight(4);
+        rowGap.setMaxHeight(4);
+        rowGap.setVgrow(Priority.NEVER);
+        calendarioGrid.getRowConstraints().add(rowGap);
+
+        for (int i = 0; i < 5; i++) {
             RowConstraints row = new RowConstraints();
-            if (i == 0) {
-                row.setPrefHeight(28);
-                row.setMinHeight(20);
-                row.setMaxHeight(32);
-                row.setVgrow(Priority.NEVER);
-            } else {
-                row.setVgrow(Priority.ALWAYS);
-            }
+            row.setPrefHeight(90);
+            row.setMinHeight(60);
+            row.setVgrow(Priority.ALWAYS);
             calendarioGrid.getRowConstraints().add(row);
         }
 
         // Cabeçalho dos dias da semana
-        String[] diasSemana = {"Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"};
+        String[] diasSemana = {"Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"};
         for (int col = 0; col < 7; col++) {
             Label label = new Label(diasSemana[col]);
-            label.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #3498db; -fx-background-color: #eaf6fb; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+            label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: rgba(197, 130, 63, 0.86); -fx-background-radius: 12; -fx-border-width: 0; -fx-padding: 8 0 8 0;");
             label.setMaxWidth(Double.MAX_VALUE);
             label.setMaxHeight(28);
             label.setAlignment(Pos.CENTER);
-            calendarioGrid.add(label, col, 0);
+
+            StackPane cabecalhoPane = new StackPane(label);
+            cabecalhoPane.setAlignment(Pos.CENTER);
+            cabecalhoPane.setStyle("-fx-background-radius: 12; -fx-border-radius: 12;");
+            
+            calendarioGrid.add(cabecalhoPane, col, 0);
         }
 
         // Descobre o primeiro dia do mês e o primeiro dia a mostrar (pode ser do mês anterior)
@@ -597,29 +618,29 @@ public class PaginaPrincipalController implements Initializable {
         LocalDate inicioGrid = primeiroDiaMes.minusDays(diaSemanaPrimeiro - 1);
 
         LocalDate data = inicioGrid;
-            for (int row = 1; row <= 5; row++) {
+            for (int row = 2; row <= 6; row++) {
                 for (int col = 0; col < 7; col++) {
                     StackPane cell = new StackPane();
                     cell.setMaxWidth(Double.MAX_VALUE);
                     cell.setMaxHeight(Double.MAX_VALUE);
 
                     Label diaLabel = new Label(String.format("%02d", data.getDayOfMonth()));
-                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #222; -fx-font-weight: bold;");
+                    diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold;");
                     StackPane.setAlignment(diaLabel, Pos.TOP_LEFT);
                     diaLabel.setPadding(new Insets(4, 0, 0, 6));
                     cell.getChildren().add(diaLabel);
 
                     if (data.equals(LocalDate.now())) {
-                        cell.setStyle("-fx-background-color: #ffb366; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+                        cell.setStyle("-fx-background-color: rgb(255, 215, 0); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
                         diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: normal;");
                     } else if (utils.Feriados.isFeriado(data)) {
-                        cell.setStyle("-fx-background-color: #f78fb3; -fx-border-color: #e67e22; -fx-border-width: 2; -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand;");
+                        cell.setStyle("-fx-background-color: rgb(36, 43, 141); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
                         diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: bold;");
                     } else if (data.getMonth() != primeiroDiaMes.getMonth()) {
-                        cell.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #bdc3c7; -fx-border-width: 1;");
+                        cell.setStyle("-fx-background-color: rgba(43, 40, 40, 0.53); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
                         diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #bbb; -fx-font-weight: normal;");
                     } else {
-                        cell.setStyle("-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-cursor: hand;");
+                        cell.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
                     }
 
                     final LocalDate diaClicado = data;
@@ -706,7 +727,7 @@ public class PaginaPrincipalController implements Initializable {
                 HBox hbox = new HBox(2);
 
                 if (is15min1) {
-                    Pane box1 = criarBoxMarcacao(marcacao1);
+                    Pane box1 = criarBoxMarcacao(marcacao1, true, true, is15min2);
                     HBox.setHgrow(box1, Priority.ALWAYS);
                     box1.setMaxWidth(Double.MAX_VALUE);
                     hbox.getChildren().add(box1);
@@ -720,7 +741,7 @@ public class PaginaPrincipalController implements Initializable {
                 }
 
                 if (is15min2) {
-                    Pane box2 = criarBoxMarcacao(marcacao2);
+                    Pane box2 = criarBoxMarcacao(marcacao2, true, false, is15min1);
                     HBox.setHgrow(box2, Priority.ALWAYS);
                     box2.setMaxWidth(Double.MAX_VALUE);
                     hbox.getChildren().add(box2);
@@ -737,7 +758,7 @@ public class PaginaPrincipalController implements Initializable {
                 celula.setOnMouseClicked(null);
                 celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
             } else if (marcacao1 != null && marcacao1.getDuracao() >= 30) {
-                Pane box = criarBoxMarcacao(marcacao1);
+                Pane box = criarBoxMarcacao(marcacao1, false, false, false);
                 celula.getChildren().add(box);
                 celula.setOnMouseClicked(null);
                 celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
@@ -762,7 +783,7 @@ public class PaginaPrincipalController implements Initializable {
     
     private void criarCabecalhoDias() {        
         // Cabeçalhos dos dias da semana
-        String[] diasSemana = {"Seg.", "Ter.", "Qua.", "Qui.", "Sex.", "Sab.", "Dom."};
+        String[] diasSemana = {"Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"};
         DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("dd");
         LocalDate hoje = LocalDate.now();
         
@@ -790,7 +811,7 @@ public class PaginaPrincipalController implements Initializable {
             } else if (utils.Feriados.isFeriado(dataAtual)) {
                 cabecalhoPane.setStyle("-fx-background-color:rgb(36, 43, 141); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
             } else {
-                cabecalhoPane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
+                cabecalhoPane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-background-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
             }
 
             calendarioGrid.add(cabecalhoPane, dia + 1, 0);
@@ -850,14 +871,14 @@ public class PaginaPrincipalController implements Initializable {
             for (int dia = 0; dia < 7; dia++) {
                 StackPane celula = new StackPane();
                 if (dia == 6) { // Domingo
-                    celula.setStyle("-fx-background-color: white;" +
+                    celula.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86);" +
                                     "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; " +
                                     "-fx-background-radius:12; -fx-border-radius: 12;" +
                                     "-fx-min-height: 40;");
                     celula.setOnMouseEntered(e ->
                         celula.setStyle("-fx-background-color:rgb(221, 233, 236); -fx-background-radius: 12; -fx-min-height: 40;"));
                     celula.setOnMouseExited(e ->
-                        celula.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); " +
+                        celula.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); " +
                                         "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
                 } else {
                     celula.setStyle("-fx-background-color: rgb(43, 40, 40);" +
@@ -903,31 +924,36 @@ public class PaginaPrincipalController implements Initializable {
                 boolean is15min2 = marcacao2 != null && marcacao2.getDuracao() == 15;
 
                 if (is15min1 || is15min2) {
-                    HBox hbox = new HBox(2);
+                    double larguraCelula = 110;
+                    double gap = 2;
+                    double larguraBox = (larguraCelula - gap) / 2;
+
+                    HBox hbox = new HBox(gap);
+                    hbox.setAlignment(Pos.CENTER_LEFT);
+                    hbox.setPrefWidth(larguraCelula);
 
                     if (is15min1) {
-                        Pane box1 = criarBoxMarcacao(marcacao1);
-                        HBox.setHgrow(box1, Priority.ALWAYS);
-                        box1.setMaxWidth(Double.MAX_VALUE);
+                        Pane box1 = criarBoxMarcacao(marcacao1, true, true, is15min2);
+                        box1.setPrefWidth(larguraBox);
+                        box1.setMaxWidth(larguraBox);
                         hbox.getChildren().add(box1);
                     } else {
                         Region espaco1 = new Region();
-                        HBox.setHgrow(espaco1, Priority.ALWAYS);
-                        espaco1.setMaxWidth(Double.MAX_VALUE);
-                        espaco1.setPrefWidth(0);
+                        espaco1.setPrefWidth(larguraBox);
+                        espaco1.setMaxWidth(larguraBox);
                         espaco1.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                         hbox.getChildren().add(espaco1);
                     }
 
                     if (is15min2) {
-                        Pane box2 = criarBoxMarcacao(marcacao2);
-                        HBox.setHgrow(box2, Priority.ALWAYS);
-                        box2.setMaxWidth(Double.MAX_VALUE);
+                        Pane box2 = criarBoxMarcacao(marcacao2, true, false, is15min1);
+                        box2.setPrefWidth(larguraBox);
+                        box2.setMaxWidth(larguraBox);
                         hbox.getChildren().add(box2);
                     } else {
                         Region espaco2 = new Region();
-                        HBox.setHgrow(espaco2, Priority.ALWAYS);
-                        espaco2.setPrefWidth(0);
+                        espaco2.setPrefWidth(larguraBox);
+                        espaco2.setMaxWidth(larguraBox);
                         espaco2.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada.plusMinutes(15)));
                         hbox.getChildren().add(espaco2);
                     }
@@ -937,7 +963,7 @@ public class PaginaPrincipalController implements Initializable {
                     celula.setOnMouseClicked(null);
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
                 } else if (marcacao1 != null && marcacao1.getDuracao() >= 30) {
-                    Pane box = criarBoxMarcacao(marcacao1);
+                    Pane box = criarBoxMarcacao(marcacao1, false, false, false);
                     celula.getChildren().add(box);
                     celula.setOnMouseClicked(null);
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
@@ -973,7 +999,8 @@ public class PaginaPrincipalController implements Initializable {
 
     private void destacarBlocoAtual() {
         if (!diaSelecionado.equals(LocalDate.now())) {
-            celulasDia.values().forEach(p -> p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
+            celulasDia.values().forEach(p -> 
+                p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
             return;
         }
         LocalTime agora = LocalTime.now();
@@ -1001,7 +1028,7 @@ public class PaginaPrincipalController implements Initializable {
         if (hoje.isBefore(inicioSemanaVisivel) || hoje.isAfter(fimSemanaVisivel)) {
             celulasSemana.values().forEach(map -> map.forEach((dia, p) -> {
                 if (dia == 6) {
-                    p.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                    p.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 } else {
                     p.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 }
@@ -1025,7 +1052,7 @@ public class PaginaPrincipalController implements Initializable {
                 if (hora.equals(blocoAtual) && dia == diaSemana) {
                     pane.setStyle("-fx-background-color: rgb(255, 215, 0); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 } else if (dia == 6) { // Domingo
-                    pane.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                    pane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 } else {
                     pane.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 }
@@ -1160,29 +1187,42 @@ public class PaginaPrincipalController implements Initializable {
         }
     }
 
-    private Pane criarBoxMarcacao(Marcacao marcacao) {
+    private Pane criarBoxMarcacao(Marcacao marcacao, boolean meiaMarcacao, boolean ladoEsquerdo, boolean existeOutraMarcacao) {
         Label nome = new Label(marcacao.getCliente().getNome());
         nome.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
         nome.setMaxWidth(Double.MAX_VALUE);
-        nome.setPrefWidth(0);
         nome.setAlignment(Pos.CENTER_LEFT);
 
         StackPane box = new StackPane(nome);
         
         if (marcacao.isFalta()) {
-            box.setStyle("-fx-background-color: #e74c3c; -fx-background-radius: 12; -fx-border-radius: 12;");
+            box.setStyle("-fx-background-color:rgb(128, 26, 15); -fx-background-radius: 12; -fx-border-radius: 12;");
         } else {
-            box.setStyle("-fx-background-color: #A020F0; -fx-background-radius: 12; -fx-border-radius: 12;");
+            box.setStyle("-fx-background-color:rgb(14, 126, 79); -fx-background-radius: 12; -fx-border-radius: 12;");
         }
-        box.setPrefHeight(36);
-        box.setMaxWidth(Double.MAX_VALUE);
-        nome.setPrefWidth(0);
+        box.setPrefHeight(32);
+
         StackPane.setAlignment(nome, Pos.CENTER_LEFT);
         StackPane.setMargin(nome, new Insets(0, 10, 0, 10));
 
-        box.setOnMouseClicked(e -> abrirDetalheMarcacao(marcacao));
+        StackPane container = new StackPane(box);   
 
-        return box;
+        if (meiaMarcacao) {
+            if (ladoEsquerdo) {
+                container.setPadding(new Insets(4, existeOutraMarcacao ? 1 : 0, 4, 4));
+            } else {
+                container.setPadding(new Insets(4, 4, 4, existeOutraMarcacao ? 1 : 0));
+            }
+        } else {
+            container.setPadding(new Insets(4, 4, 4, 4));
+        }
+
+        container.setMaxWidth(Double.MAX_VALUE);
+        box.setMaxWidth(Double.MAX_VALUE);
+
+        container.setOnMouseClicked(e -> abrirDetalheMarcacao(marcacao));
+
+        return container;
     }
 
     private void abrirDetalheMarcacao(Marcacao marcacao) {

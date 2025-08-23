@@ -101,7 +101,7 @@
     },
     "duracao": 15,
     "observacoes": "",
-    "falta": false
+    "falta": true
   },
   {
     "dataHora": "2025-07-21T16:45",
@@ -439,7 +439,7 @@
     },
     "duracao": 15,
     "observacoes": "",
-    "falta": false
+    "falta": true
   },
   {
     "dataHora": "2025-07-22T16:00",
