@@ -924,38 +924,28 @@ public class PaginaPrincipalController implements Initializable {
                 boolean is15min2 = marcacao2 != null && marcacao2.getDuracao() == 15;
 
                 if (is15min1 || is15min2) {
-                    double larguraCelula = 110;
-                    double gap = 2;
-                    double larguraBox = (larguraCelula - gap) / 2;
+                    HBox hbox = new HBox(2);
 
-                    HBox hbox = new HBox(gap);
-                    hbox.setAlignment(Pos.CENTER_LEFT);
-                    hbox.setPrefWidth(larguraCelula);
+                    Region box1 = is15min1 ? criarBoxMarcacao(marcacao1, true, true, is15min2) : new Region();
+                    Region box2 = is15min2 ? criarBoxMarcacao(marcacao2, true, false, is15min1) : new Region();
+                    
+                    hbox.getChildren().addAll(box1, box2);
 
-                    if (is15min1) {
-                        Pane box1 = criarBoxMarcacao(marcacao1, true, true, is15min2);
-                        box1.setPrefWidth(larguraBox);
-                        box1.setMaxWidth(larguraBox);
-                        hbox.getChildren().add(box1);
-                    } else {
-                        Region espaco1 = new Region();
-                        espaco1.setPrefWidth(larguraBox);
-                        espaco1.setMaxWidth(larguraBox);
-                        espaco1.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
-                        hbox.getChildren().add(espaco1);
+                    celula.widthProperty().addListener((obs, oldVal, newVal) -> {
+                        double largura = newVal.doubleValue();
+                        box1.setPrefWidth(largura / 2);
+                        box2.setPrefWidth(largura / 2);
+                    });
+
+                    double larguraCelula = celula.getWidth() > 0 ? celula.getWidth() : 110;
+                    box1.setPrefWidth(larguraCelula / 2);
+                    box2.setPrefWidth(larguraCelula / 2);
+
+                    if (!is15min1) {
+                        box1.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                     }
-
-                    if (is15min2) {
-                        Pane box2 = criarBoxMarcacao(marcacao2, true, false, is15min1);
-                        box2.setPrefWidth(larguraBox);
-                        box2.setMaxWidth(larguraBox);
-                        hbox.getChildren().add(box2);
-                    } else {
-                        Region espaco2 = new Region();
-                        espaco2.setPrefWidth(larguraBox);
-                        espaco2.setMaxWidth(larguraBox);
-                        espaco2.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada.plusMinutes(15)));
-                        hbox.getChildren().add(espaco2);
+                    if (!is15min2) {
+                        box2.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada.plusMinutes(15)));
                     }
 
                     celula.getChildren().clear();
