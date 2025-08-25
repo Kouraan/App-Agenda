@@ -5,17 +5,17 @@
 <?import javafx.geometry.Insets?>
 
 <BorderPane fx:id="rootPane" xmlns:fx="http://javafx.com/fxml" fx:controller="controller.PaginaPrincipalController"
-            style="-fx-background-color: #f0f0f0;">
+            style="-fx-background-color: rgb(60,60,60);">
     
     <!-- Área Superior com informações do usuário e navegação -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #2c3e50; -fx-padding: 10;">
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: rgb(15, 14, 14); -fx-padding: 10;">
             <Label text="App Agenda" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="userLabel" style="-fx-text-fill: white; -fx-font-size: 16px;"/>
+            <Label fx:id="userLabel" style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
             <Button fx:id="logoutBtn" text="Logout" onAction="#handleLogout" 
                     focusTraversable="false"
-                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    style="-fx-background-color: rgb(128, 26, 15); -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
         </HBox>
     </top>
     
@@ -25,44 +25,40 @@
             
             <!-- Área Lateral Esquerda -->
             <VBox prefWidth="200" minWidth="200" maxWidth="200" spacing="12" alignment="TOP_CENTER"
-                  style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
+                  style="-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 10;">
                 <ToggleButton fx:id="calendarioToggle" text="Calendário" selected="true" onAction="#mostrarCalendario"
-                              maxWidth="Infinity" minHeight="40"
-                              style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                              maxWidth="Infinity" minHeight="40"/>
                 <ToggleButton fx:id="clientesToggle" text="Clientes" onAction="#mostrarClientes"
-                              maxWidth="Infinity" minHeight="40"
-                              style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                              maxWidth="Infinity" minHeight="40"/>
                 <VBox 
                     fx:id="anotacoesBox"
                     spacing="8"
                     style="
-                        -fx-background-color: white;
-                        -fx-border-color: #bdc3c7;
-                        -fx-border-width: 2;
+                        -fx-background-color: rgb(43, 40, 40);
+                        -fx-border-width: 0;
                         -fx-background-radius: 12;
-                        -fx-border-radius: 12;
                         -fx-padding: 16;
-                        -fx-effect: dropshadow(gaussian, #bbb, 8, 0.2, 0, 2);"
+                        -fx-effect: dropshadow(gaussian, #222, 8, 0.2, 0, 2);"
                     VBox.vgrow="ALWAYS">
                     <HBox alignment="CENTER_LEFT" spacing="8">
                         <Label text="Anotações"
-                            style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <Button fx:id="blurToggleBtn"
                                 text="🚫"
-                                minWidth="28" minHeight="22" maxWidth="28" maxHeight="22"
-                                style="-fx-background-radius: 12; -fx-background-color: #e0e0e0; -fx-font-size: 13px; -fx-padding: 0 6 0 6;"/>
+                                minWidth="35" minHeight="25" maxWidth="35" maxHeight="25"
+                                style="-fx-background-radius: 12; -fx-background-color: rgb(60, 60, 60); -fx-font-size: 15px; -fx-padding: 0 6 0 6; -fx-text-fill: white;"/>
                     </HBox>
                     <Separator
                         prefHeight="1"
-                        style="-fx-background-color: #e0e0e0;"
+                        style="-fx-background-color: white;"
                         maxWidth="Infinity"
                         prefWidth="Infinity"/>
                     <TextArea
                         fx:id="anotacoesArea"
                         promptText="Escreva suas anotações aqui..."
                         wrapText="true"
-                        style="-fx-font-size: 14px; -fx-background-radius: 12; -fx-border-radius: 8; -fx-background-insets: 0; -fx-border-width: 0; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;"
+                        style="-fx-font-size: 14px; -fx-background-color: rgb(60, 60, 60); -fx-control-inner-background: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: white; -fx-background-insets: 0; -fx-border-width: 2px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-highlight-fill: #444; -fx-highlight-text-fill: white;"
                         VBox.vgrow="ALWAYS"
                         maxWidth="Infinity"
                         prefWidth="Infinity"/>
@@ -108,8 +104,8 @@
             </StackPane>
 
             <!-- Área Lateral Direita -->
-            <VBox prefWidth="200" minWidth="200" maxWidth="200" spacing="24" style="-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
-                <Label text="Clientes Pendentes" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-alignment: center;"/>
+            <VBox prefWidth="200" minWidth="200" maxWidth="200" spacing="24" style="-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 10;">
+                <Label text="Clientes Pendentes" style="-fx-font-size: 16px; -fx-text-fill: white; -fx-font-weight: bold; -fx-text-alignment: center;"/>
                 <VBox
                     fx:id="caixaClientesPendentes"
                     spacing="0"
@@ -128,7 +124,7 @@
                 />
                 <Region VBox.vgrow="ALWAYS"/>
                 <Label fx:id="relogioLabel"
-                       style="-fx-font-size: 40px; -fx-font-weight: 900; -fx-text-fill: #34495e; -fx-alignment: center;"
+                       style="-fx-font-size: 40px; -fx-font-weight: 900; -fx-text-fill: white; -fx-alignment: center;"
                        alignment="CENTER"
                        prefWidth="200"
                 />

@@ -98,6 +98,11 @@ public class PaginaPrincipalController implements Initializable {
         diaToggle.setToggleGroup(group);
         semanaToggle.setSelected(true);
 
+        ToggleGroup grupoLateral = new ToggleGroup();
+        calendarioToggle.setToggleGroup(grupoLateral);
+        clientesToggle.setToggleGroup(grupoLateral);
+        calendarioToggle.setSelected(true);
+
         // Remover o foco visual dos botoes
         todayBtn.setFocusTraversable(false);
         semanaAnteriorBtn.setFocusTraversable(false);
@@ -124,6 +129,7 @@ public class PaginaPrincipalController implements Initializable {
                     semanaAtual = diaSelecionado.with(DayOfWeek.MONDAY);
                 }
                 atualizarCalendario();
+                atualizarEstiloTogglesModo();
             } else if (newToggle == mesToggle) {
             modoAtual = ModoVisualizacao.MES;
             if (oldToggle == semanaToggle) {
@@ -142,6 +148,7 @@ public class PaginaPrincipalController implements Initializable {
                 semanaAtual = primeiroDiaMes;
             }
             atualizarCalendario();
+            atualizarEstiloTogglesModo();
             } else if (newToggle == diaToggle) {
                 modoAtual = ModoVisualizacao.DIA;
                 if (oldToggle == mesToggle) {
@@ -153,10 +160,17 @@ public class PaginaPrincipalController implements Initializable {
                     }
                 }
                 atualizarCalendario();
+                atualizarEstiloTogglesModo();
             }
+        });
+
+        grupoLateral.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            atualizarEstiloTogglesLaterais();
         });
         
         atualizarCalendario();
+        atualizarEstiloTogglesModo();
+        atualizarEstiloTogglesLaterais();
 
         Timeline timeline = new Timeline(
             new KeyFrame(Duration.seconds(0), e ->{
@@ -295,6 +309,7 @@ public class PaginaPrincipalController implements Initializable {
         areaCentral.setVisible(true);
         areaClientes.setVisible(false);
         atualizarCalendario();
+        atualizarEstiloTogglesLaterais();
     }
 
     @FXML
@@ -303,6 +318,7 @@ public class PaginaPrincipalController implements Initializable {
         clientesToggle.setSelected(true);
         areaCentral.setVisible(false);
         areaClientes.setVisible(true);
+        atualizarEstiloTogglesLaterais();
 
         clientesContent.getChildren().clear();
 
@@ -674,14 +690,27 @@ public class PaginaPrincipalController implements Initializable {
         // Preencher linhas com horas e células vazias para conteúdos futuros
         LocalTime horaAtual = HORA_ABERTURA;
         int linha = 0;
+        boolean isDomingo = diaSelecionado.getDayOfWeek() == DayOfWeek.SUNDAY;
+        boolean isHoje = diaSelecionado.equals(LocalDate.now());
+
+        LocalTime blocoAtual = null;
+        if (isHoje) {
+            int minuto = LocalTime.now().getMinute() < 30 ? 0 : 30;
+            blocoAtual = LocalTime.of(LocalTime.now().getHour(), minuto);
+        }
+
+        Map<java.time.LocalDateTime, Marcacao> marcacoesMap =
+            (appController != null && appController.getMarcacoesMap() != null)
+            ? appController.getMarcacoesMap()
+            : java.util.Collections.emptyMap();
+
         while (!horaAtual.isAfter(HORA_FECHO)) {
             Label horaLabel = new Label(horaAtual.format(DateTimeFormatter.ofPattern("HH:mm")));
-            horaLabel.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8;");
+            horaLabel.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-text-fill: white; -fx-font-weight: bold; -fx-alignment: center; -fx-border-width: 0; -fx-padding: 8; -fx-font-size: 15px; -fx-background-radius: 12;");
             horaLabel.setMaxWidth(Double.MAX_VALUE);
             horaLabel.setAlignment(Pos.CENTER);
 
             StackPane celula = new StackPane();
-            celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
             celula.setPrefHeight(40);
             celula.setMaxWidth(Double.MAX_VALUE);
 
@@ -691,37 +720,30 @@ public class PaginaPrincipalController implements Initializable {
             boolean isPassado = dataSelecionada.isBefore(LocalDate.now()) ||
                 (dataSelecionada.isEqual(LocalDate.now()) && horaSelecionada.isBefore(LocalTime.now().withSecond(0).withNano(0)));
 
-            if (!isPassado) {
-                celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
-                celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
+            String baseStyle;
+            if (isDomingo) {
+                baseStyle = "-fx-background-color: rgba(197, 130, 63, 0.86);";
             } else {
-                celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+                baseStyle = "-fx-background-color: rgb(43, 40, 40);";
+            }
+            baseStyle += " -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;";
+            
+            if (isHoje && blocoAtual != null && horaAtual.equals(blocoAtual)) {
+                baseStyle += " -fx-border-color: rgb(255, 215, 0); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;";
             }
 
-            celula.setOnMouseEntered(e -> 
-                celula.setStyle("-fx-background-color: #ecf0f1; -fx-border-color: #3498db; -fx-border-width: 2; -fx-min-height: 40;"));
-            celula.setOnMouseExited(e -> 
-                celula.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
-
-            calendarioGrid.add(horaLabel, 0, linha);
-            calendarioGrid.add(celula, 1, linha);
-
-            celulasDia.put(horaAtual, celula);
-
-            linha++;
-            horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
+            final String estiloFinal = baseStyle;
+            celula.setStyle(estiloFinal + "; -fx-cursor: " + (isPassado ? "default" : "hand") + ";");
             
+            // Marcacoes
             java.time.LocalDateTime dataHora = dataSelecionada.atTime(horaSelecionada);
-            Map<java.time.LocalDateTime, Marcacao> marcacoesMap = 
-                (appController != null && appController.getMarcacoesMap() != null)
-                ? appController.getMarcacoesMap()
-                : java.util.Collections.emptyMap();
-
             Marcacao marcacao1 = marcacoesMap.get(dataHora);
             Marcacao marcacao2 = marcacoesMap.get(dataHora.plusMinutes(15));
 
             boolean is15min1 = marcacao1 != null && marcacao1.getDuracao() == 15;
             boolean is15min2 = marcacao2 != null && marcacao2.getDuracao() == 15;
+
+            celula.getChildren().clear();
 
             if (is15min1 || is15min2) {
                 HBox hbox = new HBox(2);
@@ -753,21 +775,36 @@ public class PaginaPrincipalController implements Initializable {
                     hbox.getChildren().add(espaco2);
                 }
 
-                celula.getChildren().clear();
                 celula.getChildren().add(hbox);
                 celula.setOnMouseClicked(null);
-                celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
             } else if (marcacao1 != null && marcacao1.getDuracao() >= 30) {
                 Pane box = criarBoxMarcacao(marcacao1, false, false, false);
                 celula.getChildren().add(box);
                 celula.setOnMouseClicked(null);
-                celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
-            } else if (!isPassado) {
-                celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
-                celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
             } else {
-                celula.setStyle(celula.getStyle() + "; -fx-background-color: #f5f5f5; -fx-cursor: default;");
+                if (!isPassado) {
+                    celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                } else {
+                    celula.setOnMouseClicked(null);
+                }
             }
+
+            // Hover: só para blocos não passados
+            if (!isPassado) {
+                celula.setOnMouseEntered(ev -> celula.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40; -fx-cursor: hand;"));
+                celula.setOnMouseExited(ev -> celula.setStyle(estiloFinal + "; -fx-cursor: hand;"));
+            } else {
+                celula.setOnMouseEntered(null);
+                celula.setOnMouseExited(null);
+            }
+
+            calendarioGrid.add(horaLabel, 0, linha);
+            calendarioGrid.add(celula, 1, linha);
+
+            celulasDia.put(horaAtual, celula);
+
+            linha++;
+            horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
         }
 
         calendarioGrid.getRowConstraints().clear();
@@ -838,7 +875,9 @@ public class PaginaPrincipalController implements Initializable {
             case DIA:
                 semanaLabel.setText(diaSelecionado.format(diaFmt));
                 if (diaSelecionado.equals(LocalDate.now())) {
-                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #ff8800;");
+                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: rgb(255, 215, 0);");
+                } else if (Feriados.isFeriado(diaSelecionado)) {
+                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: rgb(36, 43, 141);");
                 } else {
                     semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
                 }
@@ -851,7 +890,7 @@ public class PaginaPrincipalController implements Initializable {
         int linha = 1;
 
         celulasSemana.clear();
-        
+
         while (!horaAtual.isAfter(HORA_FECHO)) {
             // Criar label da hora
             Label horaLabel = new Label(horaAtual.format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -862,35 +901,14 @@ public class PaginaPrincipalController implements Initializable {
             horaLabel.setMaxWidth(Double.MAX_VALUE);
             horaLabel.setMaxHeight(Double.MAX_VALUE);
             horaLabel.setAlignment(Pos.CENTER);
-            
+
             calendarioGrid.add(horaLabel, 0, linha);
 
             Map<Integer, Pane> linhaSemana = new HashMap<>();
-            
+
             // Criar células para cada dia da semana
             for (int dia = 0; dia < 7; dia++) {
                 StackPane celula = new StackPane();
-                if (dia == 6) { // Domingo
-                    celula.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86);" +
-                                    "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; " +
-                                    "-fx-background-radius:12; -fx-border-radius: 12;" +
-                                    "-fx-min-height: 40;");
-                    celula.setOnMouseEntered(e ->
-                        celula.setStyle("-fx-background-color:rgb(221, 233, 236); -fx-background-radius: 12; -fx-min-height: 40;"));
-                    celula.setOnMouseExited(e ->
-                        celula.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); " +
-                                        "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
-                } else {
-                    celula.setStyle("-fx-background-color: rgb(43, 40, 40);" +
-                                    "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; " +
-                                    "-fx-background-radius:12; -fx-border-radius: 12;" +
-                                    "-fx-min-height: 40;");
-                    celula.setOnMouseEntered(e ->
-                        celula.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-min-height: 40;"));
-                    celula.setOnMouseExited(e ->
-                        celula.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); " +
-                                        "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
-                }
                 celula.setPrefHeight(40);
                 celula.setMaxWidth(Double.MAX_VALUE);
 
@@ -900,19 +918,45 @@ public class PaginaPrincipalController implements Initializable {
                 boolean isPassado = dataSelecionada.isBefore(LocalDate.now()) ||
                     (dataSelecionada.isEqual(LocalDate.now()) && horaSelecionada.isBefore(LocalTime.now().withSecond(0).withNano(0)));
 
+                // Estilo base para domingo ou outros dias
+                if (dia == 6) { // Domingo
+                    celula.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86);"
+                        + "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; "
+                        + "-fx-background-radius:12; -fx-border-radius: 12;"
+                        + "-fx-min-height: 40;");
+                } else {
+                    celula.setStyle("-fx-background-color: rgb(43, 40, 40);"
+                        + "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; "
+                        + "-fx-background-radius:12; -fx-border-radius: 12;"
+                        + "-fx-min-height: 40;");
+                }
+
+                // Só adiciona hover e cursor se não for passado
                 if (!isPassado) {
+                    if (dia == 6) {
+                        celula.setOnMouseEntered(e ->
+                            celula.setStyle("-fx-background-color:rgb(221, 233, 236); -fx-background-radius: 12; -fx-min-height: 40;"));
+                        celula.setOnMouseExited(e ->
+                            celula.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); "
+                                + "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
+                    } else {
+                        celula.setOnMouseEntered(e ->
+                            celula.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-min-height: 40;"));
+                        celula.setOnMouseExited(e ->
+                            celula.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); "
+                                + "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
+                    }
                     celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
                 } else {
+                    celula.setOnMouseEntered(null);
+                    celula.setOnMouseExited(null);
+                    celula.setOnMouseClicked(null);
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
                 }
-                
-                calendarioGrid.add(celula, dia + 1, linha);
-
-                linhaSemana.put(dia, celula);
 
                 java.time.LocalDateTime dataHora = dataSelecionada.atTime(horaSelecionada);
-                Map<java.time.LocalDateTime, Marcacao> marcacoesMap = 
+                Map<java.time.LocalDateTime, Marcacao> marcacoesMap =
                     (appController != null && appController.getMarcacoesMap() != null)
                     ? appController.getMarcacoesMap()
                     : java.util.Collections.emptyMap();
@@ -928,7 +972,7 @@ public class PaginaPrincipalController implements Initializable {
 
                     Region box1 = is15min1 ? criarBoxMarcacao(marcacao1, true, true, is15min2) : new Region();
                     Region box2 = is15min2 ? criarBoxMarcacao(marcacao2, true, false, is15min1) : new Region();
-                    
+
                     hbox.getChildren().addAll(box1, box2);
 
                     celula.widthProperty().addListener((obs, oldVal, newVal) -> {
@@ -957,20 +1001,19 @@ public class PaginaPrincipalController implements Initializable {
                     celula.getChildren().add(box);
                     celula.setOnMouseClicked(null);
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
-                } else if (!isPassado) {
-                    celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
-                    celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
-                } else {
-                    celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
                 }
+
+                calendarioGrid.add(celula, dia + 1, linha);
+
+                linhaSemana.put(dia, celula);
             }
 
             celulasSemana.put(horaAtual, linhaSemana);
-            
+
             linha++;
             horaAtual = horaAtual.plusMinutes(INTERVALO_MINUTOS);
         }
-        
+
         calendarioGrid.getRowConstraints().clear();
         for (int i = 0; i < linha; i++) {
             RowConstraints rowConstraints = new RowConstraints();
@@ -989,13 +1032,24 @@ public class PaginaPrincipalController implements Initializable {
 
     private void destacarBlocoAtual() {
         if (!diaSelecionado.equals(LocalDate.now())) {
-            celulasDia.values().forEach(p -> 
-                p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
+            celulasDia.forEach((hora, pane) -> {
+                if (diaSelecionado.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                    pane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                } else {
+                    pane.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                }
+            });
             return;
         }
         LocalTime agora = LocalTime.now();
         if (agora.isBefore(HORA_ABERTURA) || agora.isAfter(HORA_FECHO.plusMinutes(INTERVALO_MINUTOS - 1))) {
-            celulasDia.values().forEach(p -> p.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;"));
+            celulasDia.forEach((hora, pane) -> {
+                if (diaSelecionado.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                    pane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                } else {
+                    pane.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                }
+            });
             return;
         }
         int minuto = agora.getMinute() < 30 ? 0 : 30;
@@ -1003,9 +1057,11 @@ public class PaginaPrincipalController implements Initializable {
 
         celulasDia.forEach((hora, pane) -> {
             if (hora.equals(blocoAtual)) {
-                pane.setStyle("-fx-background-color: #ffe0b2; -fx-border-color:rgba(197, 130, 63, 0.86); -fx-border-width: 2; -fx-min-height: 40;");
+                pane.setStyle("-fx-background-color: rgb(255, 215, 0); -fx-border-color:rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+            } else if (diaSelecionado.getDayOfWeek() == DayOfWeek.SUNDAY) {
+                pane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
             } else {
-                pane.setStyle("-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-min-height: 40;");
+                pane.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
             }
         });
     }
@@ -1028,8 +1084,13 @@ public class PaginaPrincipalController implements Initializable {
 
         LocalTime agora = LocalTime.now();
         if (agora.isBefore(HORA_ABERTURA) || agora.isAfter(HORA_FECHO.plusMinutes(INTERVALO_MINUTOS - 1))) {
-            celulasSemana.values().forEach(map -> map.values().forEach(p ->
-                p.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;")));
+            celulasSemana.values().forEach(map -> map.forEach((dia, p) -> {
+                if (dia == 6) {
+                    p.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                } else {
+                    p.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                }
+            }));
             return;
         }
 
@@ -1274,5 +1335,21 @@ public class PaginaPrincipalController implements Initializable {
             }
         }
         utils.Persistencia.guardarMarcacoes(marcacoes);
+    }
+
+    private void atualizarEstiloTogglesModo() {
+        String ativo = "-fx-background-color: rgb(60, 60, 60); -fx-border-color: rgb(43, 40, 40); -fx-text-fill: white; -fx-font-weight: bold; -fx-border-width: 0; -fx-background-radius: 12; -fx-border-radius: 12;";
+        String inativo = "-fx-background-color: rgb(43, 40, 40); -fx-border-colour: rgb(43, 40, 40); -fx-text-fill: white; -fx-font-weight: bold; -fx-border-width: 0; -fx-background-radius: 12; -fx-border-radius: 12;";
+        diaToggle.setStyle(modoAtual == ModoVisualizacao.DIA ? ativo : inativo);
+        semanaToggle.setStyle(modoAtual == ModoVisualizacao.SEMANA ? ativo : inativo);
+        mesToggle.setStyle(modoAtual == ModoVisualizacao.MES ? ativo : inativo);
+    }
+
+    private void atualizarEstiloTogglesLaterais() {
+        String base = "-fx-font-size: 15px; -fx-font-weight: bold; -fx-background-radius: 12; -fx-border-radius: 12;";
+        String ativo = base + " -fx-background-color: rgb(60,60,60); -fx-text-fill: white;";
+        String inativo = base + " -fx-background-color: rgb(43,40,40); -fx-text-fill: white;";
+        calendarioToggle.setStyle(calendarioToggle.isSelected() ? ativo : inativo);
+        clientesToggle.setStyle(clientesToggle.isSelected() ? ativo : inativo);
     }
 }
