@@ -214,10 +214,12 @@ public class PaginaPrincipalController implements Initializable {
                 if (anotacoesBlurred) {
                     anotacoesArea.setEffect(new GaussianBlur(10));
                     blurToggleBtn.setText("👁");
+                    blurToggleBtn.setStyle("-fx-background-radius: 12; -fx-background-color: rgb(60, 60, 60); -fx-font-size: 15px; -fx-padding: 0; -fx-text-fill: white;");
                     anotacoesArea.setEditable(false);
                 } else {
                     anotacoesArea.setEffect(null);
-                    blurToggleBtn.setText("🚫");
+                    blurToggleBtn.setText("⛔");
+                    blurToggleBtn.setStyle("-fx-background-radius: 12; -fx-background-color: rgb(60, 60, 60); -fx-font-size: 15px; -fx-padding: 0; -fx-text-fill: white;");
                     anotacoesArea.setEditable(true);
                 }
             });

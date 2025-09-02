@@ -45,9 +45,9 @@
                             style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <Button fx:id="blurToggleBtn"
-                                text="🚫"
+                                text="⛔"
                                 minWidth="35" minHeight="25" maxWidth="35" maxHeight="25"
-                                style="-fx-background-radius: 12; -fx-background-color: rgb(60, 60, 60); -fx-font-size: 15px; -fx-padding: 0 6 0 6; -fx-text-fill: white;"/>
+                                style="-fx-background-radius: 12; -fx-background-color: rgb(60, 60, 60); -fx-font-size: 15px; -fx-padding: 0; -fx-text-fill: white;"/>
                     </HBox>
                     <Separator
                         prefHeight="1"
@@ -98,8 +98,14 @@
                                   GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS"/>
                     </ScrollPane>                
                 </VBox>
-                <StackPane fx:id="areaClientes" visible="false" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-padding: 10;">
-                    <VBox fx:id="clientesContent" alignment="TOP_LEFT" spacing="16" StackPane.alignment="TOP_LEFT" VBox.vgrow="ALWAYS"/>
+                <StackPane fx:id="areaClientes" visible="false" 
+                    style="-fx-background-color: rgb(15, 14, 14); -fx-border-width: 0; -fx-background-radius: 12; -fx-padding: 10;">
+                    <VBox fx:id="clientesContent" 
+                        alignment="TOP_LEFT"
+                        spacing="16"
+                        StackPane.alignment="TOP_LEFT"
+                        VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 10;"/>
                 </StackPane>
             </StackPane>
 
