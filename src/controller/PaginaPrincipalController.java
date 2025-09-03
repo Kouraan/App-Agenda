@@ -326,9 +326,25 @@ public class PaginaPrincipalController implements Initializable {
 
         if (appController != null && (appController.getClientesMap() == null || appController.getClientesMap().isEmpty())) {
             Label msg = new Label("Não tem nenhum cliente salvo, deseja adicionar um?");
-            msg.setStyle("-fx-font-size: 22px; -fx-text-fill: #222; -fx-font-weight: bold;");
+            msg.setStyle(
+                "-fx-font-size: 22px; " +
+                "-fx-text-fill: white; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-color: transparent;"
+            );
+            msg.setAlignment(Pos.CENTER);
+
             Button adicionarBtn = new Button("Adicionar");
-            adicionarBtn.setStyle("-fx-font-size: 16px; -fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24 8 24;");
+            adicionarBtn.setStyle(
+                "-fx-font-size: 18px; " +
+                "-fx-background-color: rgb(43, 40, 40); " +
+                "-fx-text-fill: white; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 12; " +
+                "-fx-border-radius: 12; " +
+                "-fx-border-width: 0; " +
+                "-fx-padding: 10 32 10 32;"
+            );
             
             adicionarBtn.setOnAction(e -> {
                 try {
@@ -360,26 +376,37 @@ public class PaginaPrincipalController implements Initializable {
                 }
             });
 
-            VBox box = new VBox(18, msg, adicionarBtn);
+            VBox box = new VBox(32, msg, adicionarBtn);
             box.setAlignment(Pos.CENTER);
-            box.setPrefHeight(clientesContent.getHeight());
-            box.setPrefWidth(clientesContent.getWidth());
-            box.setStyle("-fx-alignment: center; -fx-padding: 0;");
+            box.setStyle(
+                "-fx-background-color: rgb(15, 14, 14); " +
+                "-fx-background-radius: 24; " +
+                "-fx-border-radius: 24; " +
+                "-fx-padding: 32;"
+            );
 
             clientesContent.setAlignment(Pos.CENTER);
             clientesContent.getChildren().add(box);
         } else {
             HBox barraTopo = new HBox(10);
             barraTopo.setAlignment(Pos.TOP_LEFT);
-            barraTopo.setPadding(new Insets(10, 10, 10, 10));
+            barraTopo.setPadding(new Insets(10, 0, 15, 0));
 
-            double alturaBarra = 32;
-            double larguraBotao = 32;
+            double alturaBarra = 36;
+            double larguraBotao = 36;
 
             TextField pesquisaField = new TextField();
             pesquisaField.setPromptText("Pesquisar cliente...");
             pesquisaField.setPrefHeight(alturaBarra);
-            pesquisaField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+            pesquisaField.setStyle(
+                "-fx-background-color: rgb(43, 40, 40); " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 16px; " +
+                "-fx-background-radius: 12; " +
+                "-fx-border-radius: 12; " +
+                "-fx-border-width: 0; " +
+                "-fx-padding: 0 16 0 16;"
+                );
             pesquisaField.setOnKeyPressed(event -> {
                 switch (event.getCode()) {
                     case ENTER:
@@ -393,7 +420,15 @@ public class PaginaPrincipalController implements Initializable {
             Button btnAdicionar = new Button("+");
             btnAdicionar.setPrefWidth(larguraBotao);
             btnAdicionar.setPrefHeight(alturaBarra);
-            btnAdicionar.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0;");
+            btnAdicionar.setStyle(
+                "-fx-background-color: rgb(43, 40, 40); " +
+                "-fx-text-fill: white; " +
+                "-fx-font-size: 18px; " +
+                "-fx-font-weight: bold; " +
+                "-fx-background-radius: 12; " +
+                "-fx-border-radius: 12; " +
+                "-fx-border-width: 0;"
+            );
             btnAdicionar.setOnAction(e -> {
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/AdicionarCliente.fxml"));
@@ -432,11 +467,16 @@ public class PaginaPrincipalController implements Initializable {
             HBox.setHgrow(barraTopo, Priority.ALWAYS);
 
             VBox layout = new VBox(0, barraTopo);
+            layout.setStyle("-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 24; -fx-padding: 10;");
             layout.setOnMouseClicked(event -> {
                 if (event.getTarget() != pesquisaField) {
                     layout.requestFocus();
                 }
             });
+            layout.setMaxWidth(Double.MAX_VALUE);
+            layout.setMaxHeight(Double.MAX_VALUE);
+            VBox.setVgrow(layout, Priority.ALWAYS);
+
             clientesContent.setAlignment(Pos.TOP_LEFT);
             clientesContent.getChildren().add(layout);
 
@@ -455,8 +495,8 @@ public class PaginaPrincipalController implements Initializable {
 
         GridPane tabela = new GridPane();
         tabela.setHgap(8);
-        tabela.setVgap(2);
-        tabela.setStyle("-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        tabela.setVgap(8);
+        tabela.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-padding: 10; -fx-background-radius: 12;");
         tabela.setMaxWidth(Double.MAX_VALUE);
 
         for (int i = 0; i < 6; i++) {
@@ -469,7 +509,7 @@ public class PaginaPrincipalController implements Initializable {
         String[] cabecalho = {"Nome", "Telefone", "Tipo", "Faltas", "Dia Semana", "Hora Corte"};
         for (int i = 0; i < cabecalho.length; i++) {
             Label th = new Label(cabecalho[i]);
-            th.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-background-color: #d6eaf8; -fx-padding: 6 12 6 12; -fx-border-color: #bdc3c7; -fx-border-width: 0 1 1 0;");
+            th.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-background-color: rgba(197, 130, 63, 0.86); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 8 0 8 0; -fx-border-width: 0;");
             th.setMaxWidth(Double.MAX_VALUE);
             th.setAlignment(Pos.CENTER);
             tabela.add(th, i, 0);
@@ -482,32 +522,57 @@ public class PaginaPrincipalController implements Initializable {
         int row = 1;
         for (models.Cliente c : lista) {
             if (c.getNome().toLowerCase().contains(filtroLower) || c.getNumeroTelefone().contains(filtroLower)) {
-                Label nomeLabel = novoCell(c.getNome());
-                nomeLabel.setStyle(nomeLabel.getStyle() + "; -fx-cursor: hand;");
-                nomeLabel.setOnMouseClicked(event -> {
-                    abrirDetalhesCliente(c);
-                });
-                tabela.add(nomeLabel, 0, row);
-
-                tabela.add(novoCell(c.getNumeroTelefone()), 1, row);
-                tabela.add(novoCell(c.getTipoCliente().toString()), 2, row);
-                tabela.add(novoCell(String.valueOf(c.getFaltas())), 3, row);
-                if (c.getTipoCliente() == models.Cliente.TipoCliente.SEMANAL) {
-                    tabela.add(novoCell(c.getDiaSemana()), 4, row);
-                    tabela.add(novoCell(c.getHoraCorte()), 5, row);
-                } else {
-                    tabela.add(novoCell("—"), 4, row);
-                    tabela.add(novoCell("—"), 5, row);
+                for (int col = 0; col < cabecalho.length; col++) {
+                    String texto;
+                    switch(col) {
+                        case 0: texto = c.getNome(); break;
+                        case 1: texto = c.getNumeroTelefone(); break;
+                        case 2: texto = c.getTipoCliente().toString(); break;
+                        case 3: texto = String.valueOf(c.getFaltas()); break;
+                        case 4: texto = c.getTipoCliente() == models.Cliente.TipoCliente.SEMANAL ? c.getDiaSemana() : "—"; break;
+                        case 5: texto = c.getTipoCliente() == models.Cliente.TipoCliente.SEMANAL ? c.getHoraCorte() : "—"; break;
+                        default: texto = "—";
+                    }
+                    Label cell = new Label(texto == null ? "—" : texto);
+                    cell.setStyle(
+                        "-fx-font-size: 14px; " +
+                        "-fx-background-color: rgb(60, 60, 60); " +
+                        "-fx-text-fill: white; " +
+                        "-fx-background-radius: 12; -fx-border-radius: 12; " +
+                        "-fx-border-color: rgba(197, 130, 63, 0.86); " +
+                        "-fx-border-width: 1; " +
+                        "-fx-padding: 8 0 8 0;"
+                    );
+                    cell.setMaxWidth(Double.MAX_VALUE);
+                    cell.setAlignment(Pos.CENTER);
+                    if (col == 0) {
+                        cell.setStyle(cell.getStyle() + "; -fx-cursor: hand;");
+                        cell.setOnMouseClicked(event -> abrirDetalhesCliente(c));
+                    }
+                    tabela.add(cell, col, row);
                 }
                 row++;
             }
         }
 
-        ScrollPane tabelaScroll = new ScrollPane(tabela);
+        StackPane tabelaFundo = new StackPane(tabela);
+        tabelaFundo.setStyle("-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 0;");
+
+        ScrollPane tabelaScroll = new ScrollPane(tabelaFundo);
         tabelaScroll.setFitToWidth(true);
         tabelaScroll.setFitToHeight(true);
         tabelaScroll.setFocusTraversable(false);
-        tabelaScroll.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0;");
+        tabelaScroll.setStyle(
+            "-fx-background-color: rgb(15, 14, 14);" +
+            "-fx-background-insets: 0;" +
+            "-fx-background-radius: 12;" +
+            "-fx-border-width: 0;" +
+            "-fx-padding: 0;" +
+            "-fx-hbar-policy: never;" +
+            "-fx-vbar-policy: never;" +
+            "-fx-focus-color: transparent;" +
+            "-fx-faint-focus-color: transparent;"
+        );
         VBox.setVgrow(tabelaScroll, Priority.ALWAYS);
 
         layout.getChildren().add(tabelaScroll);

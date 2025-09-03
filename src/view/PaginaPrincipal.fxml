@@ -99,13 +99,13 @@
                     </ScrollPane>                
                 </VBox>
                 <StackPane fx:id="areaClientes" visible="false" 
-                    style="-fx-background-color: rgb(15, 14, 14); -fx-border-width: 0; -fx-background-radius: 12; -fx-padding: 10;">
+                    style="-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 0; -fx-padding: 0;">
                     <VBox fx:id="clientesContent" 
                         alignment="TOP_LEFT"
                         spacing="16"
                         StackPane.alignment="TOP_LEFT"
                         VBox.vgrow="ALWAYS"
-                        style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 10;"/>
+                        style="-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 12; -fx-padding: 10;"/>
                 </StackPane>
             </StackPane>
 
