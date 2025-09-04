@@ -225,12 +225,6 @@ public class PaginaPrincipalController implements Initializable {
             });
         }
 
-        if (caixaClientesPendentes != null) {
-            caixaClientesPendentes.setStyle("-fx-cursor: hand;");
-            caixaClientesPendentes.setOnMouseEntered(e -> caixaClientesPendentes.setStyle("-fx-cursor: hand;"));
-            caixaClientesPendentes.setOnMouseExited(e -> caixaClientesPendentes.setStyle("-fx-cursor: hand;"));
-            caixaClientesPendentes.setOnMouseClicked(e -> abrirGestaoPendentes());
-        }
         atualizarBoxClientesPendentes();
     }
     
@@ -857,12 +851,18 @@ public class PaginaPrincipalController implements Initializable {
             }
 
             // Hover: só para blocos não passados
-            if (!isPassado) {
+            if (!isPassado || marcacao1 != null) {
                 celula.setOnMouseEntered(ev -> celula.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40; -fx-cursor: hand;"));
                 celula.setOnMouseExited(ev -> celula.setStyle(estiloFinal + "; -fx-cursor: hand;"));
+                if (!isPassado) {
+                    celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                } else {
+                    celula.setOnMouseClicked(null);
+                }
             } else {
                 celula.setOnMouseEntered(null);
                 celula.setOnMouseExited(null);
+                celula.setOnMouseClicked(null);
             }
 
             calendarioGrid.add(horaLabel, 0, linha);
@@ -998,8 +998,17 @@ public class PaginaPrincipalController implements Initializable {
                         + "-fx-min-height: 40;");
                 }
 
-                // Só adiciona hover e cursor se não for passado
-                if (!isPassado) {
+                java.time.LocalDateTime dataHora = dataSelecionada.atTime(horaSelecionada);
+                Map<java.time.LocalDateTime, Marcacao> marcacoesMap =
+                    (appController != null && appController.getMarcacoesMap() != null)
+                    ? appController.getMarcacoesMap()
+                    : java.util.Collections.emptyMap();
+
+                Marcacao marcacao1 = marcacoesMap.get(dataHora); // 1ª metade
+                Marcacao marcacao2 = marcacoesMap.get(dataHora.plusMinutes(15)); // 2ª metade
+
+                // Só adiciona hover e cursor se não for passado ou entao se for marcacao
+                if (!isPassado || marcacao1 != null) {
                     if (dia == 6) {
                         celula.setOnMouseEntered(e ->
                             celula.setStyle("-fx-background-color:rgb(221, 233, 236); -fx-background-radius: 12; -fx-min-height: 40;"));
@@ -1013,7 +1022,11 @@ public class PaginaPrincipalController implements Initializable {
                             celula.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-border-color: rgba(197, 130, 63, 0.86); "
                                 + "-fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;"));
                     }
-                    celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                    if (!isPassado) {
+                        celula.setOnMouseClicked(e -> abrirCriarMarcacao(dataSelecionada, horaSelecionada));
+                    } else {
+                        celula.setOnMouseClicked(null);
+                    }
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: hand;");
                 } else {
                     celula.setOnMouseEntered(null);
@@ -1021,15 +1034,6 @@ public class PaginaPrincipalController implements Initializable {
                     celula.setOnMouseClicked(null);
                     celula.setStyle(celula.getStyle() + "; -fx-cursor: default;");
                 }
-
-                java.time.LocalDateTime dataHora = dataSelecionada.atTime(horaSelecionada);
-                Map<java.time.LocalDateTime, Marcacao> marcacoesMap =
-                    (appController != null && appController.getMarcacoesMap() != null)
-                    ? appController.getMarcacoesMap()
-                    : java.util.Collections.emptyMap();
-
-                Marcacao marcacao1 = marcacoesMap.get(dataHora); // 1ª metade
-                Marcacao marcacao2 = marcacoesMap.get(dataHora.plusMinutes(15)); // 2ª metade
 
                 boolean is15min1 = marcacao1 != null && marcacao1.getDuracao() == 15;
                 boolean is15min2 = marcacao2 != null && marcacao2.getDuracao() == 15;
@@ -1252,6 +1256,17 @@ public class PaginaPrincipalController implements Initializable {
         java.util.List<models.Pendente> pendentes = appController != null ? appController.getPendentes() : null;
 
         if (pendentes == null || pendentes.isEmpty()) {
+            Label vazio = new Label("Clique para adicionar pendente");
+            vazio.setStyle("-fx-font-size: 15px; -fx-text-fill: #bbb; -fx-font-style: italic; -fx-alignment: center;");
+            vazio.setMaxWidth(Double.MAX_VALUE);
+            vazio.setMaxHeight(Double.MAX_VALUE);
+            VBox.setVgrow(vazio, Priority.ALWAYS);
+            vazio.setOnMouseClicked(e -> {
+                abrirGestaoPendentes();
+                e.consume();
+            });
+            caixaClientesPendentes.getChildren().add(vazio);
+            vazio.setStyle(vazio.getStyle() + "; -fx-cursor: hand;");
             return;
         }
 
@@ -1259,18 +1274,27 @@ public class PaginaPrincipalController implements Initializable {
             models.Pendente p = pendentes.get(i);
 
             Label nome = new Label(p.getNome());
-            nome.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #34495e; -fx-padding: 8 0 8 0;");
+            nome.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: white; -fx-padding: 2 4 2 4; -fx-cursor: hand;");
             nome.setMaxWidth(Double.MAX_VALUE);
+            nome.setOnMouseClicked(e -> {
+                abrirGestaoPendentes();
+                e.consume();
+            });
 
             caixaClientesPendentes.getChildren().add(nome);
 
             if (i < pendentes.size() - 1) {
                 Separator sep = new Separator();
-                sep.setStyle("-fx-background-color: #e0e0e0;");
+                sep.setPrefHeight(2);
+                sep.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86);");
                 sep.setMaxWidth(Double.MAX_VALUE);
+                VBox.setMargin(sep, new Insets(0, 4, 0, 4));
                 caixaClientesPendentes.getChildren().add(sep);
             }
         }
+
+        caixaClientesPendentes.setOnMouseClicked(e -> abrirGestaoPendentes());
+        caixaClientesPendentes.setStyle("-fx-cursor: hand;");
     }
 
     private void abrirCriarMarcacao(LocalDate data, LocalTime hora) {

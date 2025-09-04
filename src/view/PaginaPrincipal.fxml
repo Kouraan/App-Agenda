@@ -99,7 +99,7 @@
                     </ScrollPane>                
                 </VBox>
                 <StackPane fx:id="areaClientes" visible="false" 
-                    style="-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 0; -fx-padding: 0;">
+                    style="-fx-background-color: rgb(15, 14, 14); -fx-border-width: 0; -fx-background-radius: 12; -fx-padding: 10;">
                     <VBox fx:id="clientesContent" 
                         alignment="TOP_LEFT"
                         spacing="16"
@@ -110,31 +110,50 @@
             </StackPane>
 
             <!-- Área Lateral Direita -->
-            <VBox prefWidth="200" minWidth="200" maxWidth="200" spacing="24" style="-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 10;">
-                <Label text="Clientes Pendentes" style="-fx-font-size: 16px; -fx-text-fill: white; -fx-font-weight: bold; -fx-text-alignment: center;"/>
-                <VBox
-                    fx:id="caixaClientesPendentes"
-                    spacing="0"
-                    alignment="TOP_LEFT"
-                    prefHeight="350"
+            <VBox prefWidth="200" minWidth="200" maxWidth="200" spacing="16" style="-fx-background-color: rgb(15, 14, 14); -fx-background-radius: 12; -fx-padding: 10;">
+                <Label text="Clientes Pendentes" style="-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Separator
+                    prefHeight="3"
+                    style="-fx-background-color: white;"
+                    maxWidth="Infinity"
+                    prefWidth="Infinity"
+                />
+                <ScrollPane
+                    fx:id="scrollPendentes"
+                    fitToWidth="true"
+                    fitToHeight="false"
+                    hbarPolicy="NEVER"
+                    vbarPolicy="NEVER"
                     style="
-                        -fx-background-color: white;
-                        -fx-border-color: #bdc3c7;
+                        -fx-background: rgb(43, 40, 40);
+                        -fx-border-color: rgba(197, 130, 64, 0.86);
                         -fx-border-width: 2;
-                        -fx-background-radius: 12;
-                        -fx-border-radius: 12;
-                        -fx-padding: 16;
-                        -fx-effect: dropshadow(gaussian, #bbb, 8, 0.2, 0, 2);
+                        -fx-background-radius: 16;
+                        -fx-border-radius: 16; 
+                        -fx-padding: 4; 
+                        -fx-focus-color: transparent;
+                        -fx-faint-focus-color: transparent;
                         "
                     VBox.vgrow="ALWAYS"
+                >
+                    <VBox
+                        fx:id="caixaClientesPendentes"
+                        spacing="0"
+                        alignment="TOP_LEFT"
+                        prefWidth="180"
+                    />
+                </ScrollPane>
+                <Separator
+                    prefHeight="3"
+                    style="-fx-background-color: white;"
+                    maxWidth="Infinity"
+                    prefWidth="Infinity"
                 />
-                <Region VBox.vgrow="ALWAYS"/>
                 <Label fx:id="relogioLabel"
                        style="-fx-font-size: 40px; -fx-font-weight: 900; -fx-text-fill: white; -fx-alignment: center;"
                        alignment="CENTER"
                        prefWidth="200"
                 />
-                <Region VBox.vgrow="ALWAYS"/>
             </VBox>      
         </HBox>
     </center>

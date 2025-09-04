@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "nome": "Marco Silva",
+    "numeroTelefone": "965131863"
+  },
+  {
+    "nome": "Nuno Silva",
+    "numeroTelefone": "913332902"
+  },
+  {
+    "nome": "teste",
+    "numeroTelefone": "-"
+  }
+]
