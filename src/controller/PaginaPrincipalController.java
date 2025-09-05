@@ -1227,6 +1227,7 @@ public class PaginaPrincipalController implements Initializable {
             PendentesController controller = loader.getController();
             controller.setPendentes(appController.getPendentes());
             controller.setAppController(appController);
+            controller.setPaginaPrincipalController(this);
 
             Stage stage = new Stage();
             stage.setTitle("Clientes Pendentes");
@@ -1250,7 +1251,7 @@ public class PaginaPrincipalController implements Initializable {
         }
     }
 
-    private void atualizarBoxClientesPendentes() {
+    public void atualizarBoxClientesPendentes() {
         caixaClientesPendentes.getChildren().clear();
 
         java.util.List<models.Pendente> pendentes = appController != null ? appController.getPendentes() : null;
