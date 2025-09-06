@@ -1532,5 +1532,44 @@
     "duracao": 30,
     "observacoes": "",
     "falta": false
+  },
+  {
+    "dataHora": "2025-09-06T11:30",
+    "cliente": {
+      "nome": "teste2",
+      "numeroTelefone": "",
+      "tipoCliente": "DESCONHECIDO",
+      "faltas": 0,
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": false
+  },
+  {
+    "dataHora": "2025-09-06T12:00",
+    "cliente": {
+      "nome": "testeF",
+      "numeroTelefone": "",
+      "tipoCliente": "DESCONHECIDO",
+      "faltas": 0,
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": true
+  },
+  {
+    "dataHora": "2025-09-07T09:00",
+    "cliente": {
+      "nome": "teste",
+      "numeroTelefone": "",
+      "tipoCliente": "DESCONHECIDO",
+      "faltas": 0,
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": false
   }
 ]

@@ -83,8 +83,8 @@ public class PendentesController {
                 "-fx-background-color: rgb(43, 40, 40); -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; " +
                 "-fx-background-radius: 12px; -fx-border-radius: 12px; -fx-border-width: 0; -fx-cursor: hand;"
             );
-            btnAdicionar.setPrefWidth(36);
-            btnAdicionar.setPrefHeight(36);
+            btnAdicionar.setPrefWidth(28);
+            btnAdicionar.setPrefHeight(28);
             btnAdicionar.setOnAction(e -> mostrarCriarPendente());
 
             Button btnRemover = new Button("-");
@@ -93,8 +93,8 @@ public class PendentesController {
                 "-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;" +
                 "-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-cursor: hand;"
             );
-            btnRemover.setPrefWidth(36);
-            btnRemover.setPrefHeight(36);
+            btnRemover.setPrefWidth(28);
+            btnRemover.setPrefHeight(28);
             btnRemover.setOnAction(e -> {
                 if (linhaSelecionada >= 0 && linhaSelecionada < pendentes.size()) {
                     Pendente removido = pendentes.get(linhaSelecionada);
@@ -115,7 +115,7 @@ public class PendentesController {
                 "-fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-cursor: hand;"
             );
             btnSair.setPrefWidth(80);
-            btnSair.setPrefHeight(36);
+            btnSair.setPrefHeight(28);
             btnSair.setOnAction(e -> closeWindow());
 
             Region espaco = new Region();
@@ -123,18 +123,22 @@ public class PendentesController {
 
             HBox barraBotoes = new HBox(12, btnAdicionar, btnRemover, espaco, btnSair);
             barraBotoes.setAlignment(Pos.CENTER_LEFT);
-            barraBotoes.setPadding(new Insets(16, 0, 8, 0));
+            barraBotoes.setPadding(new Insets(6, 0, 0, 0));
+            barraBotoes.setMaxWidth(520);
+            barraBotoes.setMinWidth(520);
 
-            VBox areaTabela = new VBox(10);
+            VBox areaTabela = new VBox(0);
             areaTabela.setStyle(
                 "-fx-background-color: rgb(43,40,40); -fx-background-radius: 18;"
             );
-            areaTabela.setMaxWidth(Double.MAX_VALUE);
-            VBox.setVgrow(areaTabela, Priority.ALWAYS);
+            areaTabela.setAlignment(Pos.TOP_CENTER);
+            areaTabela.setPadding(new Insets(0, 0, 6, 0));
+            areaTabela.setMaxWidth(520);
 
-            HBox cabecalho = new HBox(12);
-            cabecalho.setPadding(new Insets(8, 0, 4, 0));
+            HBox cabecalho = new HBox(16);
             cabecalho.setAlignment(Pos.CENTER);
+            cabecalho.setPadding(new Insets(8, 0, 8, 0));
+
             Label thNome = new Label("Nome");
             thNome.setStyle(
                 "-fx-font-size: 15px; -fx-font-weight: bold; " +
@@ -142,6 +146,9 @@ public class PendentesController {
                 "-fx-text-fill: white; -fx-background-radius: 12; " +
                 "-fx-padding: 10 0 10 0;"
             );
+            thNome.setMinWidth(220);
+            thNome.setAlignment(Pos.CENTER);
+
             Label thTel = new Label("Telefone");
             thTel.setStyle(
                 "-fx-font-size: 15px; -fx-font-weight: bold; " +
@@ -149,35 +156,40 @@ public class PendentesController {
                 "-fx-text-fill: white; -fx-background-radius: 12; " +
                 "-fx-padding: 10 0 10 0;"
             );
-            thNome.setMinWidth(200);
-            thTel.setMinWidth(200);
+            thTel.setMinWidth(220);
+            thTel.setAlignment(Pos.CENTER);
+
             cabecalho.getChildren().addAll(thNome, thTel);
 
             VBox linhas = new VBox(8);
+            linhas.setAlignment(Pos.TOP_CENTER);
+
             for (int i = 0; i < pendentes.size(); i++) {
                 Pendente p = pendentes.get(i);
 
-                HBox linha = new HBox(12);
+                HBox linha = new HBox(16);
                 linha.setAlignment(Pos.CENTER);
 
                 Label nome = new Label(p.getNome());
                 nome.setStyle(
                     "-fx-font-size: 14px; -fx-background-color: rgb(60,60,60); -fx-text-fill: white;" +
-                    "-fx-background-radius: 12; -fx-border-color: rgba(197,130,63,0.86); -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 32 8 32;"
+                    "-fx-background-radius: 12; -fx-border-color: rgba(197,130,63,0.86); -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 0 8 0;"
                 );
-                nome.setMinWidth(200);
+                nome.setMinWidth(220);
+                nome.setAlignment(Pos.CENTER);
 
-                String telefone = (p.getNumeroTelefone() == null || p.getNumeroTelefone().isEmpty()) ? "-" : p.getNumeroTelefone();
+                String telefone = (p.getNumeroTelefone() == null || p.getNumeroTelefone().isEmpty()) ? "—" : p.getNumeroTelefone();
                 Label tel = new Label(telefone);
                 tel.setStyle(
                     "-fx-font-size: 14px; -fx-background-color: rgb(60,60,60); -fx-text-fill: white;" +
-                    "-fx-background-radius: 12; -fx-border-color: rgba(197,130,63,0.86); -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 32 8 32;"
+                    "-fx-background-radius: 12; -fx-border-color: rgba(197,130,63,0.86); -fx-border-radius: 12; -fx-border-width: 2; -fx-padding: 8 0 8 0;"
                 );
-                tel.setMinWidth(200);
+                tel.setMinWidth(220);
+                tel.setAlignment(Pos.CENTER);
 
                 if (i == linhaSelecionada) {
-                    nome.setStyle(nome.getStyle() + "; -fx-background-color: #1565c0; -fx-text-fill: white;");
-                    tel.setStyle(tel.getStyle() + "; -fx-background-color: #1565c0; -fx-text-fill: white;");
+                    nome.setStyle(nome.getStyle() + "; -fx-background-color: rgb(36, 43, 141); -fx-text-fill: white;");
+                    tel.setStyle(tel.getStyle() + "; -fx-background-color: rgb(36, 43, 141); -fx-text-fill: white;");
                 }
 
                 int idx = i;
@@ -194,7 +206,14 @@ public class PendentesController {
                 linhas.getChildren().add(linha);
             }
 
-            areaTabela.getChildren().addAll(cabecalho, linhas);
+            ScrollPane scroll = new ScrollPane(linhas);
+            scroll.setFitToWidth(true);
+            scroll.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+            scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            VBox.setVgrow(scroll, Priority.ALWAYS);
+
+            areaTabela.getChildren().addAll(cabecalho, scroll);
             VBox.setVgrow(areaTabela, Priority.ALWAYS);
 
             rootVBox.setAlignment(Pos.TOP_CENTER);
@@ -335,7 +354,7 @@ public class PendentesController {
         );
 
         Label erroTelefone = new Label();
-        erroTelefone.setStyle("-fx-text-fill: red; -fx-font-size: 13px;");
+        erroTelefone.setStyle("-fx-text-fill: rgb(128, 26, 15); -fx-font-size: 13px;");
 
         nomeField.setDisable(true);
         telField.setDisable(true);
@@ -429,7 +448,7 @@ public class PendentesController {
                     erroTelefone.setText("Já existe um cliente com esse numero.");
                     return;
                 }
-                if (numero.isEmpty()) numero = "-";
+                if (numero.isEmpty()) numero = "—";
                 Pendente novo = new Pendente(nome, numero);
                 pendentes.add(novo);
                 utils.Persistencia.guardarPendentes(pendentes);

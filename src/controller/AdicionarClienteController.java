@@ -50,6 +50,9 @@ public class AdicionarClienteController {
             horaCorteCombo.getItems().clear();
             rapidoCheck.setDisable(!newVal);
             if (!newVal) rapidoCheck.setSelected(false);
+
+            diaSemanaCombo.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2;");
+            horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
         });
 
         diaSemanaCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -73,6 +76,11 @@ public class AdicionarClienteController {
             } else {
                 horaCorteCombo.setDisable(true);
             }
+            horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
+        });
+
+        horaCorteCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
         });
 
         semanalCheck.setSelected(false);
@@ -141,6 +149,9 @@ public class AdicionarClienteController {
         telefoneField.setStyle("");
         diaSemanaCombo.setStyle("");
         horaCorteCombo.setStyle("");
+
+        diaSemanaCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;");
+        horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
 
         boolean semanal = semanalCheck.isSelected();
 
