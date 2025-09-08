@@ -5,18 +5,18 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.DetalheClienteController"
             prefWidth="500" prefHeight="540"
-            style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2;">
+            style="-fx-background-color: rgb(15, 14, 14); -fx-border-width: 0;">
     <center>
         <StackPane>
             <!-- VISUALIZAÇÃO -->
             <VBox fx:id="visualBox" alignment="TOP_CENTER" spacing="4" style="-fx-padding: 48 32 32 32;">
                 <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 0 0 8 0;">
                     <Button fx:id="btnEditar" text="Editar"
-                        style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
+                        style="-fx-background-color: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
                         visible="true" managed="true"/>
                 </HBox>
                 <GridPane fx:id="gridVisual"
-                        style="-fx-background-color: #f8fafd; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-padding: 6 6 6 6; -fx-background-radius: 6;"
+                        style="-fx-background-color: rgb(43, 40, 40); -fx-border-width: 0; -fx-padding: 6 6 6 6; -fx-background-radius: 12;"
                         prefWidth="Infinity" maxWidth="Infinity">
                     <columnConstraints>
                         <ColumnConstraints minWidth="140" maxWidth="180" halignment="LEFT"/>
@@ -29,29 +29,29 @@
             <VBox fx:id="editBox" alignment="TOP_CENTER" spacing="18" visible="false" managed="false" style="-fx-padding: 48 32 32 32;">
                 <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 0 0 8 0;">
                     <Button fx:id="btnVoltarVisual" text="Editar"
-                        style="-fx-background-color: #2176bd; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
+                        style="-fx-background-color: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
                         visible="false" managed="false"/>
                 </HBox>
                 <CheckBox fx:id="semanalCheck" text="Cliente Semanal" alignment="CENTER"/>
                 <VBox alignment="TOP_CENTER" spacing="10" style="-fx-padding: 12 0 0 0;" maxWidth="360">
                     <Label text="Nome:" style="-fx-font-size: 14px;"/>
                     <TextField fx:id="nomeField" maxWidth="360"/>
-                    <Label fx:id="nomeErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 12px;" visible="false" managed="false"/>
+                    <Label fx:id="nomeErrorLabel" text="" style="-fx-text-fill: rgb(128, 26, 15); -fx-font-size: 12px;" visible="false" managed="false"/>
                     <Label text="Telefone:" style="-fx-font-size: 14px;"/>
                     <TextField fx:id="telefoneField" maxWidth="360"/>
-                    <Label fx:id="telefoneErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 12px;" visible="false" managed="false"/>
+                    <Label fx:id="telefoneErrorLabel" text="" style="-fx-text-fill: rgb(128, 26, 15); -fx-font-size: 12px;" visible="false" managed="false"/>
                     <Label text="Dia da Semana:" style="-fx-font-size: 14px;"/>
                     <ComboBox fx:id="diaSemanaCombo" maxWidth="360"/>
                     <Label text="Hora do Corte:" style="-fx-font-size: 14px;"/>
                     <ComboBox fx:id="horaCorteCombo" maxWidth="360"/>
-                    <Label fx:id="horaCorteErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 12px;" visible="false" managed="false"/>
+                    <Label fx:id="horaCorteErrorLabel" text="" style="-fx-text-fill: rgb(128, 26, 15); -fx-font-size: 12px;" visible="false" managed="false"/>
                     <HBox spacing="8" alignment="CENTER">
                         <Label text="Faltas:" style="-fx-font-size: 14px;"/>
                         <Button fx:id="btnMenosFalta" text="-" style="-fx-font-size: 16px;"/>
                         <Label fx:id="faltasLabel" text="0" style="-fx-font-size: 16px;"/>
                         <Button fx:id="btnMaisFalta" text="+" style="-fx-font-size: 16px;"/>
                     </HBox>
-                    <Label fx:id="geralErrorLabel" text="" style="-fx-text-fill: red; -fx-font-size: 13px;" visible="false" managed="false"/>
+                    <Label fx:id="geralErrorLabel" text="" style="-fx-text-fill: rgb(128, 26, 15); -fx-font-size: 13px;" visible="false" managed="false"/>
                 </VBox>
             </VBox>
         </StackPane>
@@ -59,13 +59,13 @@
     <bottom>
         <HBox alignment="BOTTOM_RIGHT" spacing="16" style="-fx-padding: 0 32 32 32;">
             <Button fx:id="btnSalvar" text="Salvar"
-                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
+                style="-fx-background-color: rgb(36, 43, 141); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
                 visible="false" managed="false"/>
             <Button fx:id="btnApagar" text="Apagar"
-                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
+                style="-fx-background-color: rgb(128, 26, 15); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"
                 visible="true" managed="true"/>
             <Button fx:id="btnSair" text="Sair"
-                style="-fx-background-color: #bdc3c7; -fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"/>
+                style="-fx-background-color: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;"/>
         </HBox>
     </bottom>
 </BorderPane>

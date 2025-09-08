@@ -51,8 +51,8 @@ public class AdicionarClienteController {
             rapidoCheck.setDisable(!newVal);
             if (!newVal) rapidoCheck.setSelected(false);
 
-            diaSemanaCombo.setStyle("-fx-background-color: white; -fx-border-color: rgba(197, 130, 63, 0.86); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2;");
-            horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
+            diaSemanaCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;");
+            horaCorteCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;");
         });
 
         diaSemanaCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -76,28 +76,35 @@ public class AdicionarClienteController {
             } else {
                 horaCorteCombo.setDisable(true);
             }
-            horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
+            horaCorteCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;");
         });
 
         horaCorteCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
+            horaCorteCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;");
         });
 
         semanalCheck.setSelected(false);
 
         nomeField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            nomeField.setStyle("");
+            nomeField.setStyle("-fx-background-color: white;  " +
+                                "-fx-background-radius: 12; " +
+                                "-fx-border-width: 0; " +
+                                "-fx-focus-color: transparent; " +
+                                "-fx-faint-focus-color: transparent;"
+                                );
         });
         telefoneField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            telefoneField.setStyle("");
+            telefoneField.setStyle("-fx-background-color: white; " +
+                                "-fx-background-radius: 12; " +
+                                "-fx-border-width: 0; " +
+                                "-fx-focus-color: transparent; " +
+                                "-fx-faint-focus-color: transparent;"
+                                );
         });
-        diaSemanaCombo.setOnAction(e -> diaSemanaCombo.setStyle(""));
-        horaCorteCombo.setOnAction(e -> horaCorteCombo.setStyle(""));
+        diaSemanaCombo.setOnAction(e -> diaSemanaCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;"));
+        horaCorteCombo.setOnAction(e -> horaCorteCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;"));
 
         rootVBox.setOnMousePressed(e -> rootVBox.requestFocus());
-
-        nomeField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
-        telefoneField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
 
         semanalCheck.setFocusTraversable(false);
         diaSemanaCombo.setFocusTraversable(false);
@@ -151,7 +158,7 @@ public class AdicionarClienteController {
         horaCorteCombo.setStyle("");
 
         diaSemanaCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;");
-        horaCorteCombo.setStyle("-fx-background-color: rgb(43,40,40); -fx-text-fill: white; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 2; -fx-border-color: #222; -fx-prompt-text-fill: white;");
+        horaCorteCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;");
 
         boolean semanal = semanalCheck.isSelected();
 
