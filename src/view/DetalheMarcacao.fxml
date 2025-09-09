@@ -5,40 +5,40 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.DetalheMarcacaoController"
             prefWidth="340" prefHeight="520"
-            style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 2;">
+            style="-fx-background-color: rgb(15, 14, 14); -fx-border-width: 0;">
     <top>
         <Label fx:id="tituloLabel"
-               style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 14 0 8 0; -fx-text-fill: #34495e;"
+               style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 14 0 8 0;"
                BorderPane.alignment="CENTER"/>
     </top>
     <center>
         <VBox alignment="TOP_LEFT" spacing="10" style="-fx-padding: 18 32 18 32;">
-            <Label text="Nome: " style="-fx-font-size: 15px;"/>
-            <TextField fx:id="nomeField" editable="false" focusTraversable="false" style="-fx-background-color: #f5f5f5; -fx-font-size: 15px;"/>
+            <Label text="Nome: " style="-fx-text-fill: white; -fx-font-size: 15px;"/>
+            <TextField fx:id="nomeField" editable="false" focusTraversable="false" style="-fx-background-color: white; -fx-font-size: 15px; -fx-background-radius: 12; -fx-border-width: 0;"/>
         
-            <Label text="Telefone: " style="-fx-font-size: 15px;"/>
-            <TextField fx:id="telefoneField" editable="false" focusTraversable="false" style="-fx-background-color: #f5f5f5; -fx-font-size: 15px;"/>
+            <Label text="Telefone: " style="-fx-text-fill: white; -fx-font-size: 15px;"/>
+            <TextField fx:id="telefoneField" editable="false" focusTraversable="false" style="-fx-background-color: white; -fx-font-size: 15px; -fx-background-radius: 12; -fx-border-width: 0;"/>
 
-            <Label text="Duração: " style="-fx-font-size: 15px;"/>
-            <TextField fx:id="duracaoField" editable="false" focusTraversable="false" style="-fx-background-color: #f5f5f5; -fx-font-size: 15px;"/>
+            <Label text="Duração: " style="-fx-text-fill: white; -fx-font-size: 15px;"/>
+            <TextField fx:id="duracaoField" editable="false" focusTraversable="false" style="-fx-background-color: white; -fx-font-size: 15px; -fx-background-radius: 12; -fx-border-width: 0;"/>
 
-            <Label text="Observações: " style="-fx-font-size: 15px;"/>
+            <Label text="Observações: " style="-fx-text-fill: white; -fx-font-size: 15px;"/>
             <TextArea fx:id="observacoesArea" prefRowCount="3" wrapText="true"
-                      style="-fx-background-color: #f5f5f5; -fx-font-size: 15px; -fx-border-radius: 6; -fx-border-color: #888; -fx-border-width: 2;"
+                      style="-fx-background-color: white; -fx-font-size: 15px; -fx-background-radius: 12; -fx-border-width: 0; -fx-padding: 2.5;"
                       focusTraversable="false"/>
 
             <Label fx:id="alterarHoraLabel" text="Alterar Hora"
-                   style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 18 0 8 0;"
+                   style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 18 0 8 0;"
                    alignment="CENTER"
                    maxWidth="Infinity"/>
             <HBox alignment="CENTER" spacing="24">
                 <VBox alignment="CENTER" spacing="4">
-                    <Label fx:id="diaLabel" text="Dia" style="-fx-font-size: 14px"/>
-                    <ComboBox fx:id="diaCombo" prefWidth="110" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;"/>
+                    <Label fx:id="diaLabel" text="Dia" style="-fx-text-fill: white; -fx-font-size: 14px"/>
+                    <ComboBox fx:id="diaCombo" prefWidth="110" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;"/>
                 </VBox>
                 <VBox alignment="CENTER" spacing="4">
-                    <Label fx:id="horaLabel" text="Hora" style="-fx-font-size: 14px;"/>
-                    <ComboBox fx:id="horaCombo" prefWidth="110" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;"/>
+                    <Label fx:id="horaLabel" text="Hora" style="-fx-text-fill: white; -fx-font-size: 14px;"/>
+                    <ComboBox fx:id="horaCombo" prefWidth="110" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;"/>
                 </VBox>
             </HBox>
         </VBox>
@@ -46,9 +46,9 @@
     <bottom>
         <HBox fx:id="botoesBox" alignment="CENTER" spacing="20" style="-fx-padding: 0 0 18 0;">
             <Button fx:id="btnSalvar" text="Salvar"
-                    style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;"/>
+                    style="-fx-background-color: rgb(36, 43, 141); -fx-background-radius: 12; -fx-border-width: 0; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;"/>
             <Button fx:id="btnApagar" text="Apagar"
-                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;"/>
+                    style="-fx-background-color: rgb(128, 26, 15); -fx-background-radius: 12; -fx-border-width: 0; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;"/>
         </HBox>
     </bottom>
 </BorderPane>

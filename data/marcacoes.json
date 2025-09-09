@@ -1570,6 +1570,6 @@
     },
     "duracao": 30,
     "observacoes": "",
-    "falta": false
+    "falta": true
   }
 ]

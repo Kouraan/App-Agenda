@@ -101,6 +101,11 @@ public class AdicionarClienteController {
                                 "-fx-faint-focus-color: transparent;"
                                 );
         });
+        telefoneField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            return newText.matches("\\+?\\d*") ? change : null;
+        }));
+        
         diaSemanaCombo.setOnAction(e -> diaSemanaCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;"));
         horaCorteCombo.setOnAction(e -> horaCorteCombo.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-border-width: 0;"));
 

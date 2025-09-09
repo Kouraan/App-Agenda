@@ -117,6 +117,10 @@ public class AdicionarMarcacaoController implements Initializable {
                 numeroDesconhecidoField.clear();
             }
         });
+        numeroDesconhecidoField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            return newText.matches("\\+?\\d*") ? change : null;
+        }));
 
         // Botão Sair
         btnSair.setOnAction(e -> fechar());
@@ -145,14 +149,14 @@ public class AdicionarMarcacaoController implements Initializable {
             ((VBox)btnSalvar.getParent().getParent()).requestFocus();
         });
 
-        String focusStyle = "-fx-focus-color: #3498db; -fx-faint-focus-color: transparent;";
         String noFocusStyle = "-fx-focus-color: transparent; -fx-faint-focus-color: transparent;";
 
         TextInputControl[] campos = {pesquisaClienteField, nomeDesconhecidoField, numeroDesconhecidoField, observacoesArea};
         for (TextInputControl campo : campos) {
-            campo.setStyle(noFocusStyle);
+            campo.setStyle(campo.getStyle() + noFocusStyle);
             campo.focusedProperty().addListener((obs, oldVal, newVal) -> {
-                campo.setStyle(newVal ? focusStyle : noFocusStyle);
+                String baseStyle = campo.getStyle().replace(noFocusStyle, "");
+                campo.setStyle(baseStyle + noFocusStyle);
             });
         }
 
@@ -162,7 +166,7 @@ public class AdicionarMarcacaoController implements Initializable {
                     pesquisaClienteField.getParent().requestFocus();
                 }
             });
-    });
+        });
     }
 
     private void atualizarTitulo() {

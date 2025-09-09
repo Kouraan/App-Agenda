@@ -352,6 +352,10 @@ public class PendentesController {
             "-fx-focus-color: transparent;" +
             "-fx-faint-focus-color: transparent;"
         );
+        telField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            return newText.matches("\\+?\\d*") ? change : null;
+        }));
 
         Label erroTelefone = new Label();
         erroTelefone.setStyle("-fx-text-fill: rgb(128, 26, 15); -fx-font-size: 13px;");

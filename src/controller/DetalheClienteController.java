@@ -5,6 +5,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.geometry.Insets;
 
 import models.Cliente;
 
@@ -89,6 +90,10 @@ public class DetalheClienteController {
         telefoneField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal) telefoneField.deselect();
         });
+        telefoneField.setTextFormatter(new TextFormatter<>(change -> {
+            String newText = change.getControlNewText();
+            return newText.matches("\\+?\\d*") ? change : null;
+        }));
 
         diaSemanaCombo.setFocusTraversable(false);
         horaCorteCombo.setFocusTraversable(false);
@@ -128,17 +133,20 @@ public class DetalheClienteController {
     }
 
     private void addRow(String titulo, String valor, int row) {
-        Label th = new Label(titulo);
-        th.setStyle("-fx-background-color: #d6eaf8; -fx-text-fill: #222; -fx-font-size: 15px; -fx-font-weight: bold; "
-                + "-fx-padding: 10 18 10 18; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-background-radius: 4;");
+       Label th = new Label(titulo);
+        th.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; "
+                + "-fx-padding: 12 18 12 18; -fx-border-width: 0; -fx-background-radius: 12;");
         th.setMaxWidth(Double.MAX_VALUE);
         th.setMinWidth(140);
 
         Label val = new Label(valor == null ? "—" : valor);
-        val.setStyle("-fx-background-color: #f8fafd; -fx-font-size: 15px; -fx-padding: 10 18 10 18; "
-                + "-fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-background-radius: 4;");
+        val.setStyle("-fx-background-color: rgb(60, 60, 60); -fx-text-fill: white; -fx-font-size: 15px; -fx-padding: 12 18 12 18; "
+                + "-fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12;");
         val.setMaxWidth(Double.MAX_VALUE);
         GridPane.setHgrow(val, Priority.ALWAYS);
+
+        GridPane.setMargin(th, new Insets(0, 8, 16, 0));
+        GridPane.setMargin(val, new Insets(0, 0, 16, 0));
         
         gridVisual.add(th, 0, row);
         gridVisual.add(val, 1, row);
@@ -149,20 +157,20 @@ public class DetalheClienteController {
         Stage parentStage = (Stage) btnApagar.getScene().getWindow();
 
         VBox box = new VBox(24);
-        box.setStyle("-fx-background-color: white; -fx-padding: 32 24 24 24; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-background-radius: 8;");
+        box.setStyle("-fx-background-color: rgb(15, 14, 14); -fx-padding: 32 24 24 24; -fx-border-width: 0;");
         box.setAlignment(javafx.geometry.Pos.CENTER);
 
         Label msg = new Label("Deseja apagar o Cliente? Esta ação é irreversível");
-        msg.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #c0392b; -fx-alignment: center;");
+        msg.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white; -fx-alignment: center;");
         msg.setWrapText(true);
 
         HBox botoes = new HBox(24);
         botoes.setAlignment(javafx.geometry.Pos.CENTER);
 
         Button btnNao = new Button("Não");
-        btnNao.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
+        btnNao.setStyle("-fx-background-color: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
         Button btnSim = new Button("Sim");
-        btnSim.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
+        btnSim.setStyle("-fx-background-color: rgb(128, 26, 15); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
 
         botoes.getChildren().addAll(btnSim, btnNao);
         box.getChildren().addAll(msg, botoes);
@@ -243,6 +251,8 @@ public class DetalheClienteController {
 
         if (editar) {
             preencherCamposEdicao();
+            editBox.requestFocus();
+            nomeField.deselect();
         } else {
             mostrarVisual();
         }
@@ -467,20 +477,20 @@ public class DetalheClienteController {
         Stage parentStage = (Stage) btnSalvar.getScene().getWindow();
     
         VBox box = new VBox(24);
-        box.setStyle("-fx-background-color: white; -fx-padding: 32 24 24 24; -fx-border-color: #bdc3c7; -fx-border-width: 2; -fx-background-radius: 8;");
+        box.setStyle("-fx-background-color: rgb(43, 40, 40); -fx-padding: 32 24 24 24; -fx-border-width: 0;");
         box.setAlignment(javafx.geometry.Pos.CENTER);
     
         Label msg = new Label("Deseja salvar as alterações?");
-        msg.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #27ae60; -fx-alignment: center;");
+        msg.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white; -fx-alignment: center;");
         msg.setWrapText(true);
     
         HBox botoes = new HBox(24);
         botoes.setAlignment(javafx.geometry.Pos.CENTER);
     
         Button btnNao = new Button("Não");
-        btnNao.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #222; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
+        btnNao.setStyle("-fx-background-color: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
         Button btnSim = new Button("Sim");
-        btnSim.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
+        btnSim.setStyle("-fx-background-color: rgb(36, 43, 141); -fx-text-fill: white; -fx-background-radius: 12; -fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 10 32 10 32;");
     
         botoes.getChildren().addAll(btnSim, btnNao);
         box.getChildren().addAll(msg, botoes);

@@ -106,14 +106,14 @@ public class DetalheMarcacaoController {
         if (passou) {
             if (btnFaltou == null) {
                 btnFaltou = new Button("Faltou");
-                btnFaltou.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;");
+                btnFaltou.setStyle("-fx-background-color: rgb(128, 26, 15); -fx-background-radius: 12; -fx-border-width: 0; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;");
                 btnFaltou.setOnAction(e -> marcarFalta());
             }
             if (marcacao.isFalta()) {
                 btnFaltou.setDisable(true);
             } else {
                 btnFaltou.setDisable(false);
-                btnFaltou.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;");
+                btnFaltou.setStyle("-fx-background-color: rgb(128, 26, 15); -fx-background-radius: 12; -fx-border-width: 0; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 90px; -fx-pref-height: 36px;");
             }
             if (!botoesBox.getChildren().contains(btnFaltou)) {
                 int idx = botoesBox.getChildren().indexOf(btnApagar);
