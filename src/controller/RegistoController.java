@@ -33,8 +33,10 @@ public class RegistoController {
             if (e.getCode() == KeyCode.ENTER) handleRegisto();
         });
 
-        nomeField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
-        passwordField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        String baseStyle = "-fx-background-color: white; -fx-border-color: transparent; -fx-background-radius: 14; -fx-border-radius: 14; -fx-font-size: 12px; -fx-font-weight: bold;";
+
+        nomeField.setStyle(baseStyle + " -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        passwordField.setStyle(baseStyle + " -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
         
         stackPaneRoot.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
             if (nomeField.isFocused() && !nomeField.localToScene(nomeField.getBoundsInLocal()).contains(e.getSceneX(), e.getSceneY())) {

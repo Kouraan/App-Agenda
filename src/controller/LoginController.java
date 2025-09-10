@@ -41,8 +41,10 @@ public class LoginController {
             if (e.getCode() == KeyCode.ENTER) handleLogin();
         });
 
-        usernameField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
-        passwordField.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        String baseStyle = "-fx-background-color: white; -fx-border-color: transparent; -fx-background-radius: 14; -fx-border-radius: 14; -fx-font-size: 12px; -fx-font-weight: bold;";
+
+        usernameField.setStyle(baseStyle + " -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        passwordField.setStyle(baseStyle + " -fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
         
         stackPaneRoot.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
             if (usernameField.isFocused() && !usernameField.localToScene(usernameField.getBoundsInLocal()).contains(e.getSceneX(), e.getSceneY())) {
@@ -90,10 +92,11 @@ public class LoginController {
     }
 
     private void setFieldError(TextField field, boolean error) {
+        String baseStyle = "-fx-background-color: white; -fx-background-radius: 14; -fx-border-radius: 14; -fx-font-size: 12px; -fx-font-weight: bold;";
         if (error) {
-            field.setStyle("-fx-border-color: red; -fx-border-width: 2;");
+            field.setStyle(baseStyle + " -fx-border-color: rgb(128, 26, 15); -fx-border-width: 2; -fx-border-radius: 14;");
         } else {
-            field.setStyle("");
+            field.setStyle(baseStyle + "-fx-border-color: transparent; -fx-border-radius: 14; -fx-border-width: 2;");
         }
     }
 }

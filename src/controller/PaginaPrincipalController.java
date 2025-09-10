@@ -714,7 +714,7 @@ public class PaginaPrincipalController implements Initializable {
                     cell.getChildren().add(diaLabel);
 
                     if (data.equals(LocalDate.now())) {
-                        cell.setStyle("-fx-background-color: rgb(255, 215, 0); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
+                        cell.setStyle("-fx-background-color: rgb(189, 166, 35); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
                         diaLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: white; -fx-font-weight: normal;");
                     } else if (utils.Feriados.isFeriado(data)) {
                         cell.setStyle("-fx-background-color: rgb(36, 43, 141); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-cursor: hand;");
@@ -796,7 +796,7 @@ public class PaginaPrincipalController implements Initializable {
             baseStyle += " -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;";
             
             if (isHoje && blocoAtual != null && horaAtual.equals(blocoAtual)) {
-                baseStyle += " -fx-border-color: rgb(255, 215, 0); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;";
+                baseStyle += " -fx-border-color: rgb(189, 166, 35); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;";
             }
 
             final String estiloFinal = baseStyle;
@@ -917,7 +917,7 @@ public class PaginaPrincipalController implements Initializable {
             });
 
             if (dataAtual.equals(hoje)) {
-                cabecalhoPane.setStyle("-fx-background-color:rgb(255, 215, 0); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
+                cabecalhoPane.setStyle("-fx-background-color:rgb(189, 166, 35); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
             } else if (utils.Feriados.isFeriado(dataAtual)) {
                 cabecalhoPane.setStyle("-fx-background-color:rgb(36, 43, 141); -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 0; -fx-padding: 8;");
             } else {
@@ -948,7 +948,7 @@ public class PaginaPrincipalController implements Initializable {
             case DIA:
                 semanaLabel.setText(diaSelecionado.format(diaFmt));
                 if (diaSelecionado.equals(LocalDate.now())) {
-                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: rgb(255, 215, 0);");
+                    semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: rgb(189, 166, 35);");
                 } else if (Feriados.isFeriado(diaSelecionado)) {
                     semanaLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: rgb(36, 43, 141);");
                 } else {
@@ -1134,7 +1134,7 @@ public class PaginaPrincipalController implements Initializable {
 
         celulasDia.forEach((hora, pane) -> {
             if (hora.equals(blocoAtual)) {
-                pane.setStyle("-fx-background-color: rgb(255, 215, 0); -fx-border-color:rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                pane.setStyle("-fx-background-color: rgb(189, 166, 35); -fx-border-color:rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
             } else if (diaSelecionado.getDayOfWeek() == DayOfWeek.SUNDAY) {
                 pane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
             } else {
@@ -1178,7 +1178,7 @@ public class PaginaPrincipalController implements Initializable {
         celulasSemana.forEach((hora, map) -> {
             map.forEach((dia, pane) -> {
                 if (hora.equals(blocoAtual) && dia == diaSemana) {
-                    pane.setStyle("-fx-background-color: rgb(255, 215, 0); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
+                    pane.setStyle("-fx-background-color: rgb(189, 166, 35); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 } else if (dia == 6) { // Domingo
                     pane.setStyle("-fx-background-color: rgba(197, 130, 63, 0.86); -fx-border-color: rgba(197, 130, 63, 0.86); -fx-border-width: 1; -fx-background-radius: 12; -fx-border-radius: 12; -fx-min-height: 40;");
                 } else {
@@ -1338,7 +1338,6 @@ public class PaginaPrincipalController implements Initializable {
 
     private Pane criarBoxMarcacao(Marcacao marcacao, boolean meiaMarcacao, boolean ladoEsquerdo, boolean existeOutraMarcacao) {
         Label nome = new Label(marcacao.getCliente().getNome());
-        nome.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
         nome.setMaxWidth(Double.MAX_VALUE);
         nome.setAlignment(Pos.CENTER_LEFT);
 
@@ -1346,8 +1345,10 @@ public class PaginaPrincipalController implements Initializable {
         
         if (marcacao.isFalta()) {
             box.setStyle("-fx-background-color:rgb(128, 26, 15); -fx-background-radius: 12; -fx-border-radius: 12;");
+            nome.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
         } else {
-            box.setStyle("-fx-background-color:rgb(14, 126, 79); -fx-background-radius: 12; -fx-border-radius: 12;");
+            box.setStyle("-fx-background-color: rgb(247, 221, 151); -fx-background-radius: 12; -fx-border-radius: 12;");
+            nome.setStyle("-fx-text-fill: rgb(43, 40, 40); -fx-font-size: 14px; -fx-font-weight: bold;");
         }
         box.setPrefHeight(32);
 
