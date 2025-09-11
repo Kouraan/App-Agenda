@@ -23,7 +23,8 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setOnCloseRequest(e -> utils.Logger.logAppTerminada());
-        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/fundo.jpg")));
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/icon.jpg")));
+        primaryStage.setTitle("App-Agenda");
         Controller appController = new Controller(primaryStage);
         appController.startApp();
     }

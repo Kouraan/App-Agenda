@@ -34,16 +34,8 @@ MAIN_CLASS = Main
 # Criar os ficheiros JSON se não existirem
 initdata:
 	@mkdir -p $(DATA_DIR)
-	@test -f $(DATA_DIR)/utilizador.json || echo "[]" > $(DATA_DIR)/utilizador.json
-	@test -f $(DATA_DIR)/clientes.json || echo "[]" > $(DATA_DIR)/clientes.json
-	@test -f $(DATA_DIR)/marcacoes.json || echo "[]" > $(DATA_DIR)/marcacoes.json
-	@test -f $(DATA_DIR)/anotacoes.json || echo "\"\"" > $(DATA_DIR)/anotacoes.json
-	@test -f $(DATA_DIR)/pendentes.json || echo "[]" > $(DATA_DIR)/pendentes.json
+	@mkdir -p $(DATA_DIR)/Marcacoes
 	@mkdir -p $(LOG_DIR)
-	@test -f $(LOG_DIR)/logsUtilizador.json || echo "[]" > $(LOG_DIR)/logsUtilizador.json
-	@test -f $(LOG_DIR)/logsClientes.json || echo "[]" > $(LOG_DIR)/logsClientes.json
-	@test -f $(LOG_DIR)/logsMarcacoes.json || echo "[]" > $(LOG_DIR)/logsMarcacoes.json
-	@test -f $(LOG_DIR)/logsPendentes.json || echo "[]" > $(LOG_DIR)/logsPendentes.json
 
 
 # Compilar todas as classes

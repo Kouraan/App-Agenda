@@ -13,12 +13,24 @@ public class Logger {
 
     // Log generico Utilizador
     public static void logUtilizador(String mensagem) {
+        LocalDateTime now = LocalDateTime.now();
         String data = dataAtual();
+        String ano = now.format(DateTimeFormatter.ofPattern("yyyy"));
+        String mes = now.format(DateTimeFormatter.ofPattern("MM"));
         String linha = "[" + data + "]" + mensagem + "\n";
-        String path = "logs/logsUtilizador.json";
+        String dirPath = "logs/" + ano;
+        String filePath = dirPath + "/logsUtilizador" + mes + ".json";
+
         try {
+            // Garante que o diretório existe
+            java.io.File dir = new java.io.File(dirPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            // Ler o ficheiro se existir
             StringBuilder sb = new StringBuilder();
-            java.io.File file = new java.io.File(path);
+            java.io.File file = new java.io.File(filePath);
             if (file.exists()) {
                 try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
                     String l;
@@ -27,7 +39,9 @@ public class Logger {
                     }
                 }
             }
-            try (FileWriter writer = new FileWriter(path, false)) {
+
+            // Escrever o log
+            try (FileWriter writer = new FileWriter(filePath, false)) {
                 writer.write(linha);
                 writer.write(sb.toString());
             }
@@ -63,12 +77,24 @@ public class Logger {
 
     // Log generico Cliete
     public static void logCliente(String mensagem) {
+        LocalDateTime now = LocalDateTime.now();
         String data = dataAtual();
+        String ano = now.format(DateTimeFormatter.ofPattern("yyyy"));
+        String mes = now.format(DateTimeFormatter.ofPattern("MM"));
         String linha = "[" + data + "]" + mensagem + "\n";
-        String path = "logs/logsClientes.json";
+        String dirPath = "logs/" + ano;
+        String filePath = dirPath + "/logsClientes" + mes + ".json";
+
         try {
+            // Garante que o diretório existe
+            java.io.File dir = new java.io.File(dirPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            // Ler o ficheiro se existir
             StringBuilder sb = new StringBuilder();
-            java.io.File file = new java.io.File(path);
+            java.io.File file = new java.io.File(filePath);
             if (file.exists()) {
                 try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
                     String l;
@@ -77,7 +103,9 @@ public class Logger {
                     }
                 }
             }
-            try (FileWriter writer = new FileWriter(path, false)) {
+
+            // Escrever o log
+            try (FileWriter writer = new FileWriter(filePath, false)) {
                 writer.write(linha);
                 writer.write(sb.toString());
             }
@@ -123,7 +151,8 @@ public class Logger {
 
     // Tipo alterado de NORMAL para SEMANAL
     public static void logTipoNormalParaSemanal(String nome, String dia, String hora) {
-        logCliente("Cliente '" + nome + "' alterado de NORMAL para SEMANAL, horário de '" + dia + "' às '" + hora + "'.");
+        logCliente(
+                "Cliente '" + nome + "' alterado de NORMAL para SEMANAL, horário de '" + dia + "' às '" + hora + "'.");
     }
 
     // Horário alterado em SEMANAL
@@ -133,12 +162,24 @@ public class Logger {
 
     // Log generico Marcacao
     public static void logMarcacao(String mensagem) {
+        LocalDateTime now = LocalDateTime.now();
         String data = dataAtual();
+        String ano = now.format(DateTimeFormatter.ofPattern("yyyy"));
+        String mes = now.format(DateTimeFormatter.ofPattern("MM"));
         String linha = "[" + data + "] " + mensagem + "\n";
-        String path = "logs/logsMarcacoes.json";
+        String dirPath = "logs/" + ano;
+        String filePath = dirPath + "/logsMarcacoes" + mes + ".json";
+
         try {
+            // Garante que o diretório existe
+            java.io.File dir = new java.io.File(dirPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            // Ler o ficheiro se existir
             StringBuilder sb = new StringBuilder();
-            java.io.File file = new java.io.File(path);
+            java.io.File file = new java.io.File(filePath);
             if (file.exists()) {
                 try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
                     String l;
@@ -147,7 +188,9 @@ public class Logger {
                     }
                 }
             }
-            try (FileWriter writer = new FileWriter(path, false)) {
+
+            // Escrever o log
+            try (FileWriter writer = new FileWriter(filePath, false)) {
                 writer.write(linha);
                 writer.write(sb.toString());
             }
@@ -174,13 +217,15 @@ public class Logger {
     public static void logMarcacaoObsAlterada(Marcacao marcacao, String obsNova) {
         String nome = marcacao.getCliente() != null ? marcacao.getCliente().getNome() : "N/A";
         String dataHora = marcacao.getDataHora().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        logMarcacao("Observações da marcação de '" + nome + "' em " + dataHora + " alteradas" + " para '" + obsNova + "'.");
+        logMarcacao(
+                "Observações da marcação de '" + nome + "' em " + dataHora + " alteradas" + " para '" + obsNova + "'.");
     }
 
     // Log de alteração de data/hora
     public static void logMarcacaoDataHoraAlterada(Marcacao marcacao, String dataHoraAntiga, String dataHoraNova) {
         String nome = marcacao.getCliente() != null ? marcacao.getCliente().getNome() : "N/A";
-        logMarcacao("Data/hora da marcação de '" + nome + "' alterada de " + dataHoraAntiga + " para " + dataHoraNova + ".");
+        logMarcacao("Data/hora da marcação de '" + nome + "' alterada de " + dataHoraAntiga + " para " + dataHoraNova
+                + ".");
     }
 
     // Log de Falta à Marcacao
@@ -192,12 +237,24 @@ public class Logger {
 
     // Log genérico Pendente
     public static void logPendente(String mensagem) {
+        LocalDateTime now = LocalDateTime.now();
         String data = dataAtual();
+        String ano = now.format(DateTimeFormatter.ofPattern("yyyy"));
+        String mes = now.format(DateTimeFormatter.ofPattern("MM"));
         String linha = "[" + data + "]" + mensagem + "\n";
-        String path = "logs/logsPendentes.json";
+        String dirPath = "logs/" + ano;
+        String filePath = dirPath + "/logsPendentes" + mes + ".json";
+
         try {
+            // Garante que o diretório existe
+            java.io.File dir = new java.io.File(dirPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            // Ler o ficheiro se existir
             StringBuilder sb = new StringBuilder();
-            java.io.File file = new java.io.File(path);
+            java.io.File file = new java.io.File(filePath);
             if (file.exists()) {
                 try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
                     String l;
@@ -206,7 +263,9 @@ public class Logger {
                     }
                 }
             }
-            try (FileWriter writer = new FileWriter(path, false)) {
+
+            // Escrever o log
+            try (FileWriter writer = new FileWriter(filePath, false)) {
                 writer.write(linha);
                 writer.write(sb.toString());
             }
