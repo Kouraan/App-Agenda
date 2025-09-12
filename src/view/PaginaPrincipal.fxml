@@ -58,7 +58,7 @@
                         fx:id="anotacoesArea"
                         promptText="Escreva suas anotações aqui..."
                         wrapText="true"
-                        style="-fx-font-size: 14px; -fx-background-color: rgb(60, 60, 60); -fx-control-inner-background: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: white; -fx-background-insets: 0; -fx-border-width: 2px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-highlight-fill: #444; -fx-highlight-text-fill: white;"
+                        style="-fx-font-size: 14px; -fx-prompt-text-fill: white; -fx-background-color: rgb(60, 60, 60); -fx-control-inner-background: rgb(60, 60, 60); -fx-text-fill: white; -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: white; -fx-background-insets: 0; -fx-border-width: 2px; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-highlight-fill: #444; -fx-highlight-text-fill: white;"
                         VBox.vgrow="ALWAYS"
                         maxWidth="Infinity"
                         prefWidth="Infinity"/>
