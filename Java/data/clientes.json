@@ -1,0 +1,11 @@
+[
+  {
+    "nome": "Nuno Silva",
+    "numeroTelefone": "913332902",
+    "tipoCliente": "SEMANAL",
+    "faltas": 1,
+    "diaSemana": "Quarta",
+    "horaCorte": "11:00",
+    "rapido": false
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "dataHora": "2026-01-28T11:00",
+    "cliente": {
+      "nome": "Nuno Silva",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "SEMANAL",
+      "faltas": 0,
+      "diaSemana": "Quarta",
+      "horaCorte": "11:00",
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": true
+  }
+]

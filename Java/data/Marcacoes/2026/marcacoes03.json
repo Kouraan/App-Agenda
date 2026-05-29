@@ -1,0 +1,62 @@
+[
+  {
+    "dataHora": "2026-03-04T11:00",
+    "cliente": {
+      "nome": "Nuno Silva",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "SEMANAL",
+      "faltas": 0,
+      "diaSemana": "Quarta",
+      "horaCorte": "11:00",
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": false
+  },
+  {
+    "dataHora": "2026-03-11T11:00",
+    "cliente": {
+      "nome": "Nuno Silva",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "SEMANAL",
+      "faltas": 0,
+      "diaSemana": "Quarta",
+      "horaCorte": "11:00",
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": false
+  },
+  {
+    "dataHora": "2026-03-18T11:00",
+    "cliente": {
+      "nome": "Nuno Silva",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "SEMANAL",
+      "faltas": 0,
+      "diaSemana": "Quarta",
+      "horaCorte": "11:00",
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": false
+  },
+  {
+    "dataHora": "2026-03-25T11:00",
+    "cliente": {
+      "nome": "Nuno Silva",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "SEMANAL",
+      "faltas": 0,
+      "diaSemana": "Quarta",
+      "horaCorte": "11:00",
+      "rapido": false
+    },
+    "duracao": 30,
+    "observacoes": "",
+    "falta": false
+  }
+]

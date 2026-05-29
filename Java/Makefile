@@ -7,7 +7,7 @@ RES_DIR = resources
 LIB_DIR = lib
 DATA_DIR = data
 LOG_DIR = logs
-JAVAFX_LIB = ../javafx-sdk/lib
+JAVAFX_LIB = ../../javafx-sdk-21.0.2/lib
 
 # Módulos JavaFX necessários
 JAVAFX_MODULES = javafx.controls,javafx.fxml
