@@ -72,7 +72,7 @@ class MainApp:
         )
         
         # Log de aplicação iniciada
-        from backend.utils.Logger import Logger
+        from backend.utils import Logger
         Logger.log_app_iniciada()
         
         # Callback para quando a janela fechar

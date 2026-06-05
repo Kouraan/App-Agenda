@@ -6,9 +6,9 @@ from ..models.Utilizador import Utilizador
 from ..models.Cliente import Cliente, TipoCliente
 from ..models.Marcacao import Marcacao
 from ..models.Pendente import Pendente
-from ..utils.Persistencia import Persistencia
-from ..utils.Logger import Logger
-from ..repository.ClienteRepo import ClientesRepository
+from backend.utils import Persistencia
+from backend.utils import Logger
+from ..utils import Database
 from ..utils.MarcacoesSemanais import MarcacoesSemanais
 
 class AppController:
@@ -19,24 +19,29 @@ class AppController:
         self.pendentes: List[Pendente] = []
         
     def initialize(self):
-        """Carrega dados iniciais"""
+        """Carrega dados iniciais — versão com SQLite."""
+ 
+        # 1. Garantir que as tabelas existem
+        Database.inicializar_bd()
+ 
+        # 2. Se ainda existirem ficheiros JSON antigos, migrar uma única vez
+        #    (a função é idempotente — não duplica dados)
+        Database.migrar_de_json()
+ 
+        # 3. Carregar dados (agora vêm da BD via Persistencia)
         self.utilizador = Persistencia.ler_utilizador()
         self.clientes_map = Persistencia.ler_clientes()
         self.marcacoes_map = Persistencia.ler_marcacoes()
         self.pendentes = Persistencia.ler_pendentes()
-        
-        # DEBUG: informar o que foi carregado
-        try:
-            nome = self.utilizador.get_nome() if self.utilizador else None
-        except Exception:
-            nome = None
-            
-        # Garantir marcações semanais para clientes SEMANAIS (gera até 6 meses à frente)
+ 
+        # 4. Gerar marcações semanais em falta (igual ao original)
         try:
             from datetime import date
             for cliente in list(self.clientes_map.values()):
                 try:
-                    novas = MarcacoesSemanais.gerar_marcacoes_semanais(cliente, self.marcacoes_map, date.today(), meses_a_frente=6)
+                    novas = MarcacoesSemanais.gerar_marcacoes_semanais(
+                        cliente, self.marcacoes_map, date.today(), meses_a_frente=6
+                    )
                     for m in novas:
                         try:
                             Logger.log_marcacao_criada(m)
@@ -44,10 +49,10 @@ class AppController:
                             pass
                 except Exception:
                     continue
-            # persistir se gerou algo novo
             Persistencia.guardar_marcacoes(self.marcacoes_map)
         except Exception:
             pass
+
         
     # Getters para JavaScript
     def get_clientes_map(self):
@@ -269,16 +274,6 @@ class AppController:
         else:
             return {"success": False, "error": "Erro ao guardar utilizador."}
     
-    def fazer_login(self, nome: str, password: str):
-        """Faz login do utilizador"""
-        from ..repository.UtilizadorRepo import UtilizadorRepository
-        
-        if UtilizadorRepository.autenticar(nome, password, self.utilizador):
-            Logger.log_login(nome)
-            return {"success": True, "message": "Login efetuado com sucesso!"}
-        else:
-            return {"success": False, "error": "Credenciais inválidas."}
-    
     def get_utilizador_info(self):
         """Retorna informações do utilizador atual"""
         # garantir que temos o utilizador carregado (tenta ler da persistência se necessário)
@@ -294,16 +289,6 @@ class AppController:
                 "authenticated": True
             }
         return {"authenticated": False}
-    
-    def fazer_login(self, nome: str, password: str):
-        """Faz login do utilizador"""
-        from ..repository.UtilizadorRepo import UtilizadorRepository
-        
-        if UtilizadorRepository.autenticar(nome, password, self.utilizador):
-            Logger.log_login(nome)
-            return {"success": True, "message": "Login efetuado com sucesso!"}
-        else:
-            return {"success": False, "error": "Credenciais inválidas."}
     
     def fazer_logout(self):
         """Faz logout do utilizador"""
@@ -334,7 +319,6 @@ class AppController:
     def guardar_anotacoes(self, texto: str):
         """Guarda anotações do utilizador"""
         try:
-            from ..utils.Persistencia import Persistencia
             Persistencia.guardar_anotacoes(texto)
             return {"success": True, "message": "Anotações guardadas."}
         except Exception as e:
@@ -343,7 +327,6 @@ class AppController:
     def ler_anotacoes(self):
         """Lê anotações do utilizador"""
         try:
-            from ..utils.Persistencia import Persistencia
             texto = Persistencia.ler_anotacoes()
             return {"success": True, "texto": texto}
         except Exception as e:
@@ -425,7 +408,7 @@ class AppController:
                 if hasattr(Persistencia, "guardar_clientes"):
                     saved = Persistencia.guardar_clientes(self.clientes_map)
                 elif hasattr(Persistencia, "guardarClientes"):
-                    saved = Persistencia.guardarClientes(self.clientes_map)
+                    saved = Persistencia.guardar_clientes(self.clientes_map)
                 else:
                     saved = False
 
