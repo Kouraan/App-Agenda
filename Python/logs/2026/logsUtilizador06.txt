@@ -1,0 +1,8 @@
+[05/06/2026 12:04:35] Aplicação terminada.
+[05/06/2026 12:04:30] Utilizador 'Marco' efetuou login na sua conta.
+[05/06/2026 12:04:24] Aplicação iniciada.
+[05/06/2026 12:03:35] Aplicação terminada.
+[05/06/2026 12:03:33] Utilizador 'Marco' deu logout da sua conta.
+[05/06/2026 12:01:15] Utilizador 'Marco' efetuou login na sua conta.
+[05/06/2026 12:01:11] Novo utilizador registado com o nome: 'Marco'.
+[05/06/2026 12:01:05] Aplicação iniciada.

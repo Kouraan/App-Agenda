@@ -1,0 +1,32 @@
+# --- Sistema / Editor ---
+.DS_Store
+Thumbs.db
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambientes virtuais
+venv/
+env/
+.venv/
+Pipfile.lock
+
+# Configs de IDE
+.vscode/
+.idea/
+
+# --- Build / Distribuição ---
+build/
+dist/
+*.egg-info/
+*.spec
+
+# PyInstaller artefactos
+dist/
+build/
+
+# Ficheiros sensíveis / ambiente
+.env
+*.pem

@@ -1,0 +1,5 @@
+[05/06/2026 12:03:22] Cliente 'blabla' apagado.
+[05/06/2026 12:03:18] Cliente 'blabla' criado.
+[05/06/2026 12:02:45] Nome do Cliente 'Marco' alterado para 'Marco Silva'.
+[05/06/2026 12:02:38] Cliente 'Nuno Silva' criado.
+[05/06/2026 12:01:56] Cliente 'Marco' criado.

@@ -1,15 +1,18 @@
 import webview
 import os
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, List, Optional
+
 from ..models.Utilizador import Utilizador
 from ..models.Cliente import Cliente, TipoCliente
 from ..models.Marcacao import Marcacao
 from ..models.Pendente import Pendente
-from backend.utils import Persistencia
-from backend.utils import Logger
+from ..utils import Persistencia
+from ..utils import Logger
 from ..utils import Database
+from ..utils.Validation import Validation
 from ..utils.MarcacoesSemanais import MarcacoesSemanais
+
 
 class AppController:
     def __init__(self):
@@ -17,26 +20,28 @@ class AppController:
         self.clientes_map: Dict[str, Cliente] = {}
         self.marcacoes_map: Dict[datetime, Marcacao] = {}
         self.pendentes: List[Pendente] = []
-        
+
+    # -------------------------------------------------------------------------
+    # INICIALIZAÇÃO
+    # -------------------------------------------------------------------------
+
     def initialize(self):
-        """Carrega dados iniciais — versão com SQLite."""
- 
+        """Carrega dados iniciais a partir da base de dados SQLite."""
+
         # 1. Garantir que as tabelas existem
         Database.inicializar_bd()
- 
-        # 2. Se ainda existirem ficheiros JSON antigos, migrar uma única vez
-        #    (a função é idempotente — não duplica dados)
+
+        # 2. Migrar JSON antigos para a BD (idempotente — seguro correr sempre)
         Database.migrar_de_json()
- 
-        # 3. Carregar dados (agora vêm da BD via Persistencia)
-        self.utilizador = Persistencia.ler_utilizador()
-        self.clientes_map = Persistencia.ler_clientes()
+
+        # 3. Carregar dados da BD
+        self.utilizador    = Persistencia.ler_utilizador()
+        self.clientes_map  = Persistencia.ler_clientes()
         self.marcacoes_map = Persistencia.ler_marcacoes()
-        self.pendentes = Persistencia.ler_pendentes()
- 
-        # 4. Gerar marcações semanais em falta (igual ao original)
+        self.pendentes     = Persistencia.ler_pendentes()
+
+        # 4. Gerar marcações semanais em falta (até 6 meses à frente)
         try:
-            from datetime import date
             for cliente in list(self.clientes_map.values()):
                 try:
                     novas = MarcacoesSemanais.gerar_marcacoes_semanais(
@@ -53,230 +58,85 @@ class AppController:
         except Exception:
             pass
 
-        
-    # Getters para JavaScript
-    def get_clientes_map(self):
-        """Retorna mapa de clientes para JavaScript"""
-        return {nome: self._cliente_to_dict(cliente) 
-                for nome, cliente in self.clientes_map.items()}
-    
-    def get_marcacoes_map(self):
-        """Retorna marcações para JavaScript"""
-        return {dt.isoformat(): self._marcacao_to_dict(marcacao)
-                for dt, marcacao in self.marcacoes_map.items()}
-    
-    def get_pendentes(self):
-        """Retorna pendentes para JavaScript"""
-        return [self._pendente_to_dict(p) for p in self.pendentes]
-    
-    def _get_html_path(self, filename):
-        """Retorna caminho absoluto para ficheiro HTML"""
-        # Ir até à raiz do projeto (onde está main.py)
-        current_dir = os.path.dirname(os.path.abspath(__file__))  # backend/controllers/
-        backend_dir = os.path.dirname(current_dir)                # backend/
-        project_root = os.path.dirname(backend_dir)               # AppAgenda/
-        
-        html_path = os.path.join(project_root, 'ui', 'html', filename)
-        
-        # Debug: verificar se o ficheiro existe
+    # -------------------------------------------------------------------------
+    # NAVEGAÇÃO ENTRE PÁGINAS
+    # -------------------------------------------------------------------------
+
+    def _get_html_path(self, filename: str) -> str:
+        """Devolve o URL file:// para um ficheiro HTML da pasta ui/html/."""
+        current_dir  = os.path.dirname(os.path.abspath(__file__))  # controllers/
+        backend_dir  = os.path.dirname(current_dir)                # backend/
+        project_root = os.path.dirname(backend_dir)                # Python/
+        html_path    = os.path.join(project_root, "ui", "html", filename)
         if not os.path.exists(html_path):
-            print(f"Aviso: Ficheiro HTML não encontrado em {html_path}")
-        
+            print(f"[AppController] Aviso: ficheiro HTML não encontrado em {html_path}")
         return f"file://{html_path}"
-        
-    
-    # Navegação entre páginas
+
     def mostrar_login(self):
-        """Navegar para página de login"""
         try:
-            webview.windows[0].load_url(self._get_html_path('login.html'))
+            webview.windows[0].load_url(self._get_html_path("login.html"))
             return {"success": True}
         except Exception as e:
-            print(f"Erro ao navegar para login: {e}")
+            print(f"[AppController] mostrar_login: {e}")
             return {"success": False, "error": str(e)}
-    
+
     def mostrar_registo(self):
-        """Navegar para página de registo"""
         try:
-            webview.windows[0].load_url(self._get_html_path('registo.html'))
+            webview.windows[0].load_url(self._get_html_path("registo.html"))
             return {"success": True}
         except Exception as e:
-            print(f"Erro ao navegar para registo: {e}")
+            print(f"[AppController] mostrar_registo: {e}")
             return {"success": False, "error": str(e)}
-    
+
     def mostrar_pagina_principal(self):
-        """Navegar para página principal"""
         try:
-            webview.windows[0].load_url(self._get_html_path('pagina_principal.html'))
+            webview.windows[0].load_url(self._get_html_path("pagina_principal.html"))
             return {"success": True}
         except Exception as e:
-            print(f"Erro ao navegar para página principal: {e}")
-            return {"success": False, "error": str(e)}
-        
-    def mostrar_detalhe_cliente(self, nome: str):
-        """Abre a página de detalhe do cliente (passa nome via query string)"""
-        try:
-            if not nome:
-                return {"success": False, "error": "Nome não fornecido"}
-            from urllib.parse import quote
-            url = self._get_html_path('detalhe_cliente.html') + f'?nome={quote(nome)}'
-            webview.windows[0].load_url(url)
-            return {"success": True}
-        except Exception as e:
-            print(f"Erro ao abrir detalhe cliente: {e}")
-            return {"success": False, "error": str(e)}
-            
-    def get_cliente(self, nome: str):
-        """Retorna dados do cliente por nome"""
-        try:
-            if not nome or nome not in self.clientes_map:
-                return {"success": False, "error": "Cliente não encontrado"}
-            cliente = self.clientes_map[nome]
-            return {"success": True, "cliente": self._cliente_to_dict(cliente)}
-        except Exception as e:
+            print(f"[AppController] mostrar_pagina_principal: {e}")
             return {"success": False, "error": str(e)}
 
-    def apagar_cliente(self, nome: str):
-        """Apaga cliente e marcações futuras associadas"""
-        try:
-            if not nome or nome not in self.clientes_map:
-                return {"success": False, "error": "Cliente não encontrado"}
+    # -------------------------------------------------------------------------
+    # AUTENTICAÇÃO
+    # -------------------------------------------------------------------------
 
-            cliente = self.clientes_map[nome]
-            # Remover marcações futuras desse cliente
-            from datetime import date
-            hoje = date.today()
-            to_remove = [dt for dt, m in self.marcacoes_map.items()
-                         if m.get_cliente().get_nome() == cliente.get_nome() and not dt.date() < hoje]
-            for dt in to_remove:
-                del self.marcacoes_map[dt]
-
-            # Persistir mudanças
-            Persistencia.guardar_marcacoes(self.marcacoes_map)
-            del self.clientes_map[nome]
-            Persistencia.guardar_clientes(self.clientes_map)
-            try:
-                Logger.log_cliente_apagado(cliente.get_nome())
-            except Exception:
-                pass
-            return {"success": True}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-
-    def alterar_cliente(self, cliente_dict):
-        """Altera um cliente (recebe dicionário vindo do JS).
-           cliente_dict deve conter nomeOriginal, nome, numeroTelefone, tipoCliente, diaSemana, horaCorte, faltas, rapido
-        """
-        try:
-            if not cliente_dict or "nomeOriginal" not in cliente_dict:
-                return {"success": False, "error": "Dados inválidos"}
-
-            nome_original = cliente_dict.get("nomeOriginal")
-            if nome_original not in self.clientes_map:
-                return {"success": False, "error": "Cliente original não encontrado"}
-
-            # Converter tipo
-            tipo_raw = cliente_dict.get("tipoCliente", "NORMAL")
-            tipo = TipoCliente.NORMAL
-            try:
-                if isinstance(tipo_raw, str):
-                    try:
-                        tipo = TipoCliente[tipo_raw.upper()]
-                    except KeyError:
-                        try:
-                            tipo = TipoCliente(tipo_raw)
-                        except Exception:
-                            tipo = TipoCliente.NORMAL
-            except Exception:
-                tipo = TipoCliente.NORMAL
-
-            # criar/atualizar cliente
-            novo_nome = cliente_dict.get("nome", "").strip()
-            numero = cliente_dict.get("numeroTelefone", "").strip()
-            dia_semana = cliente_dict.get("diaSemana")
-            hora_corte = cliente_dict.get("horaCorte")
-            faltas = int(cliente_dict.get("faltas", 0))
-            rapido = bool(cliente_dict.get("rapido", False))
-
-            # Validações usando Validation
-            from ..utils.Validation import Validation
-
-            # Se o nome mudou para outro que já existe -> erro
-            if novo_nome != nome_original and any(c.get_nome().lower() == novo_nome.lower() for c in self.clientes_map.values()):
-                return {"success": False, "error": "Já existe um cliente com esse nome."}
-            if any(c.get_numero_telefone() == numero and c.get_nome() != nome_original for c in self.clientes_map.values()):
-                return {"success": False, "error": "Já existe um cliente com esse número de telefone."}
-
-            # Montar objeto Cliente
-            if tipo == TipoCliente.SEMANAL:
-                novo = Cliente(novo_nome, numero, tipo, dia_semana, hora_corte, rapido)
-            else:
-                novo = Cliente(novo_nome, numero, tipo)
-            novo.set_faltas(faltas)
-
-            if not Validation.cliente_valido(novo, {k:v for k,v in self.clientes_map.items() if k != nome_original}):
-                return {"success": False, "error": "Dados do cliente inválidos ou duplicados."}
-
-            # Substituir no mapa (mover chave se nome alterado)
-            if novo_nome != nome_original:
-                del self.clientes_map[nome_original]
-            self.clientes_map[novo.get_nome()] = novo
-            # Persistir
-            Persistencia.guardar_clientes(self.clientes_map)
-            # Logs
-            try:
-                Logger.log_nome_alterado(nome_original, novo.get_nome()) if nome_original != novo.get_nome() else None
-            except Exception:
-                pass
-            
-            # Remover marcações futuras do cliente antigo e regenerar semanais (se aplicável)
-            try:
-                from datetime import date
-                hoje = date.today()
-                # remover do mapa quaisquer marcações futuras deste cliente
-                to_remove = [dt for dt, m in self.marcacoes_map.items()
-                             if m.get_cliente().get_nome() == nome_original and not dt.date() < hoje]
-                for dt in to_remove:
-                    del self.marcacoes_map[dt]
-                # se novo for semanal, gerar e persistir
-                if novo.get_tipo_cliente() == TipoCliente.SEMANAL:
-                    novas = MarcacoesSemanais.gerar_marcacoes_semanais(novo, self.marcacoes_map, hoje, meses_a_frente=6)
-                    for m in novas:
-                        try:
-                            Logger.log_marcacao_criada(m)
-                        except Exception:
-                            pass
-                # persistir marcacoes atualizadas
-                Persistencia.guardar_marcacoes(self.marcacoes_map)
-            except Exception:
-                pass
-            return {"success": True}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-    
-    # Métodos de autenticação (para JavaScript)
     def registar_utilizador(self, nome: str, password: str):
-        """Regista novo utilizador"""
-        from ..utils.Validation import Validation
-        
+        """Regista um novo utilizador (usado na página de registo)."""
         if not Validation.nome_valido(nome):
             return {"success": False, "error": "Nome inválido."}
-        
+
         if not Validation.password_valida(password):
             return {"success": False, "error": "Password tem de ter mais de 5 caracteres."}
-        
+
         novo_utilizador = Utilizador(nome, password)
-        
+
         if Persistencia.guardar_utilizador(novo_utilizador):
             self.utilizador = novo_utilizador
             Logger.log_registo(nome)
             return {"success": True, "message": "Utilizador registado com sucesso!"}
         else:
             return {"success": False, "error": "Erro ao guardar utilizador."}
-    
+
+    def fazer_login(self, nome: str, password: str):
+        """Autentica o utilizador. Chamado pelo JavaScript da página de login."""
+        if (self.utilizador is not None and
+                self.utilizador.get_nome() == nome and
+                self.utilizador.get_password() == password):
+            Logger.log_login(nome)
+            return {"success": True, "message": "Login efetuado com sucesso!"}
+        else:
+            return {"success": False, "error": "Credenciais inválidas."}
+
+    def fazer_logout(self):
+        """Faz logout do utilizador atual."""
+        if self.utilizador:
+            Logger.log_logout(self.utilizador.get_nome())
+            return {"success": True, "message": "Logout efetuado com sucesso!"}
+        return {"success": False, "error": "Nenhum utilizador logado."}
+
     def get_utilizador_info(self):
-        """Retorna informações do utilizador atual"""
-        # garantir que temos o utilizador carregado (tenta ler da persistência se necessário)
+        """Retorna informação do utilizador para o JavaScript."""
+        # Se por alguma razão não está em memória, tenta recarregar da BD
         if not self.utilizador:
             try:
                 self.utilizador = Persistencia.ler_utilizador()
@@ -289,187 +149,327 @@ class AppController:
                 "authenticated": True
             }
         return {"authenticated": False}
-    
-    def fazer_logout(self):
-        """Faz logout do utilizador"""
-        if self.utilizador:
-            Logger.log_logout(self.utilizador.get_nome())
-            return {"success": True, "message": "Logout efetuado com sucesso!"}
-        return {"success": False, "error": "Nenhum utilizador logado."}
-    
-    def get_current_time(self):
-        """Retorna hora atual formatada"""
-        from datetime import datetime
-        return datetime.now().strftime("%H:%M:%S")
-    
+
+    # -------------------------------------------------------------------------
+    # CLIENTES — leitura
+    # -------------------------------------------------------------------------
+
+    def get_clientes_map(self):
+        """Devolve o mapa de clientes serializado para JavaScript."""
+        return {
+            nome: self._cliente_to_dict(cliente)
+            for nome, cliente in self.clientes_map.items()
+        }
+
+    def get_cliente(self, nome: str):
+        """Devolve dados de um cliente específico."""
+        if not nome or nome not in self.clientes_map:
+            return {"success": False, "error": "Cliente não encontrado"}
+        return {"success": True, "cliente": self._cliente_to_dict(self.clientes_map[nome])}
+
+    # -------------------------------------------------------------------------
+    # CLIENTES — escrita
+    # -------------------------------------------------------------------------
+
+    def adicionar_cliente(self, cliente_dict: dict):
+        """Adiciona um novo cliente recebido do JavaScript."""
+        try:
+            nome     = cliente_dict.get("nome", "").strip()
+            numero   = cliente_dict.get("numeroTelefone", "").strip()
+            tipo_raw = cliente_dict.get("tipoCliente", "NORMAL")
+            dia      = cliente_dict.get("diaSemana")
+            hora     = cliente_dict.get("horaCorte")
+            rapido   = bool(cliente_dict.get("rapido", False))
+
+            if not nome:
+                return {"success": False, "error": "Campo 'nome' obrigatório."}
+
+            tipo = self._converter_tipo(tipo_raw)
+
+            if tipo == TipoCliente.SEMANAL:
+                novo = Cliente(nome, numero, tipo, dia, hora, rapido)
+            else:
+                novo = Cliente(nome, numero, tipo)
+
+            if not Validation.cliente_valido(novo, self.clientes_map):
+                return {"success": False, "error": "Dados do cliente inválidos ou duplicados."}
+
+            self.clientes_map[novo.get_nome()] = novo
+
+            if not Persistencia.guardar_clientes(self.clientes_map):
+                # reverter mapa em memória se a BD falhou
+                del self.clientes_map[novo.get_nome()]
+                return {"success": False, "error": "Erro ao guardar cliente."}
+
+            Logger.log_cliente_criado(novo.get_nome())
+
+            # Gerar marcações semanais se aplicável
+            if novo.get_tipo_cliente() == TipoCliente.SEMANAL:
+                self._gerar_e_guardar_semanais(novo)
+
+            return {"success": True, "message": "Cliente adicionado com sucesso."}
+
+        except Exception as e:
+            print(f"[AppController] adicionar_cliente: {e}")
+            return {"success": False, "error": str(e)}
+
+    def alterar_cliente(self, cliente_dict: dict):
+        """Altera um cliente existente com os dados recebidos do JavaScript."""
+        try:
+            if not cliente_dict or "nomeOriginal" not in cliente_dict:
+                return {"success": False, "error": "Dados inválidos"}
+
+            nome_original = cliente_dict.get("nomeOriginal")
+            if nome_original not in self.clientes_map:
+                return {"success": False, "error": "Cliente original não encontrado"}
+
+            novo_nome = cliente_dict.get("nome", "").strip()
+            numero    = cliente_dict.get("numeroTelefone", "").strip()
+            tipo_raw  = cliente_dict.get("tipoCliente", "NORMAL")
+            dia       = cliente_dict.get("diaSemana")
+            hora      = cliente_dict.get("horaCorte")
+            faltas    = int(cliente_dict.get("faltas", 0))
+            rapido    = bool(cliente_dict.get("rapido", False))
+
+            tipo = self._converter_tipo(tipo_raw)
+
+            # Verificar duplicados excluindo o próprio cliente
+            outros = {k: v for k, v in self.clientes_map.items() if k != nome_original}
+            if novo_nome != nome_original and any(
+                c.get_nome().lower() == novo_nome.lower() for c in outros.values()
+            ):
+                return {"success": False, "error": "Já existe um cliente com esse nome."}
+            if any(
+                c.get_numero_telefone() == numero for c in outros.values()
+            ):
+                return {"success": False, "error": "Já existe um cliente com esse número de telefone."}
+
+            if tipo == TipoCliente.SEMANAL:
+                novo = Cliente(novo_nome, numero, tipo, dia, hora, rapido)
+            else:
+                novo = Cliente(novo_nome, numero, tipo)
+            novo.set_faltas(faltas)
+
+            if not Validation.cliente_valido(novo, outros):
+                return {"success": False, "error": "Dados do cliente inválidos ou duplicados."}
+
+            # Atualizar mapa em memória
+            if novo_nome != nome_original:
+                del self.clientes_map[nome_original]
+            self.clientes_map[novo.get_nome()] = novo
+
+            Persistencia.guardar_clientes(self.clientes_map)
+
+            # Logs de alteração
+            if nome_original != novo.get_nome():
+                Logger.log_nome_alterado(nome_original, novo.get_nome())
+
+            # Gerir marcações futuras
+            self._reprocessar_semanais(nome_original, novo)
+
+            return {"success": True}
+
+        except Exception as e:
+            print(f"[AppController] alterar_cliente: {e}")
+            return {"success": False, "error": str(e)}
+
+    def apagar_cliente(self, nome: str):
+        """Apaga um cliente e as suas marcações futuras."""
+        try:
+            if not nome or nome not in self.clientes_map:
+                return {"success": False, "error": "Cliente não encontrado"}
+
+            cliente = self.clientes_map[nome]
+
+            # Remover marcações futuras do mapa em memória
+            hoje_dt = datetime.combine(date.today(), datetime.min.time())
+            to_remove = [
+                dt for dt, m in self.marcacoes_map.items()
+                if m.get_cliente().get_nome() == nome and dt >= hoje_dt
+            ]
+            for dt in to_remove:
+                del self.marcacoes_map[dt]
+
+            Persistencia.guardar_marcacoes(self.marcacoes_map)
+
+            del self.clientes_map[nome]
+            Persistencia.guardar_clientes(self.clientes_map)
+
+            Logger.log_cliente_apagado(cliente.get_nome())
+
+            return {"success": True}
+
+        except Exception as e:
+            print(f"[AppController] apagar_cliente: {e}")
+            return {"success": False, "error": str(e)}
+
+    # -------------------------------------------------------------------------
+    # MARCAÇÕES — leitura
+    # -------------------------------------------------------------------------
+
+    def get_marcacoes_map(self):
+        """Devolve o mapa de marcações serializado para JavaScript."""
+        return {
+            dt.isoformat(): self._marcacao_to_dict(marcacao)
+            for dt, marcacao in self.marcacoes_map.items()
+        }
+
     def get_marcacoes_periodo(self, data_inicio: str, data_fim: str):
-        """Retorna marcações de um período"""
-        from datetime import datetime
-        
-        inicio = datetime.fromisoformat(data_inicio)
-        fim = datetime.fromisoformat(data_fim)
-        
-        marcacoes_periodo = {}
-        for data_hora, marcacao in self.marcacoes_map.items():
-            if inicio <= data_hora <= fim:
-                marcacoes_periodo[data_hora.isoformat()] = self._marcacao_to_dict(marcacao)
-        
-        return marcacoes_periodo
-    
+        """Devolve marcações dentro de um período (datas ISO)."""
+        try:
+            inicio = datetime.fromisoformat(data_inicio)
+            fim    = datetime.fromisoformat(data_fim)
+            return {
+                dt.isoformat(): self._marcacao_to_dict(m)
+                for dt, m in self.marcacoes_map.items()
+                if inicio <= dt <= fim
+            }
+        except Exception as e:
+            print(f"[AppController] get_marcacoes_periodo: {e}")
+            return {}
+
+    # -------------------------------------------------------------------------
+    # MARCAÇÕES — escrita
+    # -------------------------------------------------------------------------
+
+    def criar_marcacao(self, cliente_nome: str, data_hora: str,
+                       duracao: int, observacoes: str = ""):
+        """Cria uma nova marcação (chamada pelo JavaScript)."""
+        try:
+            if cliente_nome not in self.clientes_map:
+                return {"success": False, "error": "Cliente não encontrado."}
+
+            data_hora_obj = datetime.fromisoformat(data_hora)
+            cliente = self.clientes_map[cliente_nome]
+
+            nova = Marcacao(cliente, data_hora_obj, duracao, observacoes)
+            self.marcacoes_map[data_hora_obj] = nova
+
+            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            Logger.log_marcacao_criada(nova)
+
+            return {"success": True, "message": "Marcação criada com sucesso."}
+
+        except Exception as e:
+            print(f"[AppController] criar_marcacao: {e}")
+            return {"success": False, "error": str(e)}
+
+    # -------------------------------------------------------------------------
+    # ANOTAÇÕES
+    # -------------------------------------------------------------------------
+
     def guardar_anotacoes(self, texto: str):
-        """Guarda anotações do utilizador"""
         try:
             Persistencia.guardar_anotacoes(texto)
             return {"success": True, "message": "Anotações guardadas."}
         except Exception as e:
             return {"success": False, "error": str(e)}
-    
+
     def ler_anotacoes(self):
-        """Lê anotações do utilizador"""
         try:
             texto = Persistencia.ler_anotacoes()
             return {"success": True, "texto": texto}
         except Exception as e:
             return {"success": False, "error": str(e), "texto": ""}
-    
-    def criar_marcacao(self, cliente_nome: str, data_hora: str, duracao: int, observacoes: str = ""):
-        """Cria nova marcação"""
-        from datetime import datetime
-        
-        if cliente_nome not in self.clientes_map:
-            return {"success": False, "error": "Cliente não encontrado."}
-        
+
+    # -------------------------------------------------------------------------
+    # PENDENTES
+    # -------------------------------------------------------------------------
+
+    def get_pendentes(self):
+        """Devolve a lista de pendentes serializada para JavaScript."""
+        return [self._pendente_to_dict(p) for p in self.pendentes]
+
+    # -------------------------------------------------------------------------
+    # UTILITÁRIOS
+    # -------------------------------------------------------------------------
+
+    def get_current_time(self):
+        return datetime.now().strftime("%H:%M:%S")
+
+    # -------------------------------------------------------------------------
+    # HELPERS PRIVADOS
+    # -------------------------------------------------------------------------
+
+    @staticmethod
+    def _converter_tipo(tipo_raw) -> TipoCliente:
+        """Converte string ou enum para TipoCliente de forma robusta."""
+        if isinstance(tipo_raw, TipoCliente):
+            return tipo_raw
+        if isinstance(tipo_raw, str):
+            try:
+                return TipoCliente[tipo_raw.upper()]
+            except KeyError:
+                try:
+                    return TipoCliente(tipo_raw)
+                except Exception:
+                    pass
+        return TipoCliente.NORMAL
+
+    def _gerar_e_guardar_semanais(self, cliente: Cliente):
+        """Gera marcações semanais para um cliente SEMANAL e persiste."""
         try:
-            data_hora_obj = datetime.fromisoformat(data_hora)
-            cliente = self.clientes_map[cliente_nome]
-            
-            nova_marcacao = Marcacao(cliente, data_hora_obj, duracao, observacoes)
-            self.marcacoes_map[data_hora_obj] = nova_marcacao
-            
+            novas = MarcacoesSemanais.gerar_marcacoes_semanais(
+                cliente, self.marcacoes_map, date.today(), meses_a_frente=6
+            )
+            for m in novas:
+                try:
+                    Logger.log_marcacao_criada(m)
+                except Exception:
+                    pass
             Persistencia.guardar_marcacoes(self.marcacoes_map)
-            
-            return {"success": True, "message": "Marcação criada com sucesso."}
         except Exception as e:
-            return {"success": False, "error": str(e)}
-    
-    def adicionar_cliente(self, cliente_dict):
+            print(f"[AppController] _gerar_e_guardar_semanais: {e}")
+
+    def _reprocessar_semanais(self, nome_original: str, novo: Cliente):
         """
-        Recebe um dicionário com os campos do cliente vindos do JS, adiciona ao mapa
-        e persiste. Retorna dict com success True/False.
+        Após alterar um cliente, remove as marcações futuras do nome antigo
+        e, se o cliente continua/passa a ser SEMANAL, regenera-as.
         """
         try:
-            from ..utils.Validation import Validation
+            hoje_dt = datetime.combine(date.today(), datetime.min.time())
 
-            nome = cliente_dict.get("nome", "").strip()
-            numero = cliente_dict.get("numeroTelefone", "").strip()
-            tipo_raw = cliente_dict.get("tipoCliente", "NORMAL")
-            dia_semana = cliente_dict.get("diaSemana")
-            hora_corte = cliente_dict.get("horaCorte")
-            rapido = bool(cliente_dict.get("rapido", False))
+            # Remover futuras do cliente original
+            to_remove = [
+                dt for dt, m in self.marcacoes_map.items()
+                if m.get_cliente().get_nome() == nome_original and dt >= hoje_dt
+            ]
+            for dt in to_remove:
+                del self.marcacoes_map[dt]
 
-            if not nome:
-                return {"success": False, "error": "Campo 'nome' obrigatório."}
-
-            # Converter tipo para Enum TipoCliente de forma robusta
-            tipo = TipoCliente.NORMAL
-            try:
-                if isinstance(tipo_raw, TipoCliente):
-                    tipo = tipo_raw
-                elif isinstance(tipo_raw, str):
-                    # tenta pelo nome do Enum (NORMAL, SEMANAL, DESCONHECIDO)
-                    try:
-                        tipo = TipoCliente[tipo_raw.upper()]
-                    except KeyError:
-                        # tenta por value
-                        try:
-                            tipo = TipoCliente(tipo_raw)
-                        except Exception:
-                            tipo = TipoCliente.NORMAL
-            except Exception:
-                tipo = TipoCliente.NORMAL
-
-            # Criar objeto Cliente com os campos apropriados
-            if tipo == TipoCliente.SEMANAL:
-                novo = Cliente(nome, numero, tipo, dia_semana, hora_corte, rapido)
+            # Regenerar se for SEMANAL
+            if novo.get_tipo_cliente() == TipoCliente.SEMANAL:
+                self._gerar_e_guardar_semanais(novo)
             else:
-                novo = Cliente(nome, numero, tipo)
+                # Só persiste a remoção
+                Persistencia.guardar_marcacoes(self.marcacoes_map)
 
-            # Validação
-            if not Validation.cliente_valido(novo, self.clientes_map):
-                return {"success": False, "error": "Dados do cliente inválidos ou duplicados."}
-
-            # Armazenar no mapa (usar nome como key)
-            chave = novo.get_nome()
-            self.clientes_map[chave] = novo
-
-            # Persistir (usa Persistencia.guardar_clientes que existe)
-            try:
-                saved = False
-                if hasattr(Persistencia, "guardar_clientes"):
-                    saved = Persistencia.guardar_clientes(self.clientes_map)
-                elif hasattr(Persistencia, "guardarClientes"):
-                    saved = Persistencia.guardar_clientes(self.clientes_map)
-                else:
-                    saved = False
-
-                if not saved:
-                    print("Aviso: Persistencia.guardar_clientes retornou False.")
-                    return {"success": False, "error": "Erro ao guardar cliente."}
-                else:
-                    try:
-                        Logger.log_cliente_criado(novo.get_nome())
-                    except Exception:
-                        pass
-                    
-                    # Se for cliente SEMANAL, gerar marcações semanais e persistir marcacoes
-                    try:
-                        from datetime import date
-                        if novo.get_tipo_cliente() == TipoCliente.SEMANAL:
-                            novas = MarcacoesSemanais.gerar_marcacoes_semanais(novo, self.marcacoes_map, date.today(), meses_a_frente=6)
-                            for m in novas:
-                                try:
-                                    Logger.log_marcacao_criada(m)
-                                except Exception:
-                                    pass
-                            Persistencia.guardar_marcacoes(self.marcacoes_map)
-                    except Exception:
-                        pass
-
-            except Exception as e:
-                print(f"Aviso: erro ao persistir clientes: {e}")
-                return {"success": False, "error": "Erro ao guardar cliente."}
-
-            return {"success": True, "message": "Cliente adicionado com sucesso."}
         except Exception as e:
-            return {"success": False, "error": str(e)}
-    
-    # Métodos auxiliares para conversão
-    def _cliente_to_dict(self, cliente: Cliente):
-        """Converte cliente para dicionário"""
+            print(f"[AppController] _reprocessar_semanais: {e}")
+
+    def _cliente_to_dict(self, cliente: Cliente) -> dict:
         return {
-            "nome": cliente.get_nome(),
+            "nome":           cliente.get_nome(),
             "numeroTelefone": cliente.get_numero_telefone(),
-            "tipoCliente": cliente.get_tipo_cliente().value,
-            "faltas": cliente.get_faltas(),
-            "diaSemana": cliente.get_dia_semana(),
-            "horaCorte": cliente.get_hora_corte(),
-            "rapido": cliente.is_rapido(),
-            "temporario": cliente.is_temporario()
+            "tipoCliente":    cliente.get_tipo_cliente().value,
+            "faltas":         cliente.get_faltas(),
+            "diaSemana":      cliente.get_dia_semana(),
+            "horaCorte":      cliente.get_hora_corte(),
+            "rapido":         cliente.is_rapido(),
+            "temporario":     cliente.is_temporario(),
         }
-    
-    def _marcacao_to_dict(self, marcacao: Marcacao):
-        """Converte marcação para dicionário"""
+
+    def _marcacao_to_dict(self, marcacao: Marcacao) -> dict:
         return {
-            "dataHora": marcacao.get_data_hora().isoformat(),
-            "cliente": self._cliente_to_dict(marcacao.get_cliente()),
-            "duracao": marcacao.get_duracao(),
+            "dataHora":   marcacao.get_data_hora().isoformat(),
+            "cliente":    self._cliente_to_dict(marcacao.get_cliente()),
+            "duracao":    marcacao.get_duracao(),
             "observacoes": marcacao.get_observacoes(),
-            "falta": marcacao.is_falta()
+            "falta":      marcacao.is_falta(),
         }
-    
-    def _pendente_to_dict(self, pendente: Pendente):
-        """Converte pendente para dicionário"""
+
+    def _pendente_to_dict(self, pendente: Pendente) -> dict:
         return {
-            "nome": pendente.get_nome(),
-            "numeroTelefone": pendente.get_numero_telefone()
+            "nome":           pendente.get_nome(),
+            "numeroTelefone": pendente.get_numero_telefone(),
         }
