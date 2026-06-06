@@ -2,15 +2,14 @@ import sqlite3
 import os
 from datetime import datetime
 from contextlib import contextmanager
+from typing import Optional
 
-# Caminho para a base de dados — fica em Python/data/agenda.db
+# Caminho para a base de dados
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BASE_DIR, "data", "agenda.db")
 
 
-# ---------------------------------------------------------------------------
 # Ligação
-# ---------------------------------------------------------------------------
 
 @contextmanager
 def _connect():
@@ -30,9 +29,7 @@ def _connect():
         conn.close()
 
 
-# ---------------------------------------------------------------------------
 # Criação do schema
-# ---------------------------------------------------------------------------
 
 def inicializar_bd():
     """Cria todas as tabelas se ainda não existirem."""
@@ -90,9 +87,7 @@ def inicializar_bd():
         """)
 
 
-# ---------------------------------------------------------------------------
-# UTILIZADOR
-# ---------------------------------------------------------------------------
+# Utilizador
 
 def ler_utilizador():
     """Devolve (nome, password) ou None."""
@@ -126,9 +121,7 @@ def guardar_utilizador(nome: str, password: str) -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------
-# CLIENTES
-# ---------------------------------------------------------------------------
+# Clientes
 
 def ler_clientes() -> list[dict]:
     """Devolve lista de dicts com todos os clientes, ordenados por nome."""
@@ -200,9 +193,7 @@ def atualizar_faltas_cliente(nome: str, faltas: int) -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------
-# MARCAÇÕES
-# ---------------------------------------------------------------------------
+# Marcações
 
 def ler_marcacoes() -> list[dict]:
     """Devolve todas as marcações ordenadas por data_hora."""
@@ -318,9 +309,7 @@ def marcar_falta_marcacao(data_hora: str) -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------
-# ANOTAÇÕES
-# ---------------------------------------------------------------------------
+# Anotações
 
 def ler_anotacoes() -> str:
     with _connect() as conn:
@@ -351,9 +340,7 @@ def guardar_anotacoes(texto: str) -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------
-# PENDENTES
-# ---------------------------------------------------------------------------
+# Pendentes
 
 def ler_pendentes() -> list[dict]:
     with _connect() as conn:
@@ -403,9 +390,7 @@ def guardar_pendentes(pendentes: list[dict]) -> bool:
         return False
 
 
-# ---------------------------------------------------------------------------
-# LOGS
-# ---------------------------------------------------------------------------
+# Logs
 
 def inserir_log(tipo: str, mensagem: str) -> bool:
     """
@@ -424,7 +409,7 @@ def inserir_log(tipo: str, mensagem: str) -> bool:
         return False
 
 
-def ler_logs(tipo: str = None, limite: int = 200) -> list[dict]:
+def ler_logs(tipo: Optional[str] = None, limite: int = 200) -> list[dict]:
     """Devolve logs mais recentes, opcionalmente filtrados por tipo."""
     with _connect() as conn:
         if tipo:
@@ -439,118 +424,3 @@ def ler_logs(tipo: str = None, limite: int = 200) -> list[dict]:
                 (limite,)
             ).fetchall()
         return [dict(r) for r in rows]
-
-
-# ---------------------------------------------------------------------------
-# MIGRAÇÃO — converte JSON antigo → BD (usar uma única vez)
-# ---------------------------------------------------------------------------
-
-def migrar_de_json():
-    """
-    Lê os ficheiros JSON existentes e popula a BD.
-    Seguro de correr múltiplas vezes (usa INSERT OR IGNORE / verificações).
-    """
-    import json
-
-    data_dir = os.path.join(BASE_DIR, "data")
-
-    # --- utilizador ---
-    path_u = os.path.join(data_dir, "utilizador.json")
-    if os.path.exists(path_u):
-        try:
-            with open(path_u, encoding="utf-8") as f:
-                u = json.load(f)
-            if u and ler_utilizador() is None:
-                guardar_utilizador(u.get("nome", ""), u.get("password", ""))
-                print("[Migração] utilizador importado.")
-        except Exception as e:
-            print(f"[Migração] utilizador: {e}")
-
-    # --- clientes ---
-    path_c = os.path.join(data_dir, "clientes.json")
-    if os.path.exists(path_c):
-        try:
-            with open(path_c, encoding="utf-8") as f:
-                clientes = json.load(f) or []
-            existentes = {c["nome"] for c in ler_clientes()}
-            for c in clientes:
-                if c["nome"] not in existentes:
-                    inserir_cliente(
-                        nome=c["nome"],
-                        numero_telefone=c.get("numeroTelefone", ""),
-                        tipo_cliente=c.get("tipoCliente", "NORMAL"),
-                        faltas=c.get("faltas", 0),
-                        dia_semana=c.get("diaSemana"),
-                        hora_corte=c.get("horaCorte"),
-                        rapido=bool(c.get("rapido", False))
-                    )
-            print(f"[Migração] {len(clientes)} clientes processados.")
-        except Exception as e:
-            print(f"[Migração] clientes: {e}")
-
-    # --- anotações ---
-    path_a = os.path.join(data_dir, "anotacoes.json")
-    if os.path.exists(path_a):
-        try:
-            with open(path_a, encoding="utf-8") as f:
-                texto = json.load(f) or ""
-            guardar_anotacoes(texto)
-            print("[Migração] anotações importadas.")
-        except Exception as e:
-            print(f"[Migração] anotações: {e}")
-
-    # --- pendentes ---
-    path_p = os.path.join(data_dir, "pendentes.json")
-    if os.path.exists(path_p):
-        try:
-            with open(path_p, encoding="utf-8") as f:
-                pendentes = json.load(f) or []
-            existentes = {p["nome"] for p in ler_pendentes()}
-            for p in pendentes:
-                if p["nome"] not in existentes:
-                    inserir_pendente(
-                        nome=p["nome"],
-                        numero_telefone=p.get("numeroTelefone", "")
-                    )
-            print(f"[Migração] {len(pendentes)} pendentes processados.")
-        except Exception as e:
-            print(f"[Migração] pendentes: {e}")
-
-    # --- marcações ---
-    marcacoes_dir = os.path.join(data_dir, "Marcacoes")
-    if os.path.exists(marcacoes_dir):
-        total = 0
-        existentes_dh = {m["data_hora"] for m in ler_marcacoes()}
-        for ano_dir in sorted(os.listdir(marcacoes_dir)):
-            ano_path = os.path.join(marcacoes_dir, ano_dir)
-            if not os.path.isdir(ano_path):
-                continue
-            for ficheiro in sorted(os.listdir(ano_path)):
-                if not (ficheiro.startswith("marcacoes") and
-                        ficheiro.endswith(".json")):
-                    continue
-                path_m = os.path.join(ano_path, ficheiro)
-                try:
-                    with open(path_m, encoding="utf-8") as f:
-                        marcacoes = json.load(f) or []
-                    bulk = []
-                    for m in marcacoes:
-                        dh = m.get("dataHora", "")
-                        if dh and dh not in existentes_dh:
-                            cliente_info = m.get("cliente", {})
-                            bulk.append({
-                                "data_hora": dh,
-                                "cliente_nome": cliente_info.get("nome", ""),
-                                "duracao": m.get("duracao", 30),
-                                "observacoes": m.get("observacoes", ""),
-                                "falta": int(m.get("falta", False))
-                            })
-                            existentes_dh.add(dh)
-                    if bulk:
-                        inserir_marcacoes_bulk(bulk)
-                        total += len(bulk)
-                except Exception as e:
-                    print(f"[Migração] {path_m}: {e}")
-        print(f"[Migração] {total} marcações importadas.")
-
-    print("[Migração] Concluída.")

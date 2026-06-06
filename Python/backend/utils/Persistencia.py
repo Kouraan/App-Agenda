@@ -16,9 +16,7 @@ from ..models.Pendente import Pendente
 from . import Database
 
 
-# ---------------------------------------------------------------------------
-# Helpers de conversão  DB-row → modelo
-# ---------------------------------------------------------------------------
+# Helpers de conversão
 
 def _row_para_cliente(row: dict) -> Cliente:
     tipo_raw = row.get("tipo_cliente", "DESCONHECIDO")
@@ -69,9 +67,7 @@ def _row_para_marcacao(row: dict, clientes_map: dict) -> Optional[Marcacao]:
     return marcacao
 
 
-# ---------------------------------------------------------------------------
-# LEITURA
-# ---------------------------------------------------------------------------
+# Leitura
 
 def ler_utilizador() -> Optional[Utilizador]:
     row = Database.ler_utilizador()
@@ -111,20 +107,13 @@ def ler_pendentes() -> List[Pendente]:
     return [Pendente(r["nome"], r.get("numero_telefone", "")) for r in rows]
 
 
-# ---------------------------------------------------------------------------
-# ESCRITA — utilizador
-# ---------------------------------------------------------------------------
+# Escrita
 
 def guardar_utilizador(utilizador: Utilizador) -> bool:
     return Database.guardar_utilizador(
         utilizador.get_nome(),
         utilizador.get_password()
     )
-
-
-# ---------------------------------------------------------------------------
-# ESCRITA — clientes
-# ---------------------------------------------------------------------------
 
 def guardar_clientes(clientes: Dict[str, Cliente]) -> bool:
     """
@@ -179,11 +168,6 @@ def guardar_clientes(clientes: Dict[str, Cliente]) -> bool:
         print(f"[Persistencia] guardar_clientes: {e}")
         return False
 
-
-# ---------------------------------------------------------------------------
-# ESCRITA — marcações
-# ---------------------------------------------------------------------------
-
 def guardar_marcacoes(marcacoes: Dict[datetime, Marcacao]) -> bool:
     """
     Sincroniza o dicionário de marcações com a BD:
@@ -217,7 +201,8 @@ def guardar_marcacoes(marcacoes: Dict[datetime, Marcacao]) -> bool:
         bulk_insert = []
         for dt, m in marcacoes.items():
             dh_str = dt.isoformat()
-            cliente_nome = m.get_cliente().get_nome()
+            c = m.get_cliente()
+            cliente_nome = c.get_nome() if c is not None else ""
             duracao = m.get_duracao()
             observacoes = m.get_observacoes() or ""
             falta = int(m.is_falta())
@@ -253,11 +238,6 @@ def guardar_marcacoes(marcacoes: Dict[datetime, Marcacao]) -> bool:
     except Exception as e:
         print(f"[Persistencia] guardar_marcacoes: {e}")
         return False
-
-
-# ---------------------------------------------------------------------------
-# ESCRITA — anotações e pendentes
-# ---------------------------------------------------------------------------
 
 def guardar_anotacoes(anotacoes: str) -> bool:
     return Database.guardar_anotacoes(anotacoes if anotacoes else "")

@@ -21,26 +21,19 @@ class AppController:
         self.marcacoes_map: Dict[datetime, Marcacao] = {}
         self.pendentes: List[Pendente] = []
 
-    # -------------------------------------------------------------------------
-    # INICIALIZAÇÃO
-    # -------------------------------------------------------------------------
-
     def initialize(self):
         """Carrega dados iniciais a partir da base de dados SQLite."""
 
-        # 1. Garantir que as tabelas existem
+        # Garante que as tabelas existem
         Database.inicializar_bd()
 
-        # 2. Migrar JSON antigos para a BD (idempotente — seguro correr sempre)
-        Database.migrar_de_json()
-
-        # 3. Carregar dados da BD
+        # Carregar dados da BD
         self.utilizador    = Persistencia.ler_utilizador()
         self.clientes_map  = Persistencia.ler_clientes()
         self.marcacoes_map = Persistencia.ler_marcacoes()
         self.pendentes     = Persistencia.ler_pendentes()
 
-        # 4. Gerar marcações semanais em falta (até 6 meses à frente)
+        # Gerar marcações semanais em falta (até 6 meses à frente)
         try:
             for cliente in list(self.clientes_map.values()):
                 try:
@@ -58,9 +51,7 @@ class AppController:
         except Exception:
             pass
 
-    # -------------------------------------------------------------------------
-    # NAVEGAÇÃO ENTRE PÁGINAS
-    # -------------------------------------------------------------------------
+    # Navegar entre paginas
 
     def _get_html_path(self, filename: str) -> str:
         """Devolve o URL file:// para um ficheiro HTML da pasta ui/html/."""
@@ -96,9 +87,7 @@ class AppController:
             print(f"[AppController] mostrar_pagina_principal: {e}")
             return {"success": False, "error": str(e)}
 
-    # -------------------------------------------------------------------------
-    # AUTENTICAÇÃO
-    # -------------------------------------------------------------------------
+    # Registo e Login
 
     def registar_utilizador(self, nome: str, password: str):
         """Regista um novo utilizador (usado na página de registo)."""
@@ -150,9 +139,7 @@ class AppController:
             }
         return {"authenticated": False}
 
-    # -------------------------------------------------------------------------
-    # CLIENTES — leitura
-    # -------------------------------------------------------------------------
+    # Clientes
 
     def get_clientes_map(self):
         """Devolve o mapa de clientes serializado para JavaScript."""
@@ -166,10 +153,6 @@ class AppController:
         if not nome or nome not in self.clientes_map:
             return {"success": False, "error": "Cliente não encontrado"}
         return {"success": True, "cliente": self._cliente_to_dict(self.clientes_map[nome])}
-
-    # -------------------------------------------------------------------------
-    # CLIENTES — escrita
-    # -------------------------------------------------------------------------
 
     def adicionar_cliente(self, cliente_dict: dict):
         """Adiciona um novo cliente recebido do JavaScript."""
@@ -283,10 +266,13 @@ class AppController:
 
             # Remover marcações futuras do mapa em memória
             hoje_dt = datetime.combine(date.today(), datetime.min.time())
-            to_remove = [
-                dt for dt, m in self.marcacoes_map.items()
-                if m.get_cliente().get_nome() == nome and dt >= hoje_dt
-            ]
+            to_remove = []
+            for dt, m in list(self.marcacoes_map.items()):
+                c = m.get_cliente()
+                if c is None:
+                    continue
+                if c.get_nome() == nome and dt >= hoje_dt:
+                    to_remove.append(dt)
             for dt in to_remove:
                 del self.marcacoes_map[dt]
 
@@ -303,9 +289,7 @@ class AppController:
             print(f"[AppController] apagar_cliente: {e}")
             return {"success": False, "error": str(e)}
 
-    # -------------------------------------------------------------------------
-    # MARCAÇÕES — leitura
-    # -------------------------------------------------------------------------
+    # Marcações
 
     def get_marcacoes_map(self):
         """Devolve o mapa de marcações serializado para JavaScript."""
@@ -327,10 +311,6 @@ class AppController:
         except Exception as e:
             print(f"[AppController] get_marcacoes_periodo: {e}")
             return {}
-
-    # -------------------------------------------------------------------------
-    # MARCAÇÕES — escrita
-    # -------------------------------------------------------------------------
 
     def criar_marcacao(self, cliente_nome: str, data_hora: str,
                        duracao: int, observacoes: str = ""):
@@ -354,9 +334,7 @@ class AppController:
             print(f"[AppController] criar_marcacao: {e}")
             return {"success": False, "error": str(e)}
 
-    # -------------------------------------------------------------------------
-    # ANOTAÇÕES
-    # -------------------------------------------------------------------------
+    # Anotação
 
     def guardar_anotacoes(self, texto: str):
         try:
@@ -372,24 +350,16 @@ class AppController:
         except Exception as e:
             return {"success": False, "error": str(e), "texto": ""}
 
-    # -------------------------------------------------------------------------
-    # PENDENTES
-    # -------------------------------------------------------------------------
+    # Pendentes
 
     def get_pendentes(self):
         """Devolve a lista de pendentes serializada para JavaScript."""
         return [self._pendente_to_dict(p) for p in self.pendentes]
 
-    # -------------------------------------------------------------------------
-    # UTILITÁRIOS
-    # -------------------------------------------------------------------------
+    # Utils
 
     def get_current_time(self):
         return datetime.now().strftime("%H:%M:%S")
-
-    # -------------------------------------------------------------------------
-    # HELPERS PRIVADOS
-    # -------------------------------------------------------------------------
 
     @staticmethod
     def _converter_tipo(tipo_raw) -> TipoCliente:
@@ -430,10 +400,13 @@ class AppController:
             hoje_dt = datetime.combine(date.today(), datetime.min.time())
 
             # Remover futuras do cliente original
-            to_remove = [
-                dt for dt, m in self.marcacoes_map.items()
-                if m.get_cliente().get_nome() == nome_original and dt >= hoje_dt
-            ]
+            to_remove = []
+            for dt, m in list(self.marcacoes_map.items()):
+                c = m.get_cliente()
+                if c is None:
+                    continue
+                if c.get_nome() == nome_original and dt >= hoje_dt:
+                    to_remove.append(dt)
             for dt in to_remove:
                 del self.marcacoes_map[dt]
 
@@ -460,12 +433,30 @@ class AppController:
         }
 
     def _marcacao_to_dict(self, marcacao: Marcacao) -> dict:
+        cliente = marcacao.get_cliente()
+        if cliente is None:
+            cliente_dict = {
+                "nome": "N/A",
+                "numeroTelefone": "",
+                "tipoCliente": TipoCliente.DESCONHECIDO.value,
+                "faltas": 0,
+                "diaSemana": None,
+                "horaCorte": None,
+                "rapido": False,
+                "temporario": True,
+            }
+        else:
+            cliente_dict = self._cliente_to_dict(cliente)
+            
+        data_hora = marcacao.get_data_hora()
+        data_hora_iso = data_hora.isoformat() if data_hora is not None else "N/A"
+        
         return {
-            "dataHora":   marcacao.get_data_hora().isoformat(),
-            "cliente":    self._cliente_to_dict(marcacao.get_cliente()),
-            "duracao":    marcacao.get_duracao(),
+            "dataHora":    data_hora_iso,
+            "cliente":     cliente_dict,
+            "duracao":     marcacao.get_duracao(),
             "observacoes": marcacao.get_observacoes(),
-            "falta":      marcacao.is_falta(),
+            "falta":       marcacao.is_falta(),
         }
 
     def _pendente_to_dict(self, pendente: Pendente) -> dict:

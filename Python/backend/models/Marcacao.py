@@ -33,10 +33,10 @@ class Marcacao:
         self.data_hora = data_hora
 
     def get_cliente(self):
-        return self.cliente.clone()
+        return self.cliente.clone() if self.cliente is not None else None
 
     def set_cliente(self, cliente):
-        self.cliente = cliente.clone()
+        self.cliente = cliente.clone() if cliente is not None else None
 
     def get_duracao(self):
         return self.duracao

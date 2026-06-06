@@ -1,6 +1,6 @@
 """
 Logger.py — regista eventos em dois destinos em paralelo:
-  1. ficheiros .txt em logs/<ano>/logs<Tipo><mes>.txt  (igual ao original)
+  1. ficheiros .txt em logs/<ano>/logs<Tipo><mes>.txt
   2. tabela `logs` na base de dados SQLite
 """
 
@@ -12,14 +12,10 @@ from ..models.Pendente import Pendente
 from . import Database
 
 
-# ---------------------------------------------------------------------------
-# Helper interno
-# ---------------------------------------------------------------------------
-
 def _escrever_log(tipo_txt: str, tipo_bd: str, mensagem: str):
     """
-    tipo_txt : sufixo do ficheiro  (ex: 'Utilizador', 'Clientes', …)
-    tipo_bd  : valor na coluna tipo da BD ('utilizador','cliente',…)
+    tipo_txt : sufixo do ficheiro
+    tipo_bd  : valor na coluna tipo da BD
     mensagem : texto do log
     """
     now = datetime.now()
@@ -28,8 +24,7 @@ def _escrever_log(tipo_txt: str, tipo_bd: str, mensagem: str):
     mes = now.strftime("%m")
     linha = f"[{data}] {mensagem}\n"
 
-    # ── 1. ficheiro .txt ────────────────────────────────────────────────────
-    # BASE_DIR sobe: utils/ → backend/ → Python/
+    # ficheiro .txt
     base_dir = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     )
@@ -49,16 +44,14 @@ def _escrever_log(tipo_txt: str, tipo_bd: str, mensagem: str):
     except OSError as e:
         print(f"[Logger] Erro ao escrever .txt: {e}")
 
-    # ── 2. base de dados ────────────────────────────────────────────────────
+    # BD
     try:
         Database.inserir_log(tipo_bd, mensagem)
     except Exception as e:
         print(f"[Logger] Erro ao inserir log na BD: {e}")
 
 
-# ---------------------------------------------------------------------------
-# LOGS DE UTILIZADOR
-# ---------------------------------------------------------------------------
+# Logs de Utilizador
 
 def log_utilizador(mensagem: str):
     _escrever_log("Utilizador", "utilizador", mensagem)
@@ -79,9 +72,7 @@ def log_app_terminada():
     log_utilizador("Aplicação terminada.")
 
 
-# ---------------------------------------------------------------------------
-# LOGS DE CLIENTE
-# ---------------------------------------------------------------------------
+# Logs de Cliente
 
 def log_cliente(mensagem: str):
     _escrever_log("Clientes", "cliente", mensagem)
@@ -119,49 +110,54 @@ def log_horario_semanal_alterado(nome: str, dia: str, hora: str):
     )
 
 
-# ---------------------------------------------------------------------------
-# LOGS DE MARCAÇÃO
-# ---------------------------------------------------------------------------
+# Logs de Marcação
 
 def log_marcacao(mensagem: str):
     _escrever_log("Marcacoes", "marcacao", mensagem)
 
 def log_marcacao_criada(marcacao: Marcacao):
-    nome = marcacao.get_cliente().get_nome() if marcacao.get_cliente() else "N/A"
-    data_hora = marcacao.get_data_hora().strftime("%d/%m/%Y %H:%M")
-    log_marcacao(f"Marcação criada para '{nome}' em {data_hora}.")
+    cliente = marcacao.get_cliente()
+    nome = cliente.get_nome() if cliente is not None else "N/A"
+    data_hora = marcacao.get_data_hora()
+    data_hora_str = data_hora.strftime("%d/%m/%Y %H:%M") if data_hora is not None else "N/A"
+    log_marcacao(f"Marcação criada para '{nome}' em {data_hora_str}.")
 
 def log_marcacao_apagada(marcacao: Marcacao):
-    nome = marcacao.get_cliente().get_nome() if marcacao.get_cliente() else "N/A"
-    data_hora = marcacao.get_data_hora().strftime("%d/%m/%Y %H:%M")
-    log_marcacao(f"Marcação de '{nome}' em {data_hora} apagada.")
+    cliente = marcacao.get_cliente()
+    nome = cliente.get_nome() if cliente is not None else "N/A"
+    data_hora = marcacao.get_data_hora()
+    data_hora_str = data_hora.strftime("%d/%m/%Y %H:%M") if data_hora is not None else "N/A"
+    log_marcacao(f"Marcação de '{nome}' em {data_hora_str} apagada.")
 
 def log_marcacao_obs_alterada(marcacao: Marcacao, obs_nova: str):
-    nome = marcacao.get_cliente().get_nome() if marcacao.get_cliente() else "N/A"
-    data_hora = marcacao.get_data_hora().strftime("%d/%m/%Y %H:%M")
+    cliente = marcacao.get_cliente()
+    nome = cliente.get_nome() if cliente is not None else "N/A"
+    data_hora = marcacao.get_data_hora()
+    data_hora_str = data_hora.strftime("%d/%m/%Y %H:%M") if data_hora is not None else "N/A"
     log_marcacao(
-        f"Observações da marcação de '{nome}' em {data_hora} "
+        f"Observações da marcação de '{nome}' em {data_hora_str} "
         f"alteradas para '{obs_nova}'."
     )
 
 def log_marcacao_data_hora_alterada(marcacao: Marcacao,
                                     data_hora_antiga: str,
                                     data_hora_nova: str):
-    nome = marcacao.get_cliente().get_nome() if marcacao.get_cliente() else "N/A"
+    cliente = marcacao.get_cliente()
+    nome = cliente.get_nome() if cliente is not None else "N/A"
     log_marcacao(
         f"Data/hora da marcação de '{nome}' alterada de "
         f"{data_hora_antiga} para {data_hora_nova}."
     )
 
 def log_marcacao_falta(marcacao: Marcacao):
-    nome = marcacao.get_cliente().get_nome() if marcacao.get_cliente() else "N/A"
-    data_hora = marcacao.get_data_hora().strftime("%d/%m/%Y %H:%M")
-    log_marcacao(f"O cliente '{nome}' faltou a marcacao na data '{data_hora}'.")
+    cliente = marcacao.get_cliente()
+    nome = cliente.get_nome() if cliente is not None else "N/A"
+    data_hora = marcacao.get_data_hora()
+    data_hora_str = data_hora.strftime("%d/%m/%Y %H:%M") if data_hora is not None else "N/A"
+    log_marcacao(f"O cliente '{nome}' faltou a marcacao na data '{data_hora_str}'.")
 
 
-# ---------------------------------------------------------------------------
-# LOGS DE PENDENTE
-# ---------------------------------------------------------------------------
+# Logs de Pendentes
 
 def log_pendente(mensagem: str):
     _escrever_log("Pendentes", "pendente", mensagem)

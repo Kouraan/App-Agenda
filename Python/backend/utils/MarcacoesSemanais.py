@@ -46,10 +46,11 @@ class MarcacoesSemanais:
             data += timedelta(days=1)
 
         limite = data_inicio + timedelta(days=meses_a_frente * 31)
+        limite_dt = datetime.combine(limite, time.max)
 
         candidate = datetime.combine(data, hora)
 
-        while candidate.date() <= limite.date():
+        while candidate.date() <= limite_dt:
             # procura a primeira semana nessa sequência onde o slot esteja livre
             while True:
                 occupied = False
@@ -67,17 +68,18 @@ class MarcacoesSemanais:
                     break
                 # se ocupada, adiar uma semana e tentar novamente
                 candidate = candidate + timedelta(days=7)
-                if candidate.date() > limite.date():
+                if candidate.date() > limite_dt:
                     break
 
-            if candidate.date() > limite.date():
+            if candidate.date() > limite_dt:
                 break
 
             # não criar duplicados para o mesmo cliente no mesmo datetime
             already = False
             for ex_dt, ex_m in list(marcacoes_map.items()):
                 try:
-                    if ex_dt == candidate and ex_m.get_cliente().get_nome() == cliente.get_nome():
+                    c = ex_m.get_cliente()
+                    if ex_dt == candidate and c is not None and c.get_nome() == cliente.get_nome():
                         already = True
                         break
                 except Exception:
