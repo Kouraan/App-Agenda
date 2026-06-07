@@ -322,7 +322,7 @@ class AppController:
             data_hora_obj = datetime.fromisoformat(data_hora)
             cliente = self.clientes_map[cliente_nome]
 
-            nova = Marcacao(cliente, data_hora_obj, duracao, observacoes)
+            nova = Marcacao(data_hora_obj, cliente, duracao, observacoes)
             self.marcacoes_map[data_hora_obj] = nova
 
             Persistencia.guardar_marcacoes(self.marcacoes_map)

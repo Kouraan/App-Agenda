@@ -11,30 +11,25 @@
         <div class="content">
             <h1 class="title">REGISTO</h1>
             <div id="errorLabel" class="error-message"></div>
-            
+ 
             <form id="registoForm" class="form">
                 <div class="form-group">
                     <label for="nomeField">Nome :</label>
-                    <input type="text" id="nomeField" required>
+                    <input type="text" id="nomeField" autocomplete="username" required>
                 </div>
-                
+ 
                 <div class="form-group">
                     <label for="passwordField">Password :</label>
-                    <input type="password" id="passwordField" required>
+                    <input type="password" id="passwordField" autocomplete="new-password" required>
                 </div>
-                
+ 
                 <div class="button-container">
                     <button type="submit" id="registoBtn">Registar</button>
-                </div>
-                
-                <div class="login-link">
-                    <span>Já tens conta? </span>
-                    <button type="button" id="loginLinkBtn" class="link-btn">Fazer Login</button>
                 </div>
             </form>
         </div>
     </div>
-
+ 
     <script src="../js/registo.js"></script>
 </body>
 </html>

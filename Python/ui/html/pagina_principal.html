@@ -14,7 +14,7 @@
         <div id="userLabel" class="user-info">Bem-vindo, Utilizador</div>
         <button id="logoutBtn" class="logout-btn">Logout</button>
     </header>
-
+ 
     <!-- Área Principal dividida em 3 colunas -->
     <main class="main-content">
         <!-- Área Lateral Esquerda -->
@@ -23,7 +23,7 @@
                 <button id="calendarioToggle" class="nav-btn active">Calendário</button>
                 <button id="clientesToggle" class="nav-btn">Clientes</button>
             </div>
-            
+ 
             <div class="anotacoes-box">
                 <div class="anotacoes-header">
                     <span class="title">Anotações</span>
@@ -33,57 +33,55 @@
                 <textarea id="anotacoesArea" placeholder="Escreva suas anotações aqui..." class="anotacoes-text blurred"></textarea>
             </div>
         </aside>
-
+ 
         <!-- Área Central - Calendário -->
         <section class="center-area">
             <div id="areaCentral" class="calendar-container">
-                <!-- Cabeçalho da semana -->
+                <!-- Cabeçalho do calendário -->
                 <div class="calendar-header">
                     <div class="navigation-controls">
-                        <button id="todayBtn" class="control-btn">Hoje</button>
+                        <button id="todayBtn"          class="control-btn">Hoje</button>
                         <button id="semanaAnteriorBtn" class="control-btn">◀</button>
-                        <button id="proximaSemanaBtn" class="control-btn">▶</button>
+                        <button id="proximaSemanaBtn"  class="control-btn">▶</button>
                     </div>
-                    
+ 
                     <div class="spacer"></div>
-                    
-                    <div id="semanaLabel" class="period-label">Janeiro 01 - Janeiro 07</div>
-                    
+ 
+                    <div id="semanaLabel" class="period-label"></div>
+ 
                     <div class="spacer"></div>
-                    
+ 
                     <div class="view-toggles">
-                        <button id="diaToggle" class="view-btn">Dia</button>
+                        <button id="diaToggle"    class="view-btn">Dia</button>
                         <button id="semanaToggle" class="view-btn active">Semana</button>
-                        <button id="mesToggle" class="view-btn">Mês</button>
+                        <button id="mesToggle"    class="view-btn">Mês</button>
                     </div>
                 </div>
-                
+ 
                 <!-- Grade do calendário -->
                 <div class="calendar-scroll">
                     <div id="calendarioGrid" class="calendar-grid"></div>
                 </div>
             </div>
-            
+ 
             <!-- Área de Clientes (inicialmente oculta) -->
             <div id="areaClientes" class="clientes-container hidden">
                 <div id="clientesContent" class="clientes-content"></div>
             </div>
         </section>
-
+ 
         <!-- Área Lateral Direita -->
         <aside class="right-sidebar">
             <h3 class="section-title">Clientes Pendentes</h3>
             <div class="separator"></div>
             <div class="pendentes-scroll">
-                <div id="caixaClientesPendentes" class="pendentes-container">
-                    <div class="pendente-item">Clique para adicionar pendente</div>
-                </div>
+                <div id="caixaClientesPendentes" class="pendentes-container"></div>
             </div>
             <div class="separator"></div>
             <div id="relogioLabel" class="clock">00:00:00</div>
         </aside>
     </main>
-
-    <script src="../js/pagina_principal.js"></script>
+ 
+    <script type="module" src="../js/pagina_principal.js"></script>
 </body>
 </html>

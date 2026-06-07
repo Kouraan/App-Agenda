@@ -50,7 +50,7 @@ class MarcacoesSemanais:
 
         candidate = datetime.combine(data, hora)
 
-        while candidate.date() <= limite_dt:
+        while candidate <= limite_dt:
             # procura a primeira semana nessa sequência onde o slot esteja livre
             while True:
                 occupied = False
@@ -58,6 +58,8 @@ class MarcacoesSemanais:
                 for ex_dt, ex_m in list(marcacoes_map.items()):
                     try:
                         ex_start = ex_dt  # chave do map é datetime
+                        if ex_start.tzinfo is not None:
+                            ex_start = ex_start.replace(tzinfo=None)
                         ex_dur = ex_m.get_duracao() if hasattr(ex_m, 'get_duracao') else getattr(ex_m, 'duracao', 30)
                     except Exception:
                         continue
@@ -68,10 +70,10 @@ class MarcacoesSemanais:
                     break
                 # se ocupada, adiar uma semana e tentar novamente
                 candidate = candidate + timedelta(days=7)
-                if candidate.date() > limite_dt:
+                if candidate > limite_dt:
                     break
 
-            if candidate.date() > limite_dt:
+            if candidate > limite_dt:
                 break
 
             # não criar duplicados para o mesmo cliente no mesmo datetime
@@ -88,7 +90,7 @@ class MarcacoesSemanais:
             if not already:
                 # criar Marcacao (usar mesma ordem de construtor que AppController emprega)
                 try:
-                    nova = Marcacao(cliente, candidate, duracao, "")
+                    nova = Marcacao(candidate, cliente, duracao, "")
                 except TypeError:
                     # fallback caso a assinatura seja diferente
                     nova = Marcacao(candidate, cliente, duracao, "")

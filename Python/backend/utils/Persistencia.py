@@ -43,6 +43,8 @@ def _row_para_cliente(row: dict) -> Cliente:
 def _row_para_marcacao(row: dict, clientes_map: dict) -> Optional[Marcacao]:
     try:
         dt = datetime.fromisoformat(row["data_hora"])
+        if dt.tzinfo is not None:
+            dt = dt.replace(tzinfo=None)
     except Exception:
         return None
 

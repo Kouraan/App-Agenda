@@ -11,25 +11,25 @@
         <div class="content">
             <h1 class="title">LOGIN</h1>
             <div id="errorLabel" class="error-message">Utilizador ou password incorretos</div>
-            
+ 
             <form id="loginForm" class="form">
                 <div class="form-group">
                     <label for="usernameField">Username :</label>
-                    <input type="text" id="usernameField" required>
+                    <input type="text" id="usernameField" autocomplete="username" required>
                 </div>
-                
+ 
                 <div class="form-group">
                     <label for="passwordField">Password :</label>
-                    <input type="password" id="passwordField" required>
+                    <input type="password" id="passwordField" autocomplete="current-password" required>
                 </div>
-                
+ 
                 <div class="button-container">
                     <button type="submit" id="entrarBtn">Entrar</button>
                 </div>
             </form>
         </div>
     </div>
-
+ 
     <script src="../js/login.js"></script>
 </body>
 </html>
