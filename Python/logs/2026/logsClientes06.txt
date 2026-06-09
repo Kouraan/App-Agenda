@@ -1,16 +1,2 @@
-[07/06/2026 04:34:05] Cliente 'bla' criado.
-[07/06/2026 04:33:56] Cliente 'bla' apagado.
-[07/06/2026 04:23:32] Cliente 'bla' criado.
-[07/06/2026 04:23:24] Cliente 'bla' apagado.
-[07/06/2026 04:23:22] Cliente 'ble' apagado.
-[07/06/2026 04:18:44] Cliente 'ble' criado.
-[07/06/2026 04:18:29] Cliente 'bla' criado.
-[07/06/2026 04:08:39] Cliente 'Nuno Silva' criado.
-[07/06/2026 04:08:19] Cliente 'Marco Silva' criado.
-[07/06/2026 03:38:32] Cliente 'baf' apagado.
-[07/06/2026 03:38:29] Cliente 'baf' criado.
-[05/06/2026 12:03:22] Cliente 'blabla' apagado.
-[05/06/2026 12:03:18] Cliente 'blabla' criado.
-[05/06/2026 12:02:45] Nome do Cliente 'Marco' alterado para 'Marco Silva'.
-[05/06/2026 12:02:38] Cliente 'Nuno Silva' criado.
-[05/06/2026 12:01:56] Cliente 'Marco' criado.
+[09/06/2026 15:55:02] Cliente 'Nuno Silva' criado.
+[09/06/2026 15:54:35] Cliente 'Marco Silva' criado.

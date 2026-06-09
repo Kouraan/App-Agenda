@@ -1,109 +1,28 @@
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 08/12/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 01/12/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 24/11/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 17/11/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 10/11/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 03/11/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 27/10/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 20/10/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 13/10/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 06/10/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 29/09/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 22/09/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 15/09/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 08/09/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 01/09/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 25/08/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 18/08/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 11/08/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 04/08/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 28/07/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 21/07/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 14/07/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 07/07/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 30/06/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 23/06/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 16/06/2026 15:00.
-[07/06/2026 04:34:05] Marcação criada para 'bla' em 09/06/2026 15:00.
-[07/06/2026 04:33:51] Marcação criada para 'Marco Silva' em 07/06/2026 10:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 09/12/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 02/12/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 25/11/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 18/11/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 11/11/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 04/11/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 28/10/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 21/10/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 14/10/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 07/10/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 30/09/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 23/09/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 16/09/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 09/09/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 02/09/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 26/08/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 19/08/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 12/08/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 05/08/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 29/07/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 22/07/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 15/07/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 08/07/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 01/07/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 24/06/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 17/06/2026 13:00.
-[07/06/2026 04:33:38] Marcação criada para 'bla' em 10/06/2026 13:00.
-[07/06/2026 04:23:12] Marcação criada para 'Marco Silva' em 07/06/2026 09:00.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 04/12/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 27/11/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 20/11/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 13/11/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 06/11/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 30/10/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 23/10/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 16/10/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 09/10/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 02/10/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 25/09/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 18/09/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 11/09/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 04/09/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 28/08/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 21/08/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 14/08/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 07/08/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 31/07/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 24/07/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 17/07/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 10/07/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 03/07/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 26/06/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 19/06/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'Nuno Silva' em 12/06/2026 14:30.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 09/12/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 02/12/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 25/11/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 18/11/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 11/11/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 04/11/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 28/10/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 21/10/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 14/10/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 07/10/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 30/09/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 23/09/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 16/09/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 09/09/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 02/09/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 26/08/2026 14:00.
-[07/06/2026 04:22:59] Marcação criada para 'ble' em 19/08/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 12/08/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 05/08/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 29/07/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 22/07/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 15/07/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 08/07/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 01/07/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 24/06/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 17/06/2026 14:00.
-[07/06/2026 04:22:58] Marcação criada para 'ble' em 10/06/2026 14:00.
+[09/06/2026 15:55:30] Marcação criada para 'Nuno Silva' em 12/06/2026 07:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 11/12/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 04/12/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 27/11/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 20/11/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 13/11/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 06/11/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 30/10/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 23/10/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 16/10/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 09/10/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 02/10/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 25/09/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 18/09/2026 10:00.
+[09/06/2026 15:55:03] Marcação criada para 'Nuno Silva' em 11/09/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 04/09/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 28/08/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 21/08/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 14/08/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 07/08/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 31/07/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 24/07/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 17/07/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 10/07/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 03/07/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 26/06/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 19/06/2026 10:00.
+[09/06/2026 15:55:02] Marcação criada para 'Nuno Silva' em 12/06/2026 10:00.
