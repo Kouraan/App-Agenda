@@ -3,7 +3,7 @@
 // ==========================================
 
 const FERIADOS_FIXOS = [
-    "01-01", "04-25", "05-01", "06-10", "08-15", 
+    "01-01", "04-25", "05-01", "06-10", "08-15",
     "10-05", "11-01", "12-01", "12-08", "12-25"
 ];
 
@@ -28,27 +28,15 @@ function calcularPascoa(ano) {
 function getFeriados(ano) {
     const feriados = new Set(FERIADOS_FIXOS);
     const pascoa = calcularPascoa(ano);
-
     const adicionar = (data) => {
         const mm = String(data.getMonth() + 1).padStart(2, "0");
         const dd = String(data.getDate()).padStart(2, "0");
         feriados.add(`${mm}-${dd}`);
     };
-
     adicionar(pascoa);
-
-    const sextaSanta = new Date(pascoa);
-    sextaSanta.setDate(pascoa.getDate() - 2);
-    adicionar(sextaSanta);
-
-    const carnaval = new Date(pascoa);
-    carnaval.setDate(pascoa.getDate() - 47);
-    adicionar(carnaval);
-
-    const corpoDeus = new Date(pascoa);
-    corpoDeus.setDate(pascoa.getDate() + 60);
-    adicionar(corpoDeus);
-
+    const sextaSanta = new Date(pascoa); sextaSanta.setDate(pascoa.getDate() - 2); adicionar(sextaSanta);
+    const carnaval = new Date(pascoa);   carnaval.setDate(pascoa.getDate() - 47);  adicionar(carnaval);
+    const corpoDeus = new Date(pascoa);  corpoDeus.setDate(pascoa.getDate() + 60); adicionar(corpoDeus);
     return feriados;
 }
 
@@ -61,20 +49,14 @@ function isHoliday(date) {
 
 function isToday(date) {
     const today = new Date();
-    return (
-        date.getDate() === today.getDate() &&
-        date.getMonth() === today.getMonth() &&
-        date.getFullYear() === today.getFullYear()
-    );
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
 }
 
-function isSunday(date) {
-    return date.getDay() === 0;
-}
+function isSunday(date) { return date.getDay() === 0; }
 
-function isPast(date) {
-    return date < new Date();
-}
+function isPast(date) { return date < new Date(); }
 
 function getMonday(date) {
     const d = new Date(date);
@@ -85,20 +67,6 @@ function getMonday(date) {
     return d;
 }
 
-function formatDate(date, format = "dd/MM") {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-
-    switch (format) {
-        case "dd/MM": return `${day}/${month}`;
-        case "dd/MM/yyyy": return `${day}/${month}/${year}`;
-        case "MMMM yyyy": return date.toLocaleDateString("pt-PT", { month: "long", year: "numeric" });
-        case "EEEE MMMM dd": return date.toLocaleDateString("pt-PT", { weekday: "long", day: "numeric", month: "long" });
-        default: return date.toLocaleDateString("pt-PT");
-    }
-}
-
 function timeToMinutes(hhmm) {
     if (!hhmm) return null;
     const parts = String(hhmm).split(":");
@@ -106,12 +74,6 @@ function timeToMinutes(hhmm) {
     const m = parseInt(parts[1], 10);
     if (isNaN(h) || isNaN(m)) return null;
     return h * 60 + m;
-}
-
-function minutesToTime(minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 function gerarHoras(step = 30) {
@@ -131,6 +93,34 @@ function getCurrentSlotDate() {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), roundedMin, 0, 0);
 }
 
+// Converte Date local para string ISO local (sem UTC offset)
+function toLocalISOString(date) {
+    const y  = date.getFullYear();
+    const mo = String(date.getMonth() + 1).padStart(2, "0");
+    const d  = String(date.getDate()).padStart(2, "0");
+    const h  = String(date.getHours()).padStart(2, "0");
+    const mi = String(date.getMinutes()).padStart(2, "0");
+    const s  = String(date.getSeconds()).padStart(2, "0");
+    return `${y}-${mo}-${d}T${h}:${mi}:${s}`;
+}
+
+// Converte string ISO (possivelmente UTC) para Date local
+function parseISOToLocal(isoStr) {
+    if (!isoStr) return null;
+    // Se termina em Z ou tem offset, usa new Date normalmente (converte para local)
+    // Se não tem info de timezone, trata como local
+    if (isoStr.includes("Z") || /[+-]\d{2}:\d{2}$/.test(isoStr)) {
+        return new Date(isoStr);
+    }
+    // sem timezone — tratar como local
+    return new Date(isoStr);
+}
+
+// Chave de lookup no mapa de marcações (ISO local sem Z)
+function marcacaoKey(date) {
+    return toLocalISOString(date);
+}
+
 
 // ==========================================
 // 2. apiUtils.js
@@ -139,10 +129,8 @@ function getCurrentSlotDate() {
 async function waitForApi(timeout = 3000, interval = 100) {
     const start = Date.now();
     while (Date.now() - start < timeout) {
-        const api =
-            (window.pywebview && window.pywebview.api) ||
-            (typeof pywebview !== "undefined" && pywebview && pywebview.api) ||
-            null;
+        const api = (window.pywebview && window.pywebview.api) ||
+                    (typeof pywebview !== "undefined" && pywebview && pywebview.api) || null;
         if (api) return api;
         await new Promise((res) => setTimeout(res, interval));
     }
@@ -150,39 +138,32 @@ async function waitForApi(timeout = 3000, interval = 100) {
 }
 
 function getApi() {
-    return (
-        (window.pywebview && window.pywebview.api) ||
-        (typeof pywebview !== "undefined" && pywebview && pywebview.api) ||
-        null
-    );
+    return (window.pywebview && window.pywebview.api) ||
+           (typeof pywebview !== "undefined" && pywebview && pywebview.api) || null;
 }
 
 async function callApi(fn, fallback = null) {
     const api = getApi();
-    if (!api) {
-        console.warn("[apiUtils] API não disponível.");
-        return fallback;
-    }
-    try {
-        return await fn(api);
-    } catch (e) {
-        console.error("[apiUtils] Erro na chamada à API:", e);
-        return fallback;
-    }
+    if (!api) { console.warn("[apiUtils] API não disponível."); return fallback; }
+    try { return await fn(api); }
+    catch (e) { console.error("[apiUtils] Erro:", e); return fallback; }
 }
 
-async function getUtilizadorInfo() { return callApi((api) => api.get_utilizador_info(), null); }
-async function fazerLogout() { return callApi((api) => api.fazer_logout(), { success: false }); }
-async function mostrarLogin() { return callApi((api) => api.mostrar_login(), { success: false }); }
-async function getClientesMap() { return callApi((api) => api.get_clientes_map(), {}); }
-async function getMarcacoesMap() { return callApi((api) => api.get_marcacoes_map(), {}); }
-async function getPendentes() { return callApi((api) => api.get_pendentes(), []); }
-async function lerAnotacoes() { return callApi((api) => api.ler_anotacoes(), { success: false, texto: "" }); }
-async function guardarAnotacoes(texto) { return callApi((api) => api.guardar_anotacoes(texto), { success: false }); }
-async function getCliente(nome) { return callApi((api) => api.get_cliente(nome), { success: false }); }
-async function adicionarCliente(clienteObj) { return callApi((api) => api.adicionar_cliente(clienteObj), { success: false }); }
-async function alterarCliente(payload) { return callApi((api) => api.alterar_cliente(payload), { success: false }); }
-async function apagarCliente(nome) { return callApi((api) => api.apagar_cliente(nome), { success: false }); }
+async function getUtilizadorInfo()               { return callApi(api => api.get_utilizador_info(), null); }
+async function fazerLogout()                      { return callApi(api => api.fazer_logout(), {success:false}); }
+async function mostrarLogin()                     { return callApi(api => api.mostrar_login(), {success:false}); }
+async function getClientesMap()                   { return callApi(api => api.get_clientes_map(), {}); }
+async function getMarcacoesMap()                  { return callApi(api => api.get_marcacoes_map(), {}); }
+async function getPendentes()                     { return callApi(api => api.get_pendentes(), []); }
+async function lerAnotacoes()                     { return callApi(api => api.ler_anotacoes(), {success:false, texto:""}); }
+async function guardarAnotacoes(texto)            { return callApi(api => api.guardar_anotacoes(texto), {success:false}); }
+async function getCliente(nome)                   { return callApi(api => api.get_cliente(nome), {success:false}); }
+async function adicionarCliente(obj)              { return callApi(api => api.adicionar_cliente(obj), {success:false}); }
+async function alterarCliente(payload)            { return callApi(api => api.alterar_cliente(payload), {success:false}); }
+async function apagarCliente(nome)                { return callApi(api => api.apagar_cliente(nome), {success:false}); }
+async function adicionarPendente(nome, numero)    { return callApi(api => api.adicionar_pendente(nome, numero||""), {success:false}); }
+async function removerPendente(nome)              { return callApi(api => api.remover_pendente(nome), {success:false}); }
+async function guardarPendentesLista(lista)       { return callApi(api => api.guardar_pendentes_lista(lista), {success:false}); }
 
 
 // ==========================================
@@ -191,42 +172,34 @@ async function apagarCliente(nome) { return callApi((api) => api.apagar_cliente(
 
 class AnotacoesModule {
     constructor(anotacoesArea, blurToggleBtn) {
-        this.area = anotacoesArea;
-        this.btn  = blurToggleBtn;
+        this.area    = anotacoesArea;
+        this.btn     = blurToggleBtn;
         this.blurred = true;
-
         this._bind();
         this._aplicarBlur(true);
     }
 
     async carregarAnotacoes() {
         const res = await lerAnotacoes();
-        if (res && res.success) {
-            this.area.value = res.texto || "";
-        }
+        if (res && res.success) this.area.value = res.texto || "";
     }
 
-    toggle() {
-        this.blurred = !this.blurred;
-        this._aplicarBlur(this.blurred);
-    }
+    toggle() { this.blurred = !this.blurred; this._aplicarBlur(this.blurred); }
 
     _aplicarBlur(blur) {
         if (blur) {
             this.area.classList.add("blurred");
             this.btn.textContent = "👁";
-            this.area.disabled = true;
+            this.area.disabled   = true;
         } else {
             this.area.classList.remove("blurred");
             this.btn.textContent = "⛔";
-            this.area.disabled = false;
+            this.area.disabled   = false;
             this.area.focus();
         }
     }
 
-    async guardar() {
-        await guardarAnotacoes(this.area.value);
-    }
+    async guardar() { await guardarAnotacoes(this.area.value); }
 
     _bind() {
         this.btn.addEventListener("click", () => this.toggle());
@@ -239,31 +212,28 @@ class AnotacoesModule {
 // 4. CalendarioModule.js
 // ==========================================
 
-const HORA_ABERTURA      = 7;
-const HORA_FECHO         = 21;
-const INTERVALO_MINUTOS  = 30;
-const DIAS_SEMANA_CURTO  = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
-const DIAS_SEMANA_LONGO  = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+const HORA_ABERTURA     = 7;
+const HORA_FECHO        = 21;
+const INTERVALO_MINUTOS = 30;
+const DIAS_SEMANA_CURTO = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
+const DIAS_SEMANA_LONGO = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 class CalendarioModule {
     constructor(els, getMarcacoes, onRefresh) {
-        this.grid         = els.calendarioGrid;
-        this.semanaLabel  = els.semanaLabel;
-        this.todayBtn     = els.todayBtn;
-        this.prevBtn      = els.semanaAnteriorBtn;
-        this.nextBtn      = els.proximaSemanaBtn;
-        this.diaToggle    = els.diaToggle;
-        this.semanaToggle = els.semanaToggle;
-        this.mesToggle    = els.mesToggle;
-
-        this.getMarcacoes = getMarcacoes;
-        this.onRefresh    = onRefresh;
+        this.grid          = els.calendarioGrid;
+        this.semanaLabel   = els.semanaLabel;
+        this.todayBtn      = els.todayBtn;
+        this.prevBtn       = els.semanaAnteriorBtn;
+        this.nextBtn       = els.proximaSemanaBtn;
+        this.diaToggle     = els.diaToggle;
+        this.semanaToggle  = els.semanaToggle;
+        this.mesToggle     = els.mesToggle;
+        this.getMarcacoes  = getMarcacoes;
+        this.onRefresh     = onRefresh;
 
         this.modoAtual      = "SEMANA";
         this.semanaAtual    = getMonday(new Date());
         this.diaSelecionado = new Date();
-
-        this._currentSlotInterval = null;
 
         this._bindNav();
     }
@@ -271,11 +241,10 @@ class CalendarioModule {
     atualizar() {
         this.grid.innerHTML = "";
         this.grid.className = `calendar-grid ${this.modoAtual.toLowerCase()}`;
-
         switch (this.modoAtual) {
-            case "SEMANA": this._criarSemana();  break;
-            case "MES":    this._criarMes();     break;
-            case "DIA":    this._criarDia();     break;
+            case "SEMANA": this._criarSemana(); break;
+            case "MES":    this._criarMes();    break;
+            case "DIA":    this._criarDia();    break;
         }
         this._atualizarLabel();
         this._atualizarEstiloToggles();
@@ -291,23 +260,22 @@ class CalendarioModule {
 
     iniciarHighlightLoop() {
         this._updateCurrentSlotHighlight();
-        const now       = new Date();
-        const minutesTo = (now.getMinutes() < 30 ? 30 : 60) - now.getMinutes();
-        const msTo      = minutesTo * 60000 - now.getSeconds() * 1000 - now.getMilliseconds();
+        const now    = new Date();
+        const msTo   = ((now.getMinutes() < 30 ? 30 : 60) - now.getMinutes()) * 60000
+                       - now.getSeconds() * 1000 - now.getMilliseconds();
         setTimeout(() => {
             this._updateCurrentSlotHighlight();
-            this._currentSlotInterval = setInterval(() => this._updateCurrentSlotHighlight(), 30 * 60000);
+            setInterval(() => this._updateCurrentSlotHighlight(), 30 * 60000);
         }, msTo);
     }
 
     _bindNav() {
-        this.todayBtn.addEventListener("click", () => this._hoje());
-        this.prevBtn.addEventListener("click",  () => this._anterior());
-        this.nextBtn.addEventListener("click",  () => this._proximo());
-
-        this.diaToggle.addEventListener("click",    () => this.setModo("DIA"));
-        this.semanaToggle.addEventListener("click", () => this.setModo("SEMANA"));
-        this.mesToggle.addEventListener("click",    () => this.setModo("MES"));
+        this.todayBtn.addEventListener("click",      () => this._hoje());
+        this.prevBtn.addEventListener("click",       () => this._anterior());
+        this.nextBtn.addEventListener("click",       () => this._proximo());
+        this.diaToggle.addEventListener("click",     () => this.setModo("DIA"));
+        this.semanaToggle.addEventListener("click",  () => this.setModo("SEMANA"));
+        this.mesToggle.addEventListener("click",     () => this.setModo("MES"));
     }
 
     _hoje() {
@@ -318,41 +286,33 @@ class CalendarioModule {
     }
 
     _anterior() {
-        if (this.modoAtual === "SEMANA") {
-            this.semanaAtual = new Date(this.semanaAtual.getTime() - 7 * 86400000);
-        } else if (this.modoAtual === "MES") {
-            this.semanaAtual = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() - 1, 1);
-        } else {
-            this.diaSelecionado = new Date(this.diaSelecionado.getTime() - 86400000);
-            this.semanaAtual    = getMonday(this.diaSelecionado);
-        }
+        if (this.modoAtual === "SEMANA")       this.semanaAtual = new Date(this.semanaAtual.getTime() - 7 * 86400000);
+        else if (this.modoAtual === "MES")     this.semanaAtual = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() - 1, 1);
+        else { this.diaSelecionado = new Date(this.diaSelecionado.getTime() - 86400000); this.semanaAtual = getMonday(this.diaSelecionado); }
         this.atualizar();
     }
 
     _proximo() {
-        if (this.modoAtual === "SEMANA") {
-            this.semanaAtual = new Date(this.semanaAtual.getTime() + 7 * 86400000);
-        } else if (this.modoAtual === "MES") {
-            this.semanaAtual = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() + 1, 1);
-        } else {
-            this.diaSelecionado = new Date(this.diaSelecionado.getTime() + 86400000);
-            this.semanaAtual    = getMonday(this.diaSelecionado);
-        }
+        if (this.modoAtual === "SEMANA")       this.semanaAtual = new Date(this.semanaAtual.getTime() + 7 * 86400000);
+        else if (this.modoAtual === "MES")     this.semanaAtual = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() + 1, 1);
+        else { this.diaSelecionado = new Date(this.diaSelecionado.getTime() + 86400000); this.semanaAtual = getMonday(this.diaSelecionado); }
         this.atualizar();
     }
 
+    // ── Semana ────────────────────────────────────────────────────────────────
+
     _criarSemana() {
+        // Célula vazia topo-esquerda
         this.grid.appendChild(this._celula("", "header"));
 
+        // Cabeçalhos dos dias
         for (let i = 0; i < 7; i++) {
             const data  = new Date(this.semanaAtual.getTime() + i * 86400000);
             const texto = `${DIAS_SEMANA_CURTO[i]} ${String(data.getDate()).padStart(2, "0")}`;
             const cel   = this._celula(texto, "header");
-
-            if      (isToday(data))   cel.classList.add("today");
-            else if (isSunday(data))  cel.classList.add("sunday");
-            else if (isHoliday(data)) cel.classList.add("holiday");
-
+            if      (isToday(data))    cel.classList.add("today");
+            else if (isSunday(data))   cel.classList.add("sunday");
+            else if (isHoliday(data))  cel.classList.add("holiday");
             cel.style.cursor = "pointer";
             cel.addEventListener("click", () => {
                 this.diaSelecionado = data;
@@ -361,13 +321,13 @@ class CalendarioModule {
             this.grid.appendChild(cel);
         }
 
+        // Linhas de horas
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
             for (let m = 0; m < 60; m += INTERVALO_MINUTOS) {
                 const horaStr = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
                 this.grid.appendChild(this._celula(horaStr, "hour"));
-
                 for (let d = 0; d < 7; d++) {
-                    const data    = new Date(this.semanaAtual.getTime() + d * 86400000);
+                    const data     = new Date(this.semanaAtual.getTime() + d * 86400000);
                     const dataHora = new Date(data.getFullYear(), data.getMonth(), data.getDate(), h, m);
                     this.grid.appendChild(this._celulaHorario(dataHora));
                 }
@@ -375,8 +335,10 @@ class CalendarioModule {
         }
     }
 
+    // ── Mês ───────────────────────────────────────────────────────────────────
+
     _criarMes() {
-        const container = document.createElement("div");
+        const container   = document.createElement("div");
         container.className = "mes-container";
 
         const header = document.createElement("div");
@@ -388,13 +350,13 @@ class CalendarioModule {
         weeksWrap.className = "mes-weeks";
 
         const primeiroDia = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth(), 1);
-        let   offset      = primeiroDia.getDay();
+        let offset = primeiroDia.getDay();
         if (offset === 0) offset = 7;
         const inicio = new Date(primeiroDia);
         inicio.setDate(inicio.getDate() - (offset - 1));
 
-        const ultimo       = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() + 1, 0);
-        let   offsetFim    = ultimo.getDay();
+        const ultimo    = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() + 1, 0);
+        let offsetFim   = ultimo.getDay();
         if (offsetFim === 0) offsetFim = 7;
         const fim = new Date(ultimo);
         fim.setDate(fim.getDate() + (7 - offsetFim));
@@ -403,72 +365,71 @@ class CalendarioModule {
         while (cur <= fim) {
             const semanaRow = document.createElement("div");
             semanaRow.className = "mes-week";
-
             for (let d = 0; d < 7; d++) {
-                const cel   = this._celula(String(cur.getDate()), "");
+                const cel    = this._celula(String(cur.getDate()), "");
                 const clique = new Date(cur);
-
-                if      (isToday(cur))   cel.classList.add("today");
-                else if (isSunday(cur))  cel.classList.add("sunday");
-                else if (isHoliday(cur)) cel.classList.add("holiday");
-
+                if      (isToday(cur))    cel.classList.add("today");
+                else if (isSunday(cur))   cel.classList.add("sunday");
+                else if (isHoliday(cur))  cel.classList.add("holiday");
                 if (cur.getMonth() !== this.semanaAtual.getMonth()) {
-                    cel.style.opacity  = "0.4";
-                    cel.style.fontSize = "16px";
+                    cel.style.opacity = "0.4"; cel.style.fontSize = "16px";
                 }
-
                 cel.style.cursor = "pointer";
                 cel.addEventListener("click", () => {
                     this.diaSelecionado = clique;
                     this.semanaAtual    = getMonday(clique);
                     this.setModo("DIA");
                 });
-
                 semanaRow.appendChild(cel);
                 cur.setDate(cur.getDate() + 1);
             }
             weeksWrap.appendChild(semanaRow);
         }
-
         container.appendChild(weeksWrap);
         this.grid.appendChild(container);
     }
+
+    // ── Dia ───────────────────────────────────────────────────────────────────
 
     _criarDia() {
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
             for (let m = 0; m < 60; m += INTERVALO_MINUTOS) {
                 const horaStr = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
                 this.grid.appendChild(this._celula(horaStr, "hour"));
-
                 const dataHora = new Date(
-                    this.diaSelecionado.getFullYear(),
-                    this.diaSelecionado.getMonth(),
-                    this.diaSelecionado.getDate(), h, m
-                );
+                    this.diaSelecionado.getFullYear(), this.diaSelecionado.getMonth(),
+                    this.diaSelecionado.getDate(), h, m);
                 this.grid.appendChild(this._celulaHorario(dataHora));
             }
         }
     }
 
-    _celulaHorario(dataHora) {
-        const cel = document.createElement("div");
-        cel.className = "calendar-cell";
-        const iso = dataHora.toISOString();
-        cel.setAttribute("data-datetime", iso);
+    // ── Célula de horário (bloco principal) ───────────────────────────────────
 
-        if (isPast(dataHora)) cel.classList.add("past");
-        if (iso === getCurrentSlotDate().toISOString()) cel.classList.add("current-slot");
+    _celulaHorario(dataHora) {
+        const cel      = document.createElement("div");
+        cel.className  = "calendar-cell";
+        const isoLocal = toLocalISOString(dataHora);
+        cel.setAttribute("data-datetime", isoLocal);
+
+        const passado = isPast(dataHora);
+        if (passado) cel.classList.add("past");
+
+        // Highlight do bloco actual
+        const slotAtual = getCurrentSlotDate();
+        if (toLocalISOString(slotAtual) === isoLocal) cel.classList.add("current-slot");
+
+        // Estilo domingo
+        if (dataHora.getDay() === 0) cel.classList.add("sunday-cell");
 
         const marcacoes = this.getMarcacoes();
-        const key       = dataHora.toISOString();
-        const key15     = new Date(dataHora.getTime() + 15 * 60000).toISOString();
-        const marc1     = marcacoes[key];
-        const marc2     = marcacoes[key15];
-
-        const is15m1 = marc1 && marc1.duracao === 15;
-        const is15m2 = marc2 && marc2.duracao === 15;
+        const marc1     = this._getMarcacao(marcacoes, dataHora);
+        const marc2     = this._getMarcacao(marcacoes, new Date(dataHora.getTime() + 15 * 60000));
+        const is15m1    = marc1 && marc1.duracao === 15;
+        const is15m2    = marc2 && marc2.duracao === 15;
 
         if (is15m1 || is15m2) {
+            // Dois blocos de 15 min lado a lado
             const hbox = document.createElement("div");
             hbox.style.cssText = "display:flex;gap:2px;width:100%;height:100%;";
 
@@ -476,7 +437,8 @@ class CalendarioModule {
                 hbox.appendChild(this._boxMarcacao(marc1, true));
             } else {
                 const r = document.createElement("div"); r.style.flex = "1";
-                if (!isPast(dataHora)) r.addEventListener("click", () => this._abrirCriarMarcacao(dataHora));
+                if (!passado) r.addEventListener("click", () => this._abrirCriarMarcacao(dataHora));
+                r.style.cursor = passado ? "default" : "pointer";
                 hbox.appendChild(r);
             }
             if (is15m2) {
@@ -484,31 +446,62 @@ class CalendarioModule {
             } else {
                 const r = document.createElement("div"); r.style.flex = "1";
                 const dt15 = new Date(dataHora.getTime() + 15 * 60000);
-                if (!isPast(dt15)) r.addEventListener("click", () => this._abrirCriarMarcacao(dt15));
+                if (!passado) r.addEventListener("click", () => this._abrirCriarMarcacao(dt15));
+                r.style.cursor = passado ? "default" : "pointer";
                 hbox.appendChild(r);
             }
             cel.appendChild(hbox);
+
         } else if (marc1 && marc1.duracao >= 30) {
+            // Marcação de 30+ min ocupa a célula inteira
             cel.appendChild(this._boxMarcacao(marc1, false));
-        } else if (!isPast(dataHora)) {
-            cel.addEventListener("click", () => this._abrirCriarMarcacao(dataHora));
+            cel.style.cursor = "pointer";
+
+        } else {
+            // Célula vazia
+            if (!passado) {
+                cel.style.cursor = "pointer";
+                cel.addEventListener("click", () => this._abrirCriarMarcacao(dataHora));
+                cel.addEventListener("mouseenter", () => cel.classList.add("hover-cell"));
+                cel.addEventListener("mouseleave", () => cel.classList.remove("hover-cell"));
+            } else {
+                cel.style.cursor = "default";
+            }
         }
 
         return cel;
     }
 
+    /** Procura a marcação cujo dataHora coincide com a data dada (por ISO local). */
+    _getMarcacao(marcacoes, date) {
+        const key = toLocalISOString(date);
+        // Tentar chave exacta
+        if (marcacoes[key]) return marcacoes[key];
+        // Tentar variantes ISO que o backend possa devolver
+        const keyZ = date.toISOString();
+        if (marcacoes[keyZ]) return marcacoes[keyZ];
+        // Fallback: iterar (lento mas seguro)
+        for (const [k, v] of Object.entries(marcacoes)) {
+            const dt = parseISOToLocal(k);
+            if (dt && Math.abs(dt.getTime() - date.getTime()) < 1000) return v;
+        }
+        return null;
+    }
+
+    // ── Box de marcação (visual) ──────────────────────────────────────────────
+
     _boxMarcacao(marcacao, meia) {
         const wrap = document.createElement("div");
-        wrap.style.cssText = `flex:${meia ? "1" : "1 1 100%"};padding:4px;`;
+        wrap.style.cssText = `flex:${meia ? "1" : "1 1 100%"};padding:4px;box-sizing:border-box;`;
 
-        const box = document.createElement("div");
-        const isFalta = marcacao.falta;
+        const box      = document.createElement("div");
+        const isFalta  = marcacao.falta;
         box.style.cssText = `
             border-radius:12px;
             background:${isFalta ? "rgb(128,26,15)" : "rgb(247,221,151)"};
             height:32px;
             display:flex;align-items:center;padding:0 8px;
-            cursor:pointer;
+            cursor:pointer;width:100%;box-sizing:border-box;
         `;
 
         const label = document.createElement("div");
@@ -527,51 +520,53 @@ class CalendarioModule {
         return wrap;
     }
 
+    // ── Modal: Criar Marcação ─────────────────────────────────────────────────
+
     _abrirCriarMarcacao(dataHora) {
         if (document.getElementById("marcacao-overlay")) return;
 
         const overlay = this._criarOverlay("marcacao-overlay");
         document.body.appendChild(overlay);
-
-        const modal = this._criarModal("360px");
+        const modal   = this._criarModal("360px");
         overlay.appendChild(modal);
 
         const titulo = document.createElement("div");
         const dias   = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
-        const dStr   = dias[dataHora.getDay()];
-        titulo.textContent = `${dStr} dia ${String(dataHora.getDate()).padStart(2,"0")} às ${String(dataHora.getHours()).padStart(2,"0")}:${String(dataHora.getMinutes()).padStart(2,"0")}`;
+        titulo.textContent = `${dias[dataHora.getDay()]} dia ${String(dataHora.getDate()).padStart(2,"0")} às ${String(dataHora.getHours()).padStart(2,"0")}:${String(dataHora.getMinutes()).padStart(2,"0")}`;
         titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:8px;";
         modal.appendChild(titulo);
 
-        const pesquisa = this._criarInputStyle("Pesquisar cliente...");
+        // Pesquisa cliente
+        const pesquisa = this._mkInput("Pesquisar cliente...");
         modal.appendChild(pesquisa);
 
         const sugestoes = document.createElement("div");
-        sugestoes.style.cssText = "background:white;border-radius:8px;max-height:80px;overflow-y:auto;display:none;";
+        sugestoes.style.cssText = "background:white;border-radius:8px;max-height:90px;overflow-y:auto;display:none;margin-bottom:4px;";
         modal.appendChild(sugestoes);
 
-        const chkRow = document.createElement("label");
+        // Checkbox desconhecido
+        const chkRow  = document.createElement("label");
         chkRow.style.cssText = "display:flex;align-items:center;gap:8px;color:white;font-size:15px;cursor:pointer;";
         const chkDesk = document.createElement("input"); chkDesk.type = "checkbox";
         chkRow.append(chkDesk, document.createTextNode(" Desconhecido"));
         modal.appendChild(chkRow);
 
-        const lblNome = this._criarLabelStyle("Nome:");
-        const fldNome = this._criarInputStyle("Nome"); fldNome.disabled = true;
-        const lblTel  = this._criarLabelStyle("Telefone:");
-        const fldTel  = this._criarInputStyle("Número de telefone"); fldTel.disabled = true;
+        const lblNome = this._mkLabel("Nome:");
+        const fldNome = this._mkInput("Nome"); fldNome.disabled = true;
+        const lblTel  = this._mkLabel("Telefone:");
+        const fldTel  = this._mkInput("Número de telefone"); fldTel.disabled = true;
         fldTel.addEventListener("input", () => { fldTel.value = fldTel.value.replace(/[^\d+]/g, ""); });
         modal.append(lblNome, fldNome, lblTel, fldTel);
 
-        const lblDur = this._criarLabelStyle("Duração:");
+        const lblDur = this._mkLabel("Duração:");
         const selDur = document.createElement("select");
         selDur.style.cssText = "width:100%;padding:6px 8px;border-radius:8px;border:none;font-size:14px;background:white;";
         modal.append(lblDur, selDur);
 
-        const lblObs = this._criarLabelStyle("Observações:");
+        const lblObs = this._mkLabel("Observações:");
         const txaObs = document.createElement("textarea");
-        txaObs.placeholder  = "Observações (opcional)";
-        txaObs.rows         = 3;
+        txaObs.placeholder   = "Observações (opcional)";
+        txaObs.rows          = 3;
         txaObs.style.cssText = "width:100%;padding:6px 8px;border-radius:8px;border:none;font-size:14px;box-sizing:border-box;resize:none;";
         modal.append(lblObs, txaObs);
 
@@ -579,21 +574,26 @@ class CalendarioModule {
         errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;";
         modal.appendChild(errorEl);
 
-        const btnRow  = document.createElement("div");
+        const btnRow    = document.createElement("div");
         btnRow.style.cssText = "display:flex;gap:12px;justify-content:center;margin-top:8px;";
-        const btnSalvar = this._criarBtnModal("Salvar",  "rgb(36,43,141)");
-        const btnSair   = this._criarBtnModal("Sair",    "rgb(128,26,15)");
+        const btnSalvar = this._mkBtn("Salvar", "rgb(36,43,141)");
+        const btnSair   = this._mkBtn("Sair",   "rgb(128,26,15)");
         btnRow.append(btnSalvar, btnSair);
         modal.appendChild(btnRow);
 
-        const api = getApi();
+        // Carregar clientes
         let clientesSnapshot = {};
-        if (api) api.get_clientes_map().then(m => {
-            clientesSnapshot = m || {};
+        const api = getApi();
+        if (api) {
+            api.get_clientes_map().then(m => {
+                clientesSnapshot = m || {};
+                this._popularDuracoes(selDur, dataHora, this.getMarcacoes());
+            });
+        } else {
             this._popularDuracoes(selDur, dataHora, this.getMarcacoes());
-        });
-        else this._popularDuracoes(selDur, dataHora, this.getMarcacoes());
+        }
 
+        // Pesquisa dinâmica com sugestões
         pesquisa.addEventListener("input", () => {
             if (chkDesk.checked) { sugestoes.style.display = "none"; return; }
             const val = pesquisa.value.trim().toLowerCase();
@@ -604,18 +604,28 @@ class CalendarioModule {
             sugestoes.style.display = "block";
             matches.forEach(n => {
                 const item = document.createElement("div");
-                item.textContent = n;
-                item.style.cssText = "padding:6px 10px;cursor:pointer;font-size:13px;color:black;";
-                item.addEventListener("click", () => { pesquisa.value = n; sugestoes.style.display = "none"; });
+                item.textContent  = n;
+                item.style.cssText = "padding:6px 10px;cursor:pointer;font-size:13px;color:black;border-bottom:1px solid #eee;";
+                item.addEventListener("mousedown", (e) => {
+                    e.preventDefault(); // impede blur no pesquisa
+                    pesquisa.value = n;
+                    sugestoes.style.display = "none";
+                });
                 sugestoes.appendChild(item);
             });
         });
 
+        // Fechar sugestões ao clicar fora
+        pesquisa.addEventListener("blur", () => {
+            setTimeout(() => { sugestoes.style.display = "none"; }, 150);
+        });
+
         chkDesk.addEventListener("change", () => {
-            fldNome.disabled = !chkDesk.checked;
-            fldTel.disabled  = !chkDesk.checked;
-            pesquisa.disabled = chkDesk.checked;
+            fldNome.disabled   = !chkDesk.checked;
+            fldTel.disabled    = !chkDesk.checked;
+            pesquisa.disabled  = chkDesk.checked;
             sugestoes.style.display = "none";
+            if (!chkDesk.checked) { fldNome.value = ""; fldTel.value = ""; }
         });
 
         const closeModal = () => {
@@ -635,32 +645,26 @@ class CalendarioModule {
             errorEl.textContent = "";
             if (!api) { errorEl.textContent = "API não disponível."; return; }
 
-            let clienteNome, clienteNumero, tipoCliente;
-
-            if (chkDesk.checked) {
-                clienteNome   = fldNome.value.trim();
-                clienteNumero = fldTel.value.trim();
-                tipoCliente   = "DESCONHECIDO";
-                if (!clienteNome) { errorEl.textContent = "Nome é obrigatório."; return; }
-            } else {
-                clienteNome = pesquisa.value.trim();
-                if (!clienteNome) { errorEl.textContent = "Selecione um cliente."; return; }
-                if (!clientesSnapshot[clienteNome]) { errorEl.textContent = "Cliente não encontrado."; return; }
-                clienteNumero = clientesSnapshot[clienteNome].numeroTelefone || "";
-                tipoCliente   = clientesSnapshot[clienteNome].tipoCliente   || "NORMAL";
-            }
-
             const duracao = parseInt(selDur.value, 10);
             if (!duracao) { errorEl.textContent = "Selecione a duração."; return; }
 
+            const dhStr = toLocalISOString(dataHora);
+
             try {
                 btnSalvar.disabled = true;
-                const res = await api.criar_marcacao(
-                    clienteNome,
-                    dataHora.toISOString(),
-                    duracao,
-                    txaObs.value.trim()
-                );
+                let res;
+                if (chkDesk.checked) {
+                    const nome   = fldNome.value.trim();
+                    const numero = fldTel.value.trim();
+                    if (!nome) { errorEl.textContent = "Nome é obrigatório."; btnSalvar.disabled = false; return; }
+                    res = await api.criar_marcacao_desconhecido(nome, numero, dhStr, duracao, txaObs.value.trim());
+                } else {
+                    const clienteNome = pesquisa.value.trim();
+                    if (!clienteNome) { errorEl.textContent = "Selecione um cliente."; btnSalvar.disabled = false; return; }
+                    if (!clientesSnapshot[clienteNome]) { errorEl.textContent = "Cliente não encontrado."; btnSalvar.disabled = false; return; }
+                    res = await api.criar_marcacao(clienteNome, dhStr, duracao, txaObs.value.trim());
+                }
+
                 if (res && res.success) {
                     await this.onRefresh();
                     closeModal();
@@ -670,6 +674,7 @@ class CalendarioModule {
                 }
             } catch (e) {
                 errorEl.textContent = "Erro ao comunicar com o backend.";
+                console.error(e);
             } finally {
                 btnSalvar.disabled = false;
             }
@@ -677,43 +682,44 @@ class CalendarioModule {
     }
 
     _popularDuracoes(sel, dataHora, marcacoes) {
-        const opcoes  = [15, 30, 45, 60, 75, 90];
-        const maxTime = new Date(dataHora.getFullYear(), dataHora.getMonth(), dataHora.getDate(), 21, 30);
-        const minutos = dataHora.getHours() * 60 + dataHora.getMinutes();
+        const opcoes   = [15, 30, 45, 60, 75, 90];
+        const maxTime  = new Date(dataHora.getFullYear(), dataHora.getMonth(), dataHora.getDate(), 21, 30);
         const is15slot = (dataHora.getMinutes() === 15 || dataHora.getMinutes() === 45);
 
         sel.innerHTML = "";
-        const disponíveis = is15slot ? [15] : opcoes.filter(dur => {
+        const disponiveis = is15slot ? [15] : opcoes.filter(dur => {
             const fim = new Date(dataHora.getTime() + dur * 60000);
             if (fim > maxTime) return false;
             for (let i = 0; i < dur; i += 15) {
-                const k = new Date(dataHora.getTime() + i * 60000).toISOString();
-                if (marcacoes[k]) return false;
+                const candidate = new Date(dataHora.getTime() + i * 60000);
+                if (this._getMarcacao(marcacoes, candidate)) return false;
             }
             return true;
         });
 
-        disponíveis.forEach(d => {
+        disponiveis.forEach(d => {
             const opt = document.createElement("option");
             opt.value = d; opt.textContent = `${d} min`;
             sel.appendChild(opt);
         });
-        if (disponíveis.includes(30)) sel.value = "30";
+        if (disponiveis.includes(30)) sel.value = "30";
+        else if (disponiveis.length > 0) sel.value = String(disponiveis[0]);
     }
+
+    // ── Modal: Detalhe de Marcação ────────────────────────────────────────────
 
     _abrirDetalheMarcacao(marcacao) {
         if (document.getElementById("detalhe-marcacao-overlay")) return;
 
         const overlay = this._criarOverlay("detalhe-marcacao-overlay");
         document.body.appendChild(overlay);
-
-        const modal = this._criarModal("340px");
+        const modal   = this._criarModal("360px");
         overlay.appendChild(modal);
 
-        const passou = new Date(marcacao.dataHora) < new Date();
+        const dt     = parseISOToLocal(marcacao.dataHora) || new Date(marcacao.dataHora);
+        const passou = dt < new Date();
+        const dias   = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 
-        const dt    = new Date(marcacao.dataHora);
-        const dias  = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
         const titulo = document.createElement("div");
         titulo.textContent = `${dias[dt.getDay()]} dia ${String(dt.getDate()).padStart(2,"0")} às ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
         titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:10px;";
@@ -721,30 +727,34 @@ class CalendarioModule {
 
         const addField = (label, value) => {
             const lbl = document.createElement("div");
-            lbl.textContent = label;
+            lbl.textContent  = label;
             lbl.style.cssText = "color:white;font-size:14px;margin-top:6px;";
             const inp = document.createElement("input");
-            inp.type = "text"; inp.value = value || ""; inp.readOnly = true;
+            inp.type     = "text";
+            inp.value    = value || "";
+            inp.readOnly = true;
             inp.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
             modal.append(lbl, inp);
         };
 
-        addField("Nome:", marcacao.cliente?.nome);
+        addField("Nome:",     marcacao.cliente?.nome);
         addField("Telefone:", marcacao.cliente?.numeroTelefone);
-        addField("Duração:", `${marcacao.duracao} minutos`);
+        addField("Duração:",  `${marcacao.duracao} minutos`);
 
         const lblObs = document.createElement("div");
-        lblObs.textContent = "Observações:";
+        lblObs.textContent  = "Observações:";
         lblObs.style.cssText = "color:white;font-size:14px;margin-top:6px;";
         const txaObs = document.createElement("textarea");
-        txaObs.value = marcacao.observacoes || "";
-        txaObs.rows  = 3;
+        txaObs.value        = marcacao.observacoes || "";
+        txaObs.rows         = 3;
         txaObs.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;font-size:14px;box-sizing:border-box;resize:none;";
         modal.append(lblObs, txaObs);
 
+        // Alterar hora (só se não passou)
+        let selDia = null, selHora = null;
         if (!passou) {
             const lblHora = document.createElement("div");
-            lblHora.textContent = "Alterar Hora";
+            lblHora.textContent  = "Alterar Hora";
             lblHora.style.cssText = "color:white;font-size:15px;font-weight:bold;text-align:center;margin-top:12px;";
             modal.appendChild(lblHora);
 
@@ -754,7 +764,7 @@ class CalendarioModule {
             const mkCombo = (lbl) => {
                 const wrap = document.createElement("div");
                 wrap.style.cssText = "display:flex;flex-direction:column;gap:4px;align-items:center;";
-                const l = document.createElement("div"); l.textContent = lbl; l.style.cssText = "color:white;font-size:13px;";
+                const l   = document.createElement("div"); l.textContent = lbl; l.style.cssText = "color:white;font-size:13px;";
                 const sel = document.createElement("select");
                 sel.style.cssText = "padding:4px 8px;border-radius:8px;border:none;min-width:110px;background:white;";
                 wrap.append(l, sel);
@@ -762,76 +772,108 @@ class CalendarioModule {
                 return sel;
             };
 
-            const selDia  = mkCombo("Dia");
-            const selHora = mkCombo("Hora");
+            selDia  = mkCombo("Dia");
+            selHora = mkCombo("Hora");
             modal.appendChild(hboxCombos);
 
             DIAS_SEMANA_LONGO.forEach(d => {
-                const opt = document.createElement("option"); opt.value = d; opt.textContent = d; selDia.appendChild(opt);
+                const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
+                selDia.appendChild(opt);
             });
-            const diaAtual = DIAS_SEMANA_LONGO[dt.getDay() === 0 ? 6 : dt.getDay() - 1];
-            selDia.value   = diaAtual;
+            // Mapear dia da semana JS (0=Dom) para índice do array DIAS_SEMANA_LONGO (0=Seg)
+            const diaIdx = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
+            selDia.value = DIAS_SEMANA_LONGO[diaIdx];
 
-            const popularHoras = () => {
+            const horaAtualStr = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+
+            const popularHoras = async () => {
                 selHora.innerHTML = "";
-                const diaIdx  = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                const diasJS  = [1,2,3,4,5,6,0];
-                const diasJSv = diasJS[diaIdx];
-                const novaData = new Date(dt);
-                novaData.setDate(novaData.getDate() + ((diasJSv - novaData.getDay() + 7) % 7));
+                const diaIdxSel = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                // Converter índice (0=Seg) para weekday JS (1=Seg, 0=Dom)
+                const weekdayJS = diaIdxSel === 6 ? 0 : diaIdxSel + 1;
 
-                const marcacoes = this.getMarcacoes();
-                for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
-                    for (let m = 0; m < 60; m += marcacao.duracao < 30 ? 15 : 30) {
-                        const candidate = new Date(novaData.getFullYear(), novaData.getMonth(), novaData.getDate(), h, m);
-                        if (candidate <= new Date()) continue;
-                        const key = candidate.toISOString();
-                        if (marcacoes[key] && marcacoes[key] !== marcacao) continue;
-                        const opt = document.createElement("option");
-                        opt.value = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-                        opt.textContent = opt.value;
-                        selHora.appendChild(opt);
-                    }
+                const api = getApi();
+                if (api) {
+                    try {
+                        const res = await api.get_horas_disponiveis(
+                            toLocalISOString(dt),
+                            diaIdxSel,
+                            marcacao.duracao
+                        );
+                        if (res && res.success && res.horas) {
+                            res.horas.forEach(h => {
+                                const opt = document.createElement("option"); opt.value = h; opt.textContent = h;
+                                selHora.appendChild(opt);
+                            });
+                        }
+                    } catch(e) { console.error(e); }
                 }
-                const horaAtualStr = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+                // Seleccionar hora actual se disponível
                 if ([...selHora.options].some(o => o.value === horaAtualStr)) selHora.value = horaAtualStr;
             };
+
             selDia.addEventListener("change", popularHoras);
             popularHoras();
         }
 
+        const errorEl = document.createElement("div");
+        errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;margin-top:4px;";
+        modal.appendChild(errorEl);
+
+        // Botões
         const btnRow    = document.createElement("div");
         btnRow.style.cssText = "display:flex;gap:12px;justify-content:center;margin-top:14px;";
-        const btnSalvar = this._criarBtnModal("Salvar",  "rgb(36,43,141)");
-        const btnSair   = this._criarBtnModal("Sair",    "rgb(60,60,60)");
+        const btnSalvar = this._mkBtn("Salvar", "rgb(36,43,141)");
+        const btnSair   = this._mkBtn("Sair",   "rgb(60,60,60)");
         btnRow.append(btnSalvar, btnSair);
 
         if (passou) {
-            const btnFaltou = this._criarBtnModal("Faltou", "rgb(128,26,15)");
+            const btnFaltou = this._mkBtn("Faltou", "rgb(128,26,15)");
             btnFaltou.disabled = marcacao.falta;
+            if (marcacao.falta) btnFaltou.style.opacity = "0.5";
             btnFaltou.addEventListener("click", async () => {
                 const api = getApi();
                 if (!api) return;
                 try {
-                    const res = await api.marcar_falta_marcacao(marcacao.dataHora);
+                    const res = await api.marcar_falta_marcacao(toLocalISOString(dt));
                     if (res && res.success) { await this.onRefresh(); closeModal(); this.atualizar(); }
-                } catch {}
+                    else errorEl.textContent = res?.error || "Erro ao marcar falta.";
+                } catch(e) { errorEl.textContent = "Erro de comunicação."; }
             });
             btnRow.insertBefore(btnFaltou, btnSalvar);
         } else {
-            const btnApagar = this._criarBtnModal("Apagar", "rgb(128,26,15)");
+            const btnApagar = this._mkBtn("Apagar", "rgb(128,26,15)");
             btnApagar.addEventListener("click", async () => {
                 const api = getApi();
                 if (!api) return;
                 try {
-                    const res = await api.apagar_marcacao(marcacao.dataHora);
+                    const res = await api.apagar_marcacao(toLocalISOString(dt));
                     if (res && res.success) { await this.onRefresh(); closeModal(); this.atualizar(); }
-                } catch {}
+                    else errorEl.textContent = res?.error || "Erro ao apagar.";
+                } catch(e) { errorEl.textContent = "Erro de comunicação."; }
             });
             btnRow.insertBefore(btnApagar, btnSalvar);
         }
 
         modal.appendChild(btnRow);
+
+        const obsOriginal = txaObs.value;
+        btnSalvar.disabled = true;
+
+        const verificarMudancas = () => {
+            const obsAlterada  = txaObs.value !== obsOriginal;
+            const horaAlterada = selDia && selHora && (() => {
+                const diaIdx   = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                const diaOrig  = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
+                const horaOrig = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+                return diaIdx !== diaOrig || selHora.value !== horaOrig;
+            })();
+            btnSalvar.disabled = !obsAlterada && !horaAlterada;
+        };
+
+        txaObs.addEventListener("input", verificarMudancas);
+        if (selDia)  selDia.addEventListener("change", verificarMudancas);
+        if (selHora) selHora.addEventListener("change", verificarMudancas);
 
         const closeModal = () => {
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
@@ -846,25 +888,46 @@ class CalendarioModule {
         overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
         btnSair.addEventListener("click", closeModal);
 
-        const obsOriginal = txaObs.value;
-        btnSalvar.disabled = true;
-        txaObs.addEventListener("input", () => { btnSalvar.disabled = txaObs.value === obsOriginal; });
-
         btnSalvar.addEventListener("click", async () => {
             const api = getApi();
-            if (!api) return;
+            if (!api) { errorEl.textContent = "API não disponível."; return; }
             try {
                 btnSalvar.disabled = true;
-                const res = await api.alterar_observacoes_marcacao(marcacao.dataHora, txaObs.value);
-                if (res && res.success) { await this.onRefresh(); closeModal(); this.atualizar(); }
-            } catch { btnSalvar.disabled = false; }
+
+                let dtNova = dt;
+                if (selDia && selHora && selHora.value) {
+                    const diaIdxSel  = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                    const weekdayJS  = diaIdxSel === 6 ? 0 : diaIdxSel + 1;
+                    const delta      = (weekdayJS - dt.getDay() + 7) % 7;
+                    const novaData   = new Date(dt.getTime() + delta * 86400000);
+                    const [hh, mm]   = selHora.value.split(":").map(Number);
+                    dtNova = new Date(novaData.getFullYear(), novaData.getMonth(), novaData.getDate(), hh, mm);
+                }
+
+                const res = await api.alterar_marcacao(
+                    toLocalISOString(dt),
+                    toLocalISOString(dtNova),
+                    txaObs.value
+                );
+                if (res && res.success) {
+                    await this.onRefresh();
+                    closeModal();
+                    this.atualizar();
+                } else {
+                    errorEl.textContent = res?.error || "Erro ao guardar.";
+                    btnSalvar.disabled = false;
+                }
+            } catch(e) {
+                errorEl.textContent = "Erro de comunicação.";
+                btnSalvar.disabled  = false;
+            }
         });
     }
 
     _updateCurrentSlotHighlight() {
         document.querySelectorAll(".calendar-cell.current-slot")
             .forEach(el => el.classList.remove("current-slot"));
-        const iso = getCurrentSlotDate().toISOString();
+        const iso = toLocalISOString(getCurrentSlotDate());
         const el  = document.querySelector(`.calendar-cell[data-datetime="${iso}"]`);
         if (el) el.classList.add("current-slot");
     }
@@ -873,15 +936,13 @@ class CalendarioModule {
         let texto = "";
         switch (this.modoAtual) {
             case "SEMANA": {
-                const fim     = new Date(this.semanaAtual.getTime() + 6 * 86400000);
-                const ini     = this.semanaAtual;
-                const mesIni  = ini.toLocaleDateString("pt-PT", { month: "long" });
-                const mesFim  = fim.toLocaleDateString("pt-PT", { month: "long" });
-                if (ini.getMonth() === fim.getMonth()) {
-                    texto = `${ini.getDate()} de ${mesIni} - ${fim.getDate()} de ${mesIni}`;
-                } else {
-                    texto = `${ini.getDate()} de ${mesIni} - ${fim.getDate()} de ${mesFim}`;
-                }
+                const fim    = new Date(this.semanaAtual.getTime() + 6 * 86400000);
+                const ini    = this.semanaAtual;
+                const mesIni = ini.toLocaleDateString("pt-PT", { month: "long" });
+                const mesFim = fim.toLocaleDateString("pt-PT", { month: "long" });
+                texto = ini.getMonth() === fim.getMonth()
+                    ? `${ini.getDate()} de ${mesIni} - ${fim.getDate()} de ${mesIni}`
+                    : `${ini.getDate()} de ${mesIni} - ${fim.getDate()} de ${mesFim}`;
                 break;
             }
             case "MES":
@@ -896,16 +957,18 @@ class CalendarioModule {
     }
 
     _atualizarEstiloToggles() {
-        const ativo  = "background-color:rgb(60,60,60);color:white;font-weight:bold;border:none;background-radius:12px;";
-        const inativo = "background-color:rgb(43,40,40);color:white;font-weight:bold;border:none;border-radius:12px;";
-        this.diaToggle.style.cssText    = (this.modoAtual === "DIA"    ? ativo : inativo);
-        this.semanaToggle.style.cssText = (this.modoAtual === "SEMANA" ? ativo : inativo);
-        this.mesToggle.style.cssText    = (this.modoAtual === "MES"    ? ativo : inativo);
+        const ativo   = "background-color:rgb(60,60,60);color:white;font-weight:bold;border:none;border-radius:12px;padding:8px 12px;cursor:pointer;";
+        const inativo = "background-color:rgb(43,40,40);color:white;font-weight:bold;border:none;border-radius:12px;padding:8px 12px;cursor:pointer;";
+        this.diaToggle.style.cssText    = this.modoAtual === "DIA"    ? ativo : inativo;
+        this.semanaToggle.style.cssText = this.modoAtual === "SEMANA" ? ativo : inativo;
+        this.mesToggle.style.cssText    = this.modoAtual === "MES"    ? ativo : inativo;
     }
+
+    // ── Helpers de UI ─────────────────────────────────────────────────────────
 
     _celula(texto, tipo) {
         const el = document.createElement("div");
-        el.className = `calendar-cell${tipo ? " " + tipo : ""}`;
+        el.className  = `calendar-cell${tipo ? " " + tipo : ""}`;
         el.textContent = texto;
         return el;
     }
@@ -936,7 +999,7 @@ class CalendarioModule {
         return el;
     }
 
-    _criarInputStyle(placeholder) {
+    _mkInput(placeholder) {
         const inp = document.createElement("input");
         inp.type        = "text";
         inp.placeholder = placeholder;
@@ -944,14 +1007,14 @@ class CalendarioModule {
         return inp;
     }
 
-    _criarLabelStyle(texto) {
+    _mkLabel(texto) {
         const lbl = document.createElement("div");
-        lbl.textContent = texto;
+        lbl.textContent  = texto;
         lbl.style.cssText = "color:white;font-size:14px;margin-top:4px;";
         return lbl;
     }
 
-    _criarBtnModal(texto, bg) {
+    _mkBtn(texto, bg) {
         const btn = document.createElement("button");
         btn.textContent = texto;
         btn.style.cssText = `background:${bg};color:white;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:15px;min-width:80px;`;
@@ -966,35 +1029,28 @@ class CalendarioModule {
 
 class ClientesModule {
     constructor(contentEl, getClientes, onRefresh) {
-        this.content    = contentEl;
+        this.content     = contentEl;
         this.getClientes = getClientes;
-        this.onRefresh  = onRefresh;
+        this.onRefresh   = onRefresh;
     }
 
     renderizar() {
         this.content.innerHTML = "";
         const clientes = Object.values(this.getClientes());
-
-        if (clientes.length === 0) {
-            this._renderVazio();
-        } else {
-            this._renderTabela(clientes);
-        }
+        if (clientes.length === 0) this._renderVazio();
+        else                       this._renderTabela(clientes);
     }
 
     _renderVazio() {
         const wrap = document.createElement("div");
         wrap.className = "clientes-empty";
-
         const msg = document.createElement("div");
         msg.className = "clientes-empty-message";
         msg.textContent = "Não tem nenhum cliente salvo, deseja adicionar um?";
-
         const btn = document.createElement("button");
         btn.className = "clientes-add-btn";
         btn.textContent = "Adicionar";
         btn.addEventListener("click", () => this._abrirAdicionarCliente());
-
         wrap.append(msg, btn);
         this.content.appendChild(wrap);
     }
@@ -1002,31 +1058,34 @@ class ClientesModule {
     _renderTabela(clientesArray, filtro = "") {
         this.content.innerHTML = "";
 
-        const toolbar = document.createElement("div");
+        const toolbar   = document.createElement("div");
         toolbar.className = "clientes-toolbar";
 
         const search = document.createElement("input");
-        search.className = "search-field";
-        search.type        = "text";
-        search.placeholder = "Pesquisar cliente...";
-        search.value       = filtro;
+        search.className    = "search-field";
+        search.type         = "text";
+        search.placeholder  = "Pesquisar cliente...";
+        search.value        = filtro;
+        // CORRECÇÃO: usar compositionend + input para não perder foco
+        search.addEventListener("input", () => {
+            this._atualizarTabelaFiltro(table, clientesArray, search.value);
+        });
 
         const addBtn = document.createElement("button");
-        addBtn.className = "add-client-btn";
+        addBtn.className   = "add-client-btn";
         addBtn.textContent = "+";
         addBtn.addEventListener("click", () => this._abrirAdicionarCliente());
 
-        search.addEventListener("input", () => this._renderTabela(clientesArray, search.value));
         toolbar.append(search, addBtn);
         this.content.appendChild(toolbar);
 
-        const container = document.createElement("div");
+        const container   = document.createElement("div");
         container.className = "clientes-table-container";
 
         const table = document.createElement("div");
         table.className = "clientes-table";
 
-        const headers = ["Nome", "Telefone", "Tipo", "Faltas", "Dia Semana", "Hora Corte"];
+        const headers = ["Nome","Telefone","Tipo","Faltas","Dia Semana","Hora Corte"];
         headers.forEach(h => {
             const th = document.createElement("div");
             th.className   = "table-header";
@@ -1034,17 +1093,35 @@ class ClientesModule {
             table.appendChild(th);
         });
 
-        const filtroLower = filtro.toLowerCase();
+        this._atualizarTabelaFiltro(table, clientesArray, filtro);
+
+        container.appendChild(table);
+        this.content.appendChild(container);
+
+        // Focar automaticamente o campo de pesquisa após render
+        // sem roubar foco se o utilizador estiver a interagir com outra coisa
+        setTimeout(() => {
+            if (document.activeElement === document.body ||
+                document.activeElement === this.content) {
+                search.focus();
+            }
+        }, 50);
+    }
+
+    _atualizarTabelaFiltro(table, clientesArray, filtro) {
+        // Remover linhas antigas (manter apenas os headers: primeiros 6 filhos)
+        const headers = Array.from(table.children).slice(0, 6);
+        table.innerHTML = "";
+        headers.forEach(h => table.appendChild(h));
+
+        const filtroLower = (filtro || "").toLowerCase();
         clientesArray
-            .filter(c => c.nome.toLowerCase().includes(filtroLower) || c.numeroTelefone.includes(filtroLower))
+            .filter(c => c.nome.toLowerCase().includes(filtroLower) ||
+                         c.numeroTelefone.includes(filtroLower))
             .forEach(c => {
                 const dados = [
-                    c.nome,
-                    c.numeroTelefone,
-                    c.tipoCliente,
-                    String(c.faltas),
-                    c.diaSemana || "—",
-                    c.horaCorte || "—",
+                    c.nome, c.numeroTelefone, c.tipoCliente,
+                    String(c.faltas), c.diaSemana || "—", c.horaCorte || "—",
                 ];
                 dados.forEach((d, i) => {
                     const cell = document.createElement("div");
@@ -1057,9 +1134,6 @@ class ClientesModule {
                     table.appendChild(cell);
                 });
             });
-
-        container.appendChild(table);
-        this.content.appendChild(container);
     }
 
     async _abrirDetalheCliente(clienteLocal) {
@@ -1071,8 +1145,7 @@ class ClientesModule {
 
         const overlay = this._overlay("detalhe-overlay");
         document.body.appendChild(overlay);
-
-        const modal = this._modal("760px");
+        const modal   = this._modal("760px");
         overlay.appendChild(modal);
 
         const closeModal = () => {
@@ -1086,7 +1159,7 @@ class ClientesModule {
         window.addEventListener("keydown", keyH, true);
         overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
 
-        const topRow = document.createElement("div");
+        const topRow    = document.createElement("div");
         topRow.style.cssText = "display:flex;align-items:center;gap:8px;";
         const btnEditar = this._btn("Editar", "rgb(60,60,60)");
         const spacer    = document.createElement("div"); spacer.style.flex = "1";
@@ -1158,8 +1231,7 @@ class ClientesModule {
         const mkCheck = (label, checked) => {
             const row  = document.createElement("label");
             row.style.cssText = "display:flex;align-items:center;gap:10px;justify-content:center;width:100%;color:white;font-weight:800;font-size:15px;cursor:pointer;";
-            const chk  = document.createElement("input"); chk.type = "checkbox"; chk.checked = checked;
-            chk.style.transform = "scale(1.5)";
+            const chk  = document.createElement("input"); chk.type = "checkbox"; chk.checked = checked; chk.style.transform = "scale(1.5)";
             row.append(chk, document.createTextNode(` ${label}`));
             editBox.appendChild(row);
             return chk;
@@ -1168,27 +1240,27 @@ class ClientesModule {
         const semanalChk = mkCheck("Cliente Semanal", clienteObj.tipoCliente === "SEMANAL");
         const nomeInp    = mkInput("Nome:", clienteObj.nome);
         const telInp     = mkInput("Telefone:", clienteObj.numeroTelefone);
-        const diaOps     = [{v:"",l:"--"},
+        telInp.addEventListener("input", () => { telInp.value = telInp.value.replace(/[^\d+]/g, ""); });
+
+        const diaOps = [{v:"",l:"--"},
             {v:"Segunda",l:"Segunda"},{v:"Terça",l:"Terça"},{v:"Quarta",l:"Quarta"},
             {v:"Quinta",l:"Quinta"},{v:"Sexta",l:"Sexta"},{v:"Sábado",l:"Sábado"},{v:"Domingo",l:"Domingo"}];
-        const diaSel     = mkSelect("Dia da Semana:", diaOps, clienteObj.diaSemana || "");
-        const horaSel    = mkSelect("Hora do Corte:", [], clienteObj.horaCorte || "");
+        const diaSel  = mkSelect("Dia da Semana:", diaOps, clienteObj.diaSemana || "");
+        const horaSel = mkSelect("Hora do Corte:", [], clienteObj.horaCorte || "");
 
-        const faltasRow  = document.createElement("div");
+        const faltasRow = document.createElement("div");
         faltasRow.style.cssText = "display:flex;align-items:center;gap:10px;justify-content:center;color:white;font-size:16px;font-weight:700;";
-        let faltasVal    = clienteObj.faltas || 0;
-        const faltasLbl  = document.createElement("div"); faltasLbl.textContent = String(faltasVal);
-        faltasLbl.style.cssText = "min-width:36px;text-align:center;color:white;font-size:15px;";
-        const btnMenos   = this._btn("-", "rgb(60,60,60)"); btnMenos.style.padding = "4px 10px";
-        const btnMais    = this._btn("+", "rgb(60,60,60)"); btnMais.style.padding  = "4px 10px";
-        const faltasTxt  = document.createElement("div"); faltasTxt.textContent = "Faltas:";
+        let faltasVal   = clienteObj.faltas || 0;
+        const faltasLbl = document.createElement("div"); faltasLbl.textContent = String(faltasVal); faltasLbl.style.cssText = "min-width:36px;text-align:center;color:white;font-size:15px;";
+        const btnMenos  = this._btn("-","rgb(60,60,60)"); btnMenos.style.padding = "4px 10px";
+        const btnMais   = this._btn("+","rgb(60,60,60)"); btnMais.style.padding  = "4px 10px";
+        const faltasTxt = document.createElement("div"); faltasTxt.textContent = "Faltas:";
         faltasRow.append(faltasTxt, btnMenos, faltasLbl, btnMais);
         editBox.appendChild(faltasRow);
-
-        const rapidoChk  = mkCheck("Corte Rápido", clienteObj.rapido === true || clienteObj.rapido === "true");
-
         btnMenos.addEventListener("click", () => { faltasVal = Math.max(0, faltasVal - 1); faltasLbl.textContent = String(faltasVal); });
         btnMais.addEventListener("click",  () => { faltasVal++;  faltasLbl.textContent = String(faltasVal); });
+
+        const rapidoChk = mkCheck("Corte Rápido", clienteObj.rapido === true || clienteObj.rapido === "true");
 
         const popularHoras = () => {
             const step     = rapidoChk.checked ? 15 : 30;
@@ -1198,36 +1270,26 @@ class ClientesModule {
                 if (String(c.tipoCliente).toUpperCase() !== "SEMANAL") return;
                 if (c.nome === clienteObj.nome) return;
                 if (!diaEsc || String(c.diaSemana).toLowerCase() !== String(diaEsc).toLowerCase()) return;
-                const start = timeToMinutes(c.horaCorte);
-                if (start === null) return;
+                const start = timeToMinutes(c.horaCorte); if (start === null) return;
                 const dur = (c.rapido === true || c.rapido === "true") ? 15 : 30;
                 for (let t = start; t < start + dur; t += 15) ocupados.add(t);
             });
-
             horaSel.innerHTML = "";
             const ph = document.createElement("option"); ph.value = ""; ph.textContent = "--"; horaSel.appendChild(ph);
             gerarHoras(step).forEach(h => {
-                const min = timeToMinutes(h);
-                let ok = false;
-                if (step === 15) {
-                    ok = !ocupados.has(min);
-                } else {
-                    const next = min + 15;
-                    ok = next <= 21 * 60 && !ocupados.has(min) && !ocupados.has(next);
-                }
+                const min  = timeToMinutes(h);
+                const next = min + 15;
+                const ok   = step === 15 ? !ocupados.has(min) : (next <= 21*60 && !ocupados.has(min) && !ocupados.has(next));
                 if (ok) { const o = document.createElement("option"); o.value = h; o.textContent = h; horaSel.appendChild(o); }
             });
-
-            if (clienteObj.horaCorte && [...horaSel.options].some(o => o.value === clienteObj.horaCorte)) {
-                horaSel.value = clienteObj.horaCorte;
-            }
+            if (clienteObj.horaCorte && [...horaSel.options].some(o => o.value === clienteObj.horaCorte)) horaSel.value = clienteObj.horaCorte;
         };
 
         const updateSemanal = () => {
             const s = semanalChk.checked;
             diaSel.disabled  = !s;
             horaSel.disabled = !s;
-            if (s) popularHoras(); else { horaSel.innerHTML = ""; }
+            if (s) popularHoras(); else horaSel.innerHTML = "";
         };
 
         semanalChk.addEventListener("change", updateSemanal);
@@ -1235,28 +1297,28 @@ class ClientesModule {
         rapidoChk.addEventListener("change", popularHoras);
         updateSemanal();
 
-        const bottomRow  = document.createElement("div");
+        const bottomRow = document.createElement("div");
         bottomRow.style.cssText = "display:flex;justify-content:flex-end;gap:8px;margin-top:auto;";
-        const btnApagar  = this._btn("Apagar", "rgb(128,26,15)");
-        const btnSalvar  = this._btn("Salvar", "rgb(36,43,141)"); btnSalvar.style.display = "none";
-        const btnSair    = this._btn("Sair",   "rgb(60,60,60)");
+        const btnApagar = this._btn("Apagar", "rgb(128,26,15)");
+        const btnSalvar = this._btn("Salvar", "rgb(36,43,141)"); btnSalvar.style.display = "none";
+        const btnSair   = this._btn("Sair",   "rgb(60,60,60)");
         bottomRow.append(btnApagar, btnSalvar, btnSair);
         modal.appendChild(bottomRow);
 
         btnEditar.addEventListener("click", () => {
             const isEditing = editBox.style.display !== "none";
             if (isEditing) {
-                editBox.style.display  = "none";
+                editBox.style.display   = "none";
                 visualBox.style.display = "grid";
                 btnSalvar.style.display = "none";
                 btnApagar.style.display = "inline-block";
-                btnEditar.textContent  = "Editar";
+                btnEditar.textContent   = "Editar";
             } else {
                 visualBox.style.display = "none";
-                editBox.style.display  = "flex";
+                editBox.style.display   = "flex";
                 btnSalvar.style.display = "inline-block";
                 btnApagar.style.display = "none";
-                btnEditar.textContent  = "Editar";
+                btnEditar.textContent   = "Editar";
                 setTimeout(() => nomeInp.focus(), 50);
             }
         });
@@ -1284,20 +1346,12 @@ class ClientesModule {
             if (tipo === "SEMANAL" && (!dia || !hora)) { alert("Selecione dia e hora para cliente semanal"); return; }
 
             const payload = {
-                nomeOriginal: clienteObj.nome,
-                nome: novoNome, numeroTelefone: novoTel,
-                tipoCliente: tipo, diaSemana: dia, horaCorte: hora,
-                faltas: faltasVal, rapido
+                nomeOriginal: clienteObj.nome, nome: novoNome, numeroTelefone: novoTel,
+                tipoCliente: tipo, diaSemana: dia, horaCorte: hora, faltas: faltasVal, rapido
             };
-
             const res = await alterarCliente(payload);
-            if (res && res.success) {
-                await this.onRefresh();
-                closeModal();
-                this.renderizar();
-            } else {
-                alert(res?.error || "Erro ao guardar cliente.");
-            }
+            if (res && res.success) { await this.onRefresh(); closeModal(); this.renderizar(); }
+            else alert(res?.error || "Erro ao guardar cliente.");
         });
     }
 
@@ -1306,8 +1360,7 @@ class ClientesModule {
 
         const overlay = this._overlay("add-cliente-overlay");
         document.body.appendChild(overlay);
-
-        const modal = this._modal("360px");
+        const modal   = this._modal("360px");
         overlay.appendChild(modal);
 
         const closeModal = () => {
@@ -1348,17 +1401,17 @@ class ClientesModule {
             return sel;
         };
 
-        const nomeInp   = mkF("Nome",     "Nome");
-        const telInp    = mkF("Telefone", "Número de telefone");
+        const nomeInp  = mkF("Nome",    "Nome");
+        const telInp   = mkF("Telefone","Número de telefone");
         telInp.addEventListener("input", () => { telInp.value = telInp.value.replace(/[^\d+]/g, ""); });
 
         const diaSelEl  = mkSel("Dia da Semana");
         const horaSelEl = mkSel("Hora do Corte");
+        const horaPlaceholder = document.createElement("option"); horaPlaceholder.value = ""; horaPlaceholder.textContent = "Hora do Corte"; horaSelEl.appendChild(horaPlaceholder);
 
-        ["", "Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"].forEach(d => {
+        ["","Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"].forEach(d => {
             const o = document.createElement("option"); o.value = d; o.textContent = d || "--"; diaSelEl.appendChild(o);
         });
-        const horaPlaceholder = document.createElement("option"); horaPlaceholder.value = ""; horaPlaceholder.textContent = "Hora do Corte"; horaSelEl.appendChild(horaPlaceholder);
 
         const rapidoRow = document.createElement("label");
         rapidoRow.style.cssText = "display:flex;align-items:center;gap:10px;color:white;font-size:14px;cursor:pointer;margin-top:4px;";
@@ -1377,24 +1430,19 @@ class ClientesModule {
         btnRow.append(btnSalvar, btnSair);
         modal.appendChild(btnRow);
 
-        const setDisabled = (el, dis) => {
-            el.disabled = dis;
-            el.style.opacity = dis ? "0.5" : "1";
-            el.style.pointerEvents = dis ? "none" : "auto";
-        };
-        setDisabled(diaSelEl,  true);
-        setDisabled(horaSelEl, true);
+        const setDisabled = (el, dis) => { el.disabled = dis; el.style.opacity = dis ? "0.5" : "1"; };
+        setDisabled(diaSelEl, true); setDisabled(horaSelEl, true);
 
         semanalChk.addEventListener("change", () => {
             const s = semanalChk.checked;
-            setDisabled(diaSelEl,  !s);
+            setDisabled(diaSelEl, !s);
             rapidoChk.disabled = !s;
             if (!s) { setDisabled(horaSelEl, true); rapidoChk.checked = false; horaSelEl.innerHTML = ""; horaSelEl.appendChild(horaPlaceholder); }
         });
 
         const popularHorasAdd = () => {
             horaSelEl.innerHTML = ""; horaSelEl.appendChild(horaPlaceholder);
-            const diaEsc   = diaSelEl.value;
+            const diaEsc = diaSelEl.value;
             if (!diaEsc) { setDisabled(horaSelEl, true); return; }
             const step     = rapidoChk.checked ? 15 : 30;
             const ocupados = new Set();
@@ -1407,31 +1455,29 @@ class ClientesModule {
             });
             gerarHoras(step).forEach(h => {
                 const min  = timeToMinutes(h);
-                let ok = false;
-                if (step === 15) { ok = !ocupados.has(min); }
-                else { const n = min + 15; ok = n <= 21 * 60 && !ocupados.has(min) && !ocupados.has(n); }
+                const next = min + 15;
+                const ok   = step === 15 ? !ocupados.has(min) : (next <= 21*60 && !ocupados.has(min) && !ocupados.has(next));
                 if (ok) { const o = document.createElement("option"); o.value = h; o.textContent = h; horaSelEl.appendChild(o); }
             });
             setDisabled(horaSelEl, false);
             errorEl.textContent = horaSelEl.options.length <= 1 ? "Nenhuma hora disponível neste dia." : "";
         };
 
-        diaSelEl.addEventListener("change", popularHorasAdd);
+        diaSelEl.addEventListener("change",  popularHorasAdd);
         rapidoChk.addEventListener("change", popularHorasAdd);
         btnSair.addEventListener("click", closeModal);
 
         btnSalvar.addEventListener("click", async () => {
             errorEl.textContent = "";
-            const nome    = nomeInp.value.trim();
+            const nome     = nomeInp.value.trim();
             const telefone = telInp.value.trim();
-            const tipo    = semanalChk.checked ? "SEMANAL" : "NORMAL";
-            const dia     = semanalChk.checked ? (diaSelEl.value  || null) : null;
-            const hora    = semanalChk.checked ? (horaSelEl.value || null) : null;
-            const rapido  = rapidoChk.checked;
+            const tipo     = semanalChk.checked ? "SEMANAL" : "NORMAL";
+            const dia      = semanalChk.checked ? (diaSelEl.value  || null) : null;
+            const hora     = semanalChk.checked ? (horaSelEl.value || null) : null;
+            const rapido   = rapidoChk.checked;
 
-            if (!nome)    { errorEl.textContent = "Nome é obrigatório."; return; }
-            if (!telefone){ errorEl.textContent = "Telefone é obrigatório."; return; }
-
+            if (!nome)     { errorEl.textContent = "Nome é obrigatório."; return; }
+            if (!telefone) { errorEl.textContent = "Telefone é obrigatório."; return; }
             const cs = Object.values(this.getClientes());
             if (cs.some(c => c.nome.toLowerCase() === nome.toLowerCase())) { errorEl.textContent = "Já existe um cliente com esse nome."; return; }
             if (cs.some(c => c.numeroTelefone === telefone)) { errorEl.textContent = "Já existe um cliente com esse número."; return; }
@@ -1452,26 +1498,22 @@ class ClientesModule {
             const wrap = document.createElement("div");
             Object.assign(wrap.style, {
                 position: "absolute", left: 0, top: 0, right: 0, bottom: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                zIndex: 99999,
+                display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999,
             });
-
             const dialog = document.createElement("div");
             Object.assign(dialog.style, {
                 minWidth: "420px", maxWidth: "90%",
                 background: "rgb(20,19,19)", borderRadius: "8px", padding: "18px",
                 boxShadow: "0 8px 30px rgba(0,0,0,0.6)", color: "white", textAlign: "center",
             });
-
-            const msg  = document.createElement("div"); msg.textContent = mensagem; msg.style.cssText = "margin-bottom:16px;font-size:16px;color:#ddd;";
-            const row  = document.createElement("div"); row.style.cssText = "display:flex;justify-content:center;gap:12px;";
-            const nao  = this._btn("Não", "rgb(96,96,96)");
-            const sim  = this._btn("Sim", "rgb(128,26,15)");
+            const msg = document.createElement("div"); msg.textContent = mensagem; msg.style.cssText = "margin-bottom:16px;font-size:16px;color:#ddd;";
+            const row = document.createElement("div"); row.style.cssText = "display:flex;justify-content:center;gap:12px;";
+            const nao = this._btn("Não", "rgb(96,96,96)");
+            const sim = this._btn("Sim", "rgb(128,26,15)");
             row.append(nao, sim);
             dialog.append(msg, row);
             wrap.appendChild(dialog);
             parentOverlay.appendChild(wrap);
-
             const cleanup = () => { if (parentOverlay.contains(wrap)) parentOverlay.removeChild(wrap); };
             nao.addEventListener("click", () => { cleanup(); resolve(false); });
             sim.addEventListener("click", () => { cleanup(); resolve(true);  });
@@ -1535,18 +1577,18 @@ class PendentesModule {
 
         if (this.pendentes.length === 0) {
             const item = document.createElement("div");
-            item.className = "pendente-item placeholder";
+            item.className  = "pendente-item placeholder";
             item.textContent = "Clique para adicionar pendente";
             item.style.fontStyle = "italic";
-            item.style.color = "#bbb";
+            item.style.color     = "#bbb";
             this.caixa.appendChild(item);
             return;
         }
 
         this.pendentes.forEach((p, i) => {
             const item = document.createElement("div");
-            item.className = "pendente-item";
-            item.textContent = p.nome;
+            item.className  = "pendente-item";
+            item.textContent = p.nome || p.get_nome?.() || "—";
             this.caixa.appendChild(item);
 
             if (i < this.pendentes.length - 1) {
@@ -1559,7 +1601,6 @@ class PendentesModule {
 
     _abrirGestao() {
         if (document.getElementById("pendentes-overlay")) return;
-
         const overlay = this._criarOverlay();
         document.body.appendChild(overlay);
         this._renderGestao(overlay);
@@ -1583,10 +1624,8 @@ class PendentesModule {
         const modal = document.createElement("div");
         Object.assign(modal.style, {
             width: "560px", maxWidth: "95%",
-            background: "rgb(15,14,14)",
-            borderRadius: "12px", padding: "20px",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
-            color: "white",
+            background: "rgb(15,14,14)", borderRadius: "12px", padding: "20px",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.6)", color: "white",
             display: "flex", flexDirection: "column", gap: "12px",
         });
         overlay.appendChild(modal);
@@ -1595,7 +1634,6 @@ class PendentesModule {
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
             window.removeEventListener("keydown", keyHandler, true);
         };
-
         const keyHandler = (e) => {
             if (!document.body.contains(overlay)) return;
             if (e.key === "Escape") { e.preventDefault(); closeModal(); }
@@ -1612,18 +1650,15 @@ class PendentesModule {
 
     _renderGestaoVazia(modal, closeModal, overlay) {
         const msg = document.createElement("div");
-        msg.textContent = "Não existe clientes pendentes, deseja adicionar um?";
-        msg.style.cssText = "font-size:22px;font-weight:bold;text-align:center;color:white;";
+        msg.textContent = "Não existem clientes pendentes, deseja adicionar um?";
+        msg.style.cssText = "font-size:20px;font-weight:bold;text-align:center;color:white;";
 
         const btnRow = document.createElement("div");
         btnRow.style.cssText = "display:flex;gap:32px;justify-content:center;margin-top:16px;";
-
         const btnAdicionar = this._criarBtn("Adicionar", "rgb(36,43,141)");
         const btnSair      = this._criarBtn("Sair", "rgb(128,26,15)");
-
         btnAdicionar.addEventListener("click", () => this._mostrarFormAdicionar(modal, closeModal, overlay));
         btnSair.addEventListener("click", closeModal);
-
         btnRow.append(btnAdicionar, btnSair);
         modal.append(msg, btnRow);
     }
@@ -1636,33 +1671,33 @@ class PendentesModule {
 
         const btnAdicionar = this._criarBtnSmall("+", "rgb(43,40,40)");
         const btnRemover   = this._criarBtnSmall("-", "rgb(43,40,40)");
-        const spacer       = document.createElement("div");
-        spacer.style.flex  = "1";
+        const spacer       = document.createElement("div"); spacer.style.flex = "1";
         const btnSair      = this._criarBtn("Sair", "rgb(128,26,15)", "80px");
 
         btnAdicionar.addEventListener("click", () => this._mostrarFormAdicionar(modal, closeModal, overlay));
+
         btnRemover.addEventListener("click", async () => {
             if (linhaSelecionada < 0 || linhaSelecionada >= this.pendentes.length) return;
-            const api = getApi();
-            if (!api) return;
-            
-            const novaLista = this.pendentes.filter((_, i) => i !== linhaSelecionada);
-            this.pendentes = novaLista;
-            
-            linhaSelecionada = -1;
-            await this.onRefreshData();
-            this._render();
-            this._renderGestao(overlay);
+            const pendente = this.pendentes[linhaSelecionada];
+            const nome     = pendente.nome || pendente.get_nome?.() || "";
+            const res      = await removerPendente(nome);
+            if (res && res.success) {
+                this.pendentes.splice(linhaSelecionada, 1);
+                linhaSelecionada = -1;
+                this._render();
+                this._renderGestao(overlay);
+            }
         });
-        btnSair.addEventListener("click", closeModal);
 
+        btnSair.addEventListener("click", closeModal);
         barra.append(btnAdicionar, btnRemover, spacer, btnSair);
         modal.appendChild(barra);
 
+        // Tabela
         const tabelaWrap = document.createElement("div");
         Object.assign(tabelaWrap.style, {
-            background: "rgb(43,40,40)", borderRadius: "12px",
-            padding: "10px", display: "flex", flexDirection: "column", gap: "8px",
+            background: "rgb(43,40,40)", borderRadius: "12px", padding: "10px",
+            display: "flex", flexDirection: "column", gap: "8px",
         });
 
         const cabecalho = document.createElement("div");
@@ -1681,6 +1716,9 @@ class PendentesModule {
         const renderLinhas = () => {
             linhasWrap.innerHTML = "";
             this.pendentes.forEach((p, i) => {
+                const nome   = p.nome || p.get_nome?.() || "—";
+                const numero = p.numeroTelefone || p.get_numero_telefone?.() || "—";
+
                 const linha = document.createElement("div");
                 linha.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:8px;cursor:pointer;";
 
@@ -1688,11 +1726,11 @@ class PendentesModule {
                 const selStyle  = "font-size:14px;background:rgb(36,43,141);color:white;border-radius:12px;border:1px solid rgba(197,130,63,0.86);padding:8px;text-align:center;";
 
                 const cellNome = document.createElement("div");
-                cellNome.textContent = p.nome;
+                cellNome.textContent  = nome;
                 cellNome.style.cssText = i === linhaSelecionada ? selStyle : baseStyle;
 
                 const cellTel = document.createElement("div");
-                cellTel.textContent = p.numeroTelefone || "—";
+                cellTel.textContent  = numero === "" ? "—" : numero;
                 cellTel.style.cssText = i === linhaSelecionada ? selStyle : baseStyle;
 
                 linha.append(cellNome, cellTel);
@@ -1712,7 +1750,7 @@ class PendentesModule {
         modal.innerHTML = "";
 
         const title = document.createElement("h3");
-        title.textContent = "Adicionar Pendente";
+        title.textContent  = "Adicionar Pendente";
         title.style.cssText = "color:white;text-align:center;margin:0 0 8px 0;font-size:18px;";
         modal.appendChild(title);
 
@@ -1720,33 +1758,27 @@ class PendentesModule {
         modal.appendChild(pesquisa);
 
         const sugestoes = document.createElement("div");
-        sugestoes.style.cssText = "background:rgb(43,40,40);border-radius:8px;max-height:100px;overflow-y:auto;display:none;";
+        sugestoes.style.cssText = "background:white;border-radius:8px;max-height:100px;overflow-y:auto;display:none;";
         modal.appendChild(sugestoes);
 
         const checkRow = document.createElement("label");
         checkRow.style.cssText = "display:flex;align-items:center;gap:10px;color:white;font-size:15px;cursor:pointer;";
-        const chk = document.createElement("input");
-        chk.type = "checkbox";
-        chk.style.transform = "scale(1.4)";
+        const chk = document.createElement("input"); chk.type = "checkbox"; chk.style.transform = "scale(1.4)";
         checkRow.append(chk, document.createTextNode(" Desconhecido"));
         modal.appendChild(checkRow);
 
         const nomeLabel = this._criarLabel("Nome:");
-        const nomeField = this._criarInput("Nome");
-        nomeField.disabled = true;
-        const telLabel = this._criarLabel("Número de telefone:");
-        const telField = this._criarInput("Número de telefone");
-        telField.disabled = true;
-        telField.addEventListener("input", () => {
-            telField.value = telField.value.replace(/[^\d+]/g, "");
-        });
+        const nomeField = this._criarInput("Nome"); nomeField.disabled = true;
+        const telLabel  = this._criarLabel("Número de telefone:");
+        const telField  = this._criarInput("Número de telefone"); telField.disabled = true;
+        telField.addEventListener("input", () => { telField.value = telField.value.replace(/[^\d+]/g, ""); });
 
         const errorEl = document.createElement("div");
         errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:18px;text-align:center;";
 
         modal.append(nomeLabel, nomeField, telLabel, telField, errorEl);
 
-        const btnRow = document.createElement("div");
+        const btnRow    = document.createElement("div");
         btnRow.style.cssText = "display:flex;gap:16px;justify-content:flex-end;margin-top:8px;";
         const btnSalvar = this._criarBtn("Salvar", "rgb(36,43,141)");
         const btnSair   = this._criarBtn("Sair", "rgb(60,60,60)");
@@ -1754,31 +1786,34 @@ class PendentesModule {
         modal.appendChild(btnRow);
 
         let clientesSnapshot = {};
-        getApi() && getApi().get_clientes_map().then(m => { clientesSnapshot = m || {}; });
+        const api = getApi();
+        if (api) api.get_clientes_map().then(m => { clientesSnapshot = m || {}; });
 
         pesquisa.addEventListener("input", () => {
             if (chk.checked) { sugestoes.style.display = "none"; return; }
             const val = pesquisa.value.trim().toLowerCase();
             if (!val) { sugestoes.style.display = "none"; return; }
-            const nomesPendentes = this.pendentes.map(p => p.nome.toLowerCase());
+            const nomesPendentes = this.pendentes.map(p => (p.nome || "").toLowerCase());
             const matches = Object.keys(clientesSnapshot).filter(
                 n => n.toLowerCase().includes(val) && !nomesPendentes.includes(n.toLowerCase())
             );
             sugestoes.innerHTML = "";
-            if (matches.length === 0) { sugestoes.style.display = "none"; return; }
+            if (!matches.length) { sugestoes.style.display = "none"; return; }
             sugestoes.style.display = "block";
             matches.forEach(n => {
                 const item = document.createElement("div");
-                item.textContent = n;
-                item.style.cssText = "padding:8px 12px;color:white;cursor:pointer;font-size:14px;";
-                item.addEventListener("mouseenter", () => item.style.background = "#333");
-                item.addEventListener("mouseleave", () => item.style.background = "");
-                item.addEventListener("click", () => {
+                item.textContent  = n;
+                item.style.cssText = "padding:8px 12px;color:black;cursor:pointer;font-size:14px;border-bottom:1px solid #eee;";
+                item.addEventListener("mousedown", (e) => {
+                    e.preventDefault();
                     pesquisa.value = n;
                     sugestoes.style.display = "none";
                 });
                 sugestoes.appendChild(item);
             });
+        });
+        pesquisa.addEventListener("blur", () => {
+            setTimeout(() => { sugestoes.style.display = "none"; }, 150);
         });
 
         chk.addEventListener("change", () => {
@@ -1792,8 +1827,6 @@ class PendentesModule {
 
         btnSalvar.addEventListener("click", async () => {
             errorEl.textContent = "";
-            const api = getApi();
-            if (!api) { errorEl.textContent = "API não disponível."; return; }
 
             let nome, numero;
 
@@ -1806,17 +1839,28 @@ class PendentesModule {
                 if (!nome || !clientesSnapshot[nome]) {
                     errorEl.textContent = "Nenhum cliente selecionado."; return;
                 }
-                numero = clientesSnapshot[nome].numeroTelefone || "";
+                numero = clientesSnapshot[nome]?.numeroTelefone || "";
             }
 
-            if (this.pendentes.some(p => p.nome.toLowerCase() === nome.toLowerCase())) {
+            if (this.pendentes.some(p => (p.nome||"").toLowerCase() === nome.toLowerCase())) {
                 errorEl.textContent = "Este cliente já está na lista de pendentes."; return;
             }
 
-            this.pendentes.push({ nome, numeroTelefone: numero });
-            await this.onRefreshData();
-            this._render();
-            this._renderGestao(overlay);
+            try {
+                btnSalvar.disabled = true;
+                const res = await adicionarPendente(nome, numero);
+                if (res && res.success) {
+                    this.pendentes.push({ nome, numeroTelefone: numero });
+                    this._render();
+                    this._renderGestao(overlay);
+                } else {
+                    errorEl.textContent = res?.error || "Erro ao adicionar pendente.";
+                }
+            } catch(e) {
+                errorEl.textContent = "Erro ao comunicar com o backend.";
+            } finally {
+                btnSalvar.disabled = false;
+            }
         });
 
         const keyH = (e) => {
@@ -1851,7 +1895,7 @@ class PendentesModule {
 
     _criarLabel(texto) {
         const label = document.createElement("div");
-        label.textContent = texto;
+        label.textContent  = texto;
         label.style.cssText = "color:white;font-size:14px;margin-top:6px;";
         return label;
     }
@@ -1897,14 +1941,14 @@ class PaginaPrincipalController {
     }
 
     async init() {
-        const api = await waitForApi(3000, 100);
+        const api = await waitForApi(5000, 100);
 
         if (api) {
             try {
                 const info = await getUtilizadorInfo();
                 const nome = info?.nome || info?.name || info?.username || null;
                 this.els.userLabel.textContent = nome ? `Bem-vindo, ${nome}` : "Bem-vindo, Utilizador";
-            } catch { /* erro não crítico */ }
+            } catch { /* não crítico */ }
         }
 
         await this._carregarDados();
@@ -1967,19 +2011,17 @@ class PaginaPrincipalController {
     }
 
     _bindGlobal() {
-        this.els.logoutBtn.addEventListener("click", () => this._handleLogout());
-        this.els.calendarioToggle.addEventListener("click", () => this._mostrarCalendario());
-        this.els.clientesToggle.addEventListener("click",   () => this._mostrarClientes());
+        this.els.logoutBtn.addEventListener("click",       () => this._handleLogout());
+        this.els.calendarioToggle.addEventListener("click",() => this._mostrarCalendario());
+        this.els.clientesToggle.addEventListener("click",  () => this._mostrarClientes());
     }
 
     _mostrarCalendario() {
         this.els.calendarioToggle.classList.add("active");
         this.els.clientesToggle.classList.remove("active");
         this._estiloTogglesLaterais();
-
         this.els.areaCentral.style.display = "flex";
         this.els.areaClientes.classList.add("hidden");
-
         this.calendarioModule.atualizar();
     }
 
@@ -1987,30 +2029,24 @@ class PaginaPrincipalController {
         this.els.clientesToggle.classList.add("active");
         this.els.calendarioToggle.classList.remove("active");
         this._estiloTogglesLaterais();
-
         this.els.areaCentral.style.display = "none";
         this.els.areaClientes.classList.remove("hidden");
-
         this.clientesModule.renderizar();
     }
 
     _estiloTogglesLaterais() {
-        const base   = "font-size:15px;font-weight:bold;border-radius:12px;border:none;padding:12px;min-height:40px;max-width:100%;width:100%;cursor:pointer;";
-        const ativo  = base + "background-color:rgb(60,60,60);color:white;";
+        const base    = "font-size:15px;font-weight:bold;border-radius:12px;border:none;padding:12px;min-height:40px;max-width:100%;width:100%;cursor:pointer;";
+        const ativo   = base + "background-color:rgb(60,60,60);color:white;";
         const inativo = base + "background-color:rgb(43,40,40);color:white;";
         const calAtivo = this.els.calendarioToggle.classList.contains("active");
-        this.els.calendarioToggle.style.cssText = calAtivo ? ativo : inativo;
+        this.els.calendarioToggle.style.cssText = calAtivo ? ativo  : inativo;
         this.els.clientesToggle.style.cssText   = calAtivo ? inativo : ativo;
     }
 
     async _handleLogout() {
         await this.anotacoesModule.guardar();
         const res = await fazerLogout();
-        if (res && res.success) {
-            await mostrarLogin();
-        } else {
-            console.error("[PaginaPrincipal] Erro no logout:", res?.error);
-        }
+        if (res && res.success) await mostrarLogin();
     }
 
     _iniciarRelogio() {

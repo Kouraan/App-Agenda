@@ -28,5 +28,33 @@
     "duracao": 30,
     "observacoes": "",
     "falta": false
+  },
+  {
+    "dataHora": "2026-06-18T08:30",
+    "cliente": {
+      "nome": "Nuno Silva",
+      "numeroTelefone": "913332902",
+      "tipoCliente": "SEMANAL",
+      "faltas": 1,
+      "diaSemana": "Quarta",
+      "horaCorte": "11:00",
+      "rapido": false
+    },
+    "duracao": 15,
+    "observacoes": "",
+    "falta": false
+  },
+  {
+    "dataHora": "2026-06-18T08:45",
+    "cliente": {
+      "nome": "marco silva",
+      "numeroTelefone": "",
+      "tipoCliente": "DESCONHECIDO",
+      "faltas": 0,
+      "rapido": false
+    },
+    "duracao": 15,
+    "observacoes": "",
+    "falta": false
   }
 ]

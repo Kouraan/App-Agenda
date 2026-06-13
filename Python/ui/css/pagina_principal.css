@@ -14,12 +14,13 @@ body {
 }
 
 /* Top Bar */
+
 .top-bar {
     display: flex;
     align-items: center;
+    gap: 20px;
     background-color: rgb(15, 14, 14);
     padding: 10px 20px;
-    gap: 20px;
 }
 
 .logo {
@@ -42,10 +43,10 @@ body {
     background-color: rgb(128, 26, 15);
     color: white;
     border: none;
+    border-radius: 8px;
     padding: 8px 16px;
     font-size: 14px;
     font-weight: bold;
-    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -54,27 +55,43 @@ body {
     background-color: rgb(150, 30, 18);
 }
 
-/* Main Content */
+/* Estrutura principal */
+
 .main-content {
-    display: flex;
     flex: 1;
+    display: flex;
     gap: 10px;
     padding: 10px;
     overflow: hidden;
 }
 
-/* Left Sidebar */
-.left-sidebar {
+.left-sidebar,
+.right-sidebar {
     width: 200px;
     min-width: 200px;
-    max-width: 200px;
     background-color: rgb(15, 14, 14);
     border-radius: 12px;
     padding: 10px;
     display: flex;
     flex-direction: column;
+}
+
+.left-sidebar {
     gap: 12px;
 }
+
+.right-sidebar {
+    gap: 16px;
+}
+
+.center-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* Navegação lateral */
 
 .navigation-buttons {
     display: flex;
@@ -86,19 +103,21 @@ body {
     background-color: rgb(43, 40, 40);
     color: white;
     border: none;
+    border-radius: 12px;
+    min-height: 40px;
     padding: 12px;
     font-size: 15px;
     font-weight: bold;
-    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s;
-    min-height: 40px;
+    transition: background-color 0.2s;
 }
 
-.nav-btn.active,
-.nav-btn:hover {
+.nav-btn:hover,
+.nav-btn.active {
     background-color: rgb(60, 60, 60);
 }
+
+/* Anotações */
 
 .anotacoes-box {
     flex: 1;
@@ -118,27 +137,27 @@ body {
 }
 
 .anotacoes-header .title {
+    flex: 1;
     color: white;
     font-size: 16px;
     font-weight: bold;
-    flex: 1;
 }
 
 .blur-btn {
+    width: 35px;
+    height: 25px;
     background-color: rgb(60, 60, 60);
     color: white;
     border: none;
-    width: 35px;
-    height: 25px;
-    font-size: 15px;
     border-radius: 12px;
+    font-size: 15px;
     cursor: pointer;
 }
 
 .separator {
     height: 1px;
-    background-color: white;
     width: 100%;
+    background-color: white;
 }
 
 .anotacoes-text {
@@ -154,44 +173,23 @@ body {
     transition: filter 0.3s;
 }
 
-/* CORREÇÃO: Blur arredondado */
-.anotacoes-text.blurred {
-    filter: blur(6px);
-    pointer-events: none;
-    border-radius: 8px !important;
-    backdrop-filter: blur(2px);
-}
-
 .anotacoes-text::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* Center Area */
-.center-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+.anotacoes-text.blurred {
+    filter: blur(6px);
+    pointer-events: none;
 }
 
-.calendar-container:has(.calendar-grid.semana) .period-label {
-    font-size: 15px;
-}
-
-.calendar-container:has(.calendar-grid.dia) .period-label {
-    font-size: 17px;
-}
-
-.calendar-container:has(.calendar-grid.mes) .period-label {
-    font-size: 20px;
-}
+/* Containers principais */
 
 .calendar-container,
 .clientes-container {
+    height: 100%;
     background-color: rgb(15, 14, 14);
     border-radius: 12px;
     padding: 10px;
-    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -200,13 +198,14 @@ body {
     display: none;
 }
 
+/* Cabeçalho do calendário */
+
 .calendar-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-bottom: 10px;
-    flex-wrap: nowrap;
     min-height: 50px;
+    padding-bottom: 10px;
 }
 
 .navigation-controls,
@@ -221,72 +220,79 @@ body {
     background-color: rgb(43, 40, 40);
     color: white;
     border: none;
+    border-radius: 12px;
     padding: 8px 12px;
     font-size: 14px;
     font-weight: bold;
-    border-radius: 12px;
     cursor: pointer;
+    white-space: nowrap;
     transition: background-color 0.2s;
-    white-space: nowrap; 
 }
 
 .control-btn:hover,
-.view-btn:hover {
-    background-color: rgb(60, 60, 60);
-}
-
+.view-btn:hover,
 .view-btn.active {
     background-color: rgb(60, 60, 60);
 }
 
 .period-label {
+    flex: 1;
     color: white;
     font-weight: bold;
     text-align: center;
-    flex: 1;
-    white-space: nowrap;
-    overflow: visible;
-    text-overflow: unset; 
-    min-width: 0;
     padding: 0 10px;
+    white-space: nowrap;
 }
 
-/* CORREÇÃO: Scrollbar invisível */
+/* Scroll do calendário */
+
 .calendar-scroll {
     flex: 1;
     overflow: auto;
     background-color: rgb(15, 14, 14);
-    scrollbar-width: none;
-    -ms-overflow-style: none;
     border-radius: 8px;
     padding: 5px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .calendar-scroll::-webkit-scrollbar {
     display: none;
 }
 
+/* Base do calendário */
+
 .calendar-grid {
+    min-height: 100%;
     display: grid;
     gap: 6px;
-    min-height: 100%;
     background-color: rgb(15, 14, 14);
 }
 
-/* Grid para visualização semanal */
-.calendar-grid.semana {
-    grid-template-columns: 80px repeat(7, 1fr);
-    grid-auto-rows: 40px;
-    padding: 10px;
-    row-gap: 10px;
-    column-gap: 6px;
+.calendar-row-spacer {
+    display: none;
 }
 
-/* Se existirem regras antigas do spacer ou .first-hour-row, apagar/ignorar */
-.calendar-grid .calendar-row-spacer { display: none !important; }
+/* Visualização semanal */
 
+.calendar-grid.semana {
+    grid-template-columns: 80px repeat(7, minmax(0, 1fr));
+    grid-auto-rows: 40px;
+    row-gap: 10px;
+    column-gap: 6px;
+    padding: 10px;
+}
 
-/* CORREÇÃO: Grid mensal com layout correto */
+/* Visualização diária */
+
+.calendar-grid.dia {
+    grid-template-columns: 80px 1fr;
+    grid-auto-rows: 40px;
+    padding: 10px;
+}
+
+/* Visualização mensal */
+
 .calendar-grid.mes {
     display: flex;
     flex-direction: column;
@@ -295,15 +301,12 @@ body {
     min-height: fit-content;
 }
 
-/* CORREÇÃO: Cabeçalho dos dias da semana */
 .mes-header {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
-    margin-bottom: 8px;
 }
 
-/* CORREÇÃO: Container das semanas */
 .mes-weeks {
     display: flex;
     flex-direction: column;
@@ -311,110 +314,162 @@ body {
     flex: 1;
 }
 
-/* CORREÇÃO: Cada linha de semana */
 .mes-week {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
 }
 
-/* Grid para visualização diária */
-.calendar-grid.dia {
-    grid-template-columns: 80px 1fr;
-    grid-auto-rows: 40px;
-    padding: 10px;
-}
+/* Células gerais */
 
-/* Células do calendário */
 .calendar-cell {
+    position: relative;
+    min-width: 0;
+    min-height: 40px;
+    overflow: hidden;
+
     background-color: rgb(43, 40, 40);
     border: 1px solid rgba(197, 130, 63, 0.86);
     border-radius: 12px;
+
     display: flex;
-    align-items: center;
     justify-content: center;
-    min-height: 40px;
-    transition: all 0.2s;
-    cursor: pointer;
-    position: relative;
+    align-items: center;
+
+    color: white;
     font-size: 14px;
     font-weight: bold;
+
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
 }
+
+/* Cabeçalhos e horas */
 
 .calendar-cell.header {
     background-color: rgba(197, 130, 63, 0.86);
-    color: white;
-    font-weight: bold;
     font-size: 16px;
-    cursor: default;
     min-height: 45px;
+    cursor: default;
 }
 
 .calendar-cell.hour {
     background-color: rgba(197, 130, 63, 0.86);
-    color: white;
-    font-weight: bold;
     font-size: 15px;
     cursor: default;
 }
 
-.calendar-cell.sunday {
-    background-color: rgba(197, 130, 63, 0.86);
-}
+/* Estados especiais */
 
-.calendar-cell.today {
+.calendar-cell.today,
+.calendar-cell.current-slot {
     background-color: rgb(189, 166, 35);
 }
 
 .calendar-cell.holiday {
     background-color: rgb(36, 43, 141);
-    color: white;
 }
 
 .calendar-cell.past {
-    cursor: default;
     opacity: 0.7;
+    cursor: default;
 }
 
-.calendar-cell.current-slot {
-    background-color: rgb(189, 166, 35);
-    color: white;
-    box-shadow: 0 4px 10px rgba(189,166,35,0.15) inset;
+.calendar-cell.sunday:not(.header) {
+    background-color: rgb(43, 40, 40);
 }
 
-/* CORREÇÃO: Células do mês com altura adequada */
-.calendar-grid.mes .calendar-cell:not(.header) {
-    min-height: 80px;
-    max-height: 80px;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.calendar-grid.mes .calendar-cell.header {
-    min-height: 45px;
-    font-size: 16px;
-}
+/* Hover apenas nas células clicáveis */
 
 .calendar-cell:not(.header):not(.hour):not(.past):hover {
     background-color: white;
     color: black;
 }
 
-/* Marcações */
+/* Número do dia no modo mês */
+
+.calendar-grid.mes .calendar-cell:not(.header) {
+    height: 80px;
+    min-height: 80px;
+    max-height: 80px;
+
+    padding: 12px 14px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+
+    color: white;
+}
+
+.calendar-grid.mes .day-number,
+.calendar-grid.mes .date-number,
+.calendar-grid.mes .dia-num {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+
+    font-size: 14px;
+    font-weight: 800;
+    color: white;
+
+    z-index: 2;
+}
+
+/* Containers de marcações no mês */
+
+.calendar-grid.mes .marcacoes,
+.calendar-grid.mes .marcacao-container {
+    width: 100%;
+    min-width: 0;
+    max-height: calc(100% - 28px);
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.calendar-grid.mes .marcacoes::-webkit-scrollbar,
+.calendar-grid.mes .marcacao-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.calendar-grid.mes .marcacoes::-webkit-scrollbar-thumb,
+.calendar-grid.mes .marcacao-container::-webkit-scrollbar-thumb {
+    background: rgba(197, 130, 63, 0.6);
+    border-radius: 6px;
+}
+
+/* Marcações gerais */
+
 .marcacao {
+    max-width: 100%;
+    min-width: 0;
+
+    height: 28px;
+    padding: 4px 8px;
+
     background-color: rgb(247, 221, 151);
     color: rgb(43, 40, 40);
+
     border-radius: 12px;
-    padding: 4px 8px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
     font-size: 14px;
     font-weight: bold;
-    text-align: center;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
     cursor: pointer;
-    width: 100%;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .marcacao.falta {
@@ -422,18 +477,31 @@ body {
     color: white;
 }
 
-/* Right Sidebar */
-.right-sidebar {
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-    background-color: rgb(15, 14, 14);
-    border-radius: 12px;
-    padding: 10px;
+/* Marcações na semana */
+
+.calendar-grid.semana .marcacoes,
+.calendar-grid.semana .marcacao-container {
+    width: 100%;
+    padding: 4px;
+
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    flex-direction: row;
+    gap: 6px;
+
+    overflow: hidden;
 }
+
+.calendar-grid.semana .marcacao {
+    flex: 1 1 0;
+    width: auto;
+}
+
+.calendar-grid.semana .marcacao:only-child {
+    width: calc(100% - 8px);
+    flex: 0 0 auto;
+}
+
+/* Sidebar direita */
 
 .section-title {
     color: white;
@@ -447,9 +515,10 @@ body {
 .pendentes-scroll {
     flex: 1;
     background-color: rgb(43, 40, 40);
-    border: 2px solid rgba(197, 130, 64, 0.86);
+    border: 2px solid rgba(197, 130, 63, 0.86);
     border-radius: 16px;
     padding: 4px;
+
     overflow: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -473,11 +542,6 @@ body {
     transition: background-color 0.2s;
 }
 
-.pendente-item.placeholder {
-    cursor: pointer;
-    transition: none;
-}
-
 .pendente-item.placeholder:hover {
     background-color: transparent;
 }
@@ -489,33 +553,36 @@ body {
 
 .pendente-separator {
     height: 2px;
-    background-color: rgba(197, 130, 63, 0.86);
     margin: 0 4px;
+    background-color: rgba(197, 130, 63, 0.86);
 }
 
 .clock {
+    width: 100%;
     color: white;
+    text-align: center;
     font-size: 40px;
     font-weight: 900;
-    text-align: center;
-    width: 100%;
 }
 
-/* Clientes Area */
+/* Área de clientes */
+
 .clientes-content {
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 16px;
-    height: 100%;
 }
 
 .clientes-empty {
+    flex: 1;
+
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     gap: 32px;
-    height: 100%;
+
     background-color: rgb(15, 14, 14);
     border-radius: 24px;
     padding: 32px;
@@ -531,11 +598,15 @@ body {
 .clientes-add-btn {
     background-color: rgb(43, 40, 40);
     color: white;
+
     border: none;
+    border-radius: 12px;
+
     padding: 10px 32px;
+
     font-size: 18px;
     font-weight: bold;
-    border-radius: 12px;
+
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -544,22 +615,28 @@ body {
     background-color: rgb(60, 60, 60);
 }
 
+/* Barra de ferramentas */
+
 .clientes-toolbar {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 0 15px 0;
+    padding-bottom: 15px;
 }
 
 .search-field {
     flex: 1;
+    height: 36px;
+
     background-color: rgb(43, 40, 40);
     color: white;
+
     border: none;
-    padding: 8px 16px;
-    font-size: 16px;
     border-radius: 12px;
-    height: 36px;
+
+    padding: 8px 16px;
+
+    font-size: 16px;
     outline: none;
 }
 
@@ -568,14 +645,18 @@ body {
 }
 
 .add-client-btn {
-    background-color: rgb(43, 40, 40);
-    color: white;
-    border: none;
     width: 36px;
     height: 36px;
+
+    background-color: rgb(43, 40, 40);
+    color: white;
+
+    border: none;
+    border-radius: 12px;
+
     font-size: 18px;
     font-weight: bold;
-    border-radius: 12px;
+
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -584,10 +665,14 @@ body {
     background-color: rgb(60, 60, 60);
 }
 
+/* Tabela de clientes */
+
 .clientes-table-container {
+    flex: 1;
+
     background-color: rgb(15, 14, 14);
     border-radius: 12px;
-    flex: 1;
+
     overflow: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -599,32 +684,40 @@ body {
 
 .clientes-table {
     width: 100%;
-    background-color: rgb(43, 40, 40);
-    border-radius: 12px;
-    padding: 10px;
+
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 8px;
+
+    background-color: rgb(43, 40, 40);
+    border-radius: 12px;
+    padding: 10px;
 }
 
 .table-header {
     background-color: rgba(197, 130, 63, 0.86);
     color: white;
+
+    border-radius: 12px;
+    padding: 8px;
+
     font-size: 15px;
     font-weight: bold;
-    padding: 8px;
     text-align: center;
-    border-radius: 12px;
 }
 
 .table-cell {
     background-color: rgb(60, 60, 60);
     color: white;
-    font-size: 14px;
-    padding: 8px;
-    text-align: center;
-    border-radius: 12px;
+
     border: 1px solid rgba(197, 130, 63, 0.86);
+    border-radius: 12px;
+
+    padding: 8px;
+
+    font-size: 14px;
+    text-align: center;
+
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -633,96 +726,98 @@ body {
     background-color: rgb(80, 80, 80);
 }
 
-/* CORREÇÃO: Responsividade melhorada */
+/* Responsividade */
+
 @media (max-width: 1400px) {
+
     .calendar-container:has(.calendar-grid.semana) .period-label {
         font-size: 14px;
     }
-    
+
     .calendar-container:has(.calendar-grid.dia) .period-label {
         font-size: 16px;
     }
-    
+
     .calendar-container:has(.calendar-grid.mes) .period-label {
         font-size: 18px;
     }
 }
 
 @media (max-width: 1200px) {
+
     .left-sidebar,
     .right-sidebar {
         width: 180px;
         min-width: 180px;
-        max-width: 180px;
     }
-    
+
     .section-title {
         font-size: 16px;
     }
-    
-    .calendar-container:has(.calendar-grid.semana) .period-label {
-        font-size: 13px;
-    }
-    
-    .calendar-container:has(.calendar-grid.dia) .period-label {
-        font-size: 15px;
-    }
-    
-    .calendar-container:has(.calendar-grid.mes) .period-label {
-        font-size: 17px;
+
+    .period-label {
+        font-size: 14px;
     }
 }
 
 @media (max-width: 1000px) {
-    .calendar-container:has(.calendar-grid.semana) .period-label {
-        font-size: 12px;
+
+    .period-label {
+        font-size: 13px;
         padding: 0 5px;
     }
-    
-    .calendar-container:has(.calendar-grid.dia) .period-label {
-        font-size: 14px;
-    }
-    
-    .calendar-container:has(.calendar-grid.mes) .period-label {
-        font-size: 16px;
+
+    .control-btn,
+    .view-btn {
+        padding: 8px;
+        font-size: 13px;
     }
 }
 
 @media (max-width: 900px) {
+
+    body {
+        overflow: auto;
+    }
+
     .main-content {
         flex-direction: column;
+        height: auto;
     }
-    
+
     .left-sidebar,
     .right-sidebar {
         width: 100%;
-        max-width: none;
-        height: auto;
+        min-width: 100%;
     }
-    
+
+    .right-sidebar {
+        order: -1;
+
+        height: 120px;
+
+        flex-direction: row;
+        align-items: center;
+    }
+
     .anotacoes-box {
         height: 150px;
         flex: none;
     }
-    
-    .right-sidebar {
-        order: -1;
-        height: 120px;
-        flex-direction: row;
-        align-items: center;
-    }
-    
+
     .clock {
         font-size: 24px;
     }
 }
 
 /* Animações */
+
 @keyframes fadeIn {
     from {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -733,4 +828,56 @@ body {
 .marcacao,
 .pendente-item {
     animation: fadeIn 0.3s ease-out;
+}
+
+.calendar-grid.semana .calendar-cell {
+    min-width: 0; /* permite o conteúdo encolher sem alargar a coluna */
+    display: flex;
+    align-items: center;
+    padding: 0; /* a célula contém o wrapper .marcacoes; ajuste se necessário */
+    box-sizing: border-box;
+}
+
+.calendar-grid.semana .calendar-cell .marcacoes,
+.calendar-grid.semana .calendar-cell .marcacao-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap; /* forçar lado-a-lado */
+    gap: 6px;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+    min-width: 0;
+    height: 100%; /* ocupa a altura da célula para melhor alinhamento vertical */
+}
+
+/* Cada marcacao encolhe e partilha espaço (duas => ~50/50). */
+.calendar-grid.semana .calendar-cell .marcacao {
+    flex: 1 1 0%;
+    min-width: 0; /* essencial para text-overflow funcionar */
+    max-width: 100%;
+    height: 28px; /* mantém altura consistente */
+    align-self: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+
+/* Se houver só uma marcação ocupa quase toda a largura */
+.calendar-grid.semana .calendar-cell .marcacao:only-child {
+    flex: 0 0 auto;
+    width: calc(100% - 8px);
+}
+
+/* Espaçamento extra entre header do mês e as semanas (vista Mês) */
+.calendar-grid.mes {
+    gap: 12px; /* aumenta espaçamento vertical entre header e semanas */
+}
+
+.mes-header {
+    margin-bottom: 12px;
 }

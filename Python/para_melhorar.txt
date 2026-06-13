@@ -1,0 +1,8 @@
+No detalhes marcacao, mudar a parte de Alterar Hora. So deixa alterar para dias a frete
+quero que deia para alterar para dias tanto para a frente como para tras, desde que a hora da marcacao
+nao esteja ja ocupada e que nao seja num dia ou hora para tras do dia e hora atual, e que deia para mudar entre semanas
+para poder escolher a semana que sera para alterar, sendo que ele aparece default na semana da marcacao
+
+
+Mudar o layout de duas marcacoes de 15 min no mesmo bloco
+aparecem bugadas e quero resolver isso de uma vez
