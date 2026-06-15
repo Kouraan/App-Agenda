@@ -1,3 +1,28 @@
+[16/06/2026 00:49:51] Aplicação terminada.
+[16/06/2026 00:49:45] Utilizador 'Marco' efetuou login na sua conta.
+[16/06/2026 00:49:40] Aplicação iniciada.
+[16/06/2026 00:49:37] Aplicação terminada.
+[16/06/2026 00:47:29] Utilizador 'Marco' efetuou login na sua conta.
+[16/06/2026 00:47:23] Aplicação iniciada.
+[16/06/2026 00:19:20] Aplicação terminada.
+[16/06/2026 00:18:36] Utilizador 'Marco' efetuou login na sua conta.
+[16/06/2026 00:18:31] Aplicação iniciada.
+[16/06/2026 00:16:45] Aplicação terminada.
+[16/06/2026 00:16:43] Utilizador 'Marco' efetuou login na sua conta.
+[16/06/2026 00:16:36] Aplicação iniciada.
+[14/06/2026 13:59:36] Aplicação terminada.
+[14/06/2026 13:12:24] Utilizador 'Marco' efetuou login na sua conta.
+[14/06/2026 13:12:19] Aplicação iniciada.
+[14/06/2026 21:12:03] Aplicação terminada.
+[14/06/2026 21:12:02] Utilizador 'Marco' efetuou login na sua conta.
+[14/06/2026 21:11:56] Aplicação iniciada.
+[14/06/2026 21:11:52] Aplicação terminada.
+[14/06/2026 21:11:51] Utilizador 'Marco' efetuou login na sua conta.
+[14/06/2026 21:11:48] Utilizador 'Marco' deu logout da sua conta.
+[14/06/2026 13:11:01] Utilizador 'Marco' efetuou login na sua conta.
+[14/06/2026 13:10:34] Aplicação terminada.
+[14/06/2026 13:04:31] Utilizador 'Marco' efetuou login na sua conta.
+[14/06/2026 13:04:22] Aplicação iniciada.
 [13/06/2026 18:01:44] Aplicação terminada.
 [13/06/2026 18:01:30] Utilizador 'Marco' efetuou login na sua conta.
 [13/06/2026 18:01:25] Aplicação iniciada.

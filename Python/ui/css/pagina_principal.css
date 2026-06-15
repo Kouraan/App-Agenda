@@ -248,25 +248,45 @@ body {
 
 .calendar-scroll {
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
     background-color: rgb(15, 14, 14);
     border-radius: 8px;
     padding: 5px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Voltamos a permitir scroll apenas nos modos semana e dia */
+.calendar-scroll.modo-semana,
+.calendar-scroll.modo-dia {
+    overflow: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-.calendar-scroll::-webkit-scrollbar {
+.calendar-scroll.modo-semana::-webkit-scrollbar,
+.calendar-scroll.modo-dia::-webkit-scrollbar {
     display: none;
 }
 
 /* Base do calendário */
 
 .calendar-grid {
-    min-height: 100%;
+    background-color: rgb(15, 14, 14);
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Semana e dia voltam a usar grid */
+.calendar-grid.semana,
+.calendar-grid.dia {
     display: grid;
     gap: 6px;
-    background-color: rgb(15, 14, 14);
+    flex: none;       /* no grid não queremos o stretch do flex pai */
+    min-height: 100%;
 }
 
 .calendar-row-spacer {
@@ -296,15 +316,20 @@ body {
 .calendar-grid.mes {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 15px 10px;
-    min-height: fit-content;
+    gap: 0px;
+    padding: 10px;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .mes-header {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
+    flex-shrink: 0;
+    margin-bottom: 6px;
 }
 
 .mes-weeks {
@@ -312,12 +337,15 @@ body {
     flex-direction: column;
     gap: 6px;
     flex: 1;
+    min-height: 0;
 }
 
 .mes-week {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Células gerais */
@@ -389,18 +417,16 @@ body {
 /* Número do dia no modo mês */
 
 .calendar-grid.mes .calendar-cell:not(.header) {
-    height: 80px;
-    min-height: 80px;
-    max-height: 80px;
-
-    padding: 12px 14px;
-
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 6px 8px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-
     color: white;
+    overflow: hidden;
 }
 
 .calendar-grid.mes .day-number,
@@ -444,38 +470,6 @@ body {
     border-radius: 6px;
 }
 
-/* Marcações gerais */
-
-.marcacao {
-    max-width: 100%;
-    min-width: 0;
-
-    height: 28px;
-    padding: 4px 8px;
-
-    background-color: rgb(247, 221, 151);
-    color: rgb(43, 40, 40);
-
-    border-radius: 12px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    font-size: 14px;
-    font-weight: bold;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
-    cursor: pointer;
-}
-
-.marcacao.falta {
-    background-color: rgb(128, 26, 15);
-    color: white;
-}
 
 /* Marcações na semana */
 
@@ -830,54 +824,92 @@ body {
     animation: fadeIn 0.3s ease-out;
 }
 
-.calendar-grid.semana .calendar-cell {
+.calendar-grid.semana .calendar-cell,
+.calendar-grid.dia .calendar-cell {
     min-width: 0; /* permite o conteúdo encolher sem alargar a coluna */
     display: flex;
     align-items: center;
-    padding: 0; /* a célula contém o wrapper .marcacoes; ajuste se necessário */
+    padding: 0;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
-.calendar-grid.semana .calendar-cell .marcacoes,
-.calendar-grid.semana .calendar-cell .marcacao-container {
+/* Container de uma marcação única (30+ min) que ocupa a célula toda */
+.marcacao-wrap-full {
+    width: 100%;
+    height: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Container das DUAS marcações de 15 min lado a lado.
+   Cada filho (slot ocupado ou vazio) ocupa SEMPRE exatamente 50%. */
+.marcacao-15-container {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap; /* forçar lado-a-lado */
-    gap: 6px;
-    align-items: center;
-    justify-content: flex-start;
+    flex-wrap: nowrap;
     width: 100%;
-    padding: 4px;
+    height: 100%;
     box-sizing: border-box;
     overflow: hidden;
     min-width: 0;
-    height: 100%; /* ocupa a altura da célula para melhor alinhamento vertical */
+    gap: 2px;
+    padding: 4px;
 }
 
-/* Cada marcacao encolhe e partilha espaço (duas => ~50/50). */
-.calendar-grid.semana .calendar-cell .marcacao {
+/* Slot ocupado por uma marcação de 15 min */
+.marcacao-15-slot {
     flex: 1 1 0%;
-    min-width: 0; /* essencial para text-overflow funcionar */
-    max-width: 100%;
-    height: 28px; /* mantém altura consistente */
-    align-self: center;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    min-width: 0;
+    max-width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+/* Slot vazio (clicável para criar marcação) */
+.marcacao-15-slot-vazio {
+    flex: 1 1 0%;
+    min-width: 0;
+    max-width: 50%;
+    height: 100%;
     box-sizing: border-box;
 }
 
-/* Se houver só uma marcação ocupa quase toda a largura */
-.calendar-grid.semana .calendar-cell .marcacao:only-child {
-    flex: 0 0 auto;
-    width: calc(100% - 8px);
+/* A "pill" visual da marcação — agora usado em todos os contextos
+   (única, 15 min, mês) */
+.marcacao {
+    flex: 1 1 0%;
+    min-width: 0;
+    width: 100%;
+    height: 28px;
+    border-radius: 12px;
+    background-color: rgb(247, 221, 151);
+    color: rgb(43, 40, 40);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    box-sizing: border-box;
+    cursor: pointer;
+    overflow: hidden;
 }
 
-/* Espaçamento extra entre header do mês e as semanas (vista Mês) */
-.calendar-grid.mes {
-    gap: 12px; /* aumenta espaçamento vertical entre header e semanas */
+.marcacao.falta {
+    background-color: rgb(128, 26, 15);
+    color: white;
 }
 
-.mes-header {
-    margin-bottom: 12px;
+.marcacao-label {
+    font-size: 13px;
+    font-weight: bold;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1 1 auto;
+    color: inherit;
 }

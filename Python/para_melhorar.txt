@@ -1,8 +1,10 @@
-No detalhes marcacao, mudar a parte de Alterar Hora. So deixa alterar para dias a frete
-quero que deia para alterar para dias tanto para a frente como para tras, desde que a hora da marcacao
-nao esteja ja ocupada e que nao seja num dia ou hora para tras do dia e hora atual, e que deia para mudar entre semanas
-para poder escolher a semana que sera para alterar, sendo que ele aparece default na semana da marcacao
+imaginemos que hoje é dia 5 sexta feira e tem um cliente semanal que marca para todas as sextas as 8:30. Na proxima semana a marcacao dele esta dia 12 sexta feira a msm hora.
+mas o cliente decidiu mudar a hora da marcacao para outro dia ou hora, ou seja mudou a marcacao semanal com sucesso no programa.
+O nosso problema e que ao reiniciar o programa essa marcacao vai ser detetada como n tendo e o proprio sistema ira remarcar essa marcacao, ou seja, isso é errado pq o cliente mudou essa vez
+ou entao apenas tinha cancelado essa marcacao por algum motivo. Por isso é preciso ter uma especie de controle para saber se essa hora ja teve marcacao semanal feita para aquele cliente e caso ja tenha sido
+feita e alterada ou removida por algum motivo ela que n volte a ser marcada novamente
 
+Outro bug seria é na tela de mudança de dia/hora da marcacao se eu mudar o dia e clicar em salvar ele n salva direto na hora das 7(ou a primeira que apareça), sou 
+obrigado a mudar a  hora e a voltar para a hora que desejava
 
-Mudar o layout de duas marcacoes de 15 min no mesmo bloco
-aparecem bugadas e quero resolver isso de uma vez
+Por fim polir o visual um bocado

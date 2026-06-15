@@ -452,60 +452,71 @@ class AppController:
             print(f"[AppController] marcar_falta_marcacao: {e}")
             return {"success": False, "error": str(e)}
 
-    def get_horas_disponiveis(self, data_hora_original: str, dia_semana_idx: int, duracao: int):
+    def get_horas_disponiveis_data(self, data_hora_original: str, data_alvo: str, duracao: int):
         """
-        Devolve horas disponíveis para remarcar uma marcação.
-        dia_semana_idx: 0=Segunda … 6=Domingo (igual ao índice JS)
+        Devolve horas disponíveis para remarcar uma marcação para uma data específica.
+
+        data_hora_original : ISO da marcação actual (para excluir ela própria do mapa).
+        data_alvo          : ISO da data-alvo (ano-mês-dia T 00:00:00 — hora ignorada).
+        duracao            : duração em minutos (15, 30, 45, ...).
+
+        Regras:
+        - Não permite data/hora no passado (antes do momento actual).
+        - Não permite slots que colidam com marcações existentes
+          (excepto a própria marcação original).
+        - Respeita o horário de funcionamento: 07:00–21:00 (último slot às 21:00,
+          fim às 21:30 para marcação de 30 min).
         """
+        from datetime import timedelta
+
         try:
             dt_orig  = self._parse_dt(data_hora_original)
+            dt_alvo  = self._parse_dt(data_alvo)
             duracao  = int(duracao)
-            hoje     = date.today()
             agora    = datetime.now()
 
-            # Calcular nova data mantendo a semana
-            if dt_orig:
-                # ajustar dia da semana dentro da mesma semana ISO
-                # dia_semana_idx 0=Seg … 6=Dom  (igual ao Java DIAS_SEMANA array)
-                dias_js_para_weekday = [0, 1, 2, 3, 4, 5, 6]  # já alinhado: 0=Seg
-                target_weekday = dias_js_para_weekday[dia_semana_idx]
-                origem_weekday = dt_orig.weekday()  # 0=Seg
-                delta = target_weekday - origem_weekday
-                nova_data = dt_orig.date() + __import__('datetime').timedelta(days=delta)
-            else:
-                return {"success": False, "error": "Data inválida."}
+            if dt_orig is None or dt_alvo is None:
+                return {"success": False, "error": "Data inválida.", "horas": []}
 
+            nova_data = dt_alvo.date()
+            hora_fecho_fim = datetime(nova_data.year, nova_data.month, nova_data.day, 21, 30)
+
+            step = 15 if duracao == 15 else 30
             horas = []
+
             for h in range(7, 22):
-                step = 15 if duracao == 15 else 30
                 for m in range(0, 60, step):
                     if h == 21 and m > 0:
                         continue
-                    candidate = datetime(nova_data.year, nova_data.month, nova_data.day, h, m)
-                    fim_candidate = candidate + __import__('datetime').timedelta(minutes=duracao)
-                    if fim_candidate > datetime(nova_data.year, nova_data.month, nova_data.day, 21, 30):
+
+                    candidate    = datetime(nova_data.year, nova_data.month, nova_data.day, h, m)
+                    fim_candidate = candidate + timedelta(minutes=duracao)
+
+                    # Fora do horário de funcionamento
+                    if fim_candidate > hora_fecho_fim:
                         continue
-                    # não pode ser no passado
-                    if nova_data <= hoje and candidate <= agora:
+
+                    # Não pode ser no passado (dia passado, ou mesmo dia mas hora passada)
+                    if candidate <= agora:
                         continue
-                    # verificar disponibilidade
+
+                    # Verificar disponibilidade bloco a bloco (cada 15 min)
                     livre = True
                     for i in range(0, duracao, 15):
-                        bloco = candidate + __import__('datetime').timedelta(minutes=i)
+                        bloco       = candidate + timedelta(minutes=i)
                         m_existente = self.marcacoes_map.get(bloco)
-                        if m_existente is not None:
-                            # ignorar a própria marcação original
-                            if bloco != dt_orig:
-                                livre = False
-                                break
+                        if m_existente is not None and bloco != dt_orig:
+                            livre = False
+                            break
+
                     if livre:
                         horas.append(f"{h:02d}:{m:02d}")
 
             return {"success": True, "horas": horas}
 
         except Exception as e:
-            print(f"[AppController] get_horas_disponiveis: {e}")
-            return {"success": False, "horas": []}
+            print(f"[AppController] get_horas_disponiveis_data: {e}")
+            return {"success": False, "error": str(e), "horas": []}
 
     # ── Anotações ──────────────────────────────────────────────────────────────
 

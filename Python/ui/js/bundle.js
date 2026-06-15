@@ -241,6 +241,14 @@ class CalendarioModule {
     atualizar() {
         this.grid.innerHTML = "";
         this.grid.className = `calendar-grid ${this.modoAtual.toLowerCase()}`;
+
+        // Ajustar classe do scroll para controlar overflow por modo
+        const scroll = this.grid.closest(".calendar-scroll");
+        if (scroll) {
+            scroll.classList.remove("modo-semana", "modo-dia", "modo-mes");
+            scroll.classList.add(`modo-${this.modoAtual.toLowerCase()}`);
+        }
+
         switch (this.modoAtual) {
             case "SEMANA": this._criarSemana(); break;
             case "MES":    this._criarMes();    break;
@@ -338,13 +346,10 @@ class CalendarioModule {
     // ── Mês ───────────────────────────────────────────────────────────────────
 
     _criarMes() {
-        const container   = document.createElement("div");
-        container.className = "mes-container";
-
         const header = document.createElement("div");
         header.className = "mes-header";
         DIAS_SEMANA_CURTO.forEach(d => header.appendChild(this._celula(d, "header")));
-        container.appendChild(header);
+        this.grid.appendChild(header);
 
         const weeksWrap = document.createElement("div");
         weeksWrap.className = "mes-weeks";
@@ -385,8 +390,7 @@ class CalendarioModule {
             }
             weeksWrap.appendChild(semanaRow);
         }
-        container.appendChild(weeksWrap);
-        this.grid.appendChild(container);
+        this.grid.appendChild(weeksWrap);
     }
 
     // ── Dia ───────────────────────────────────────────────────────────────────
@@ -429,14 +433,14 @@ class CalendarioModule {
         const is15m2    = marc2 && marc2.duracao === 15;
 
         if (is15m1 || is15m2) {
-            // Dois blocos de 15 min lado a lado
             const hbox = document.createElement("div");
-            hbox.style.cssText = "display:flex;gap:2px;width:100%;height:100%;";
+            hbox.className = "marcacao-15-container";
 
             if (is15m1) {
                 hbox.appendChild(this._boxMarcacao(marc1, true));
             } else {
-                const r = document.createElement("div"); r.style.flex = "1";
+                const r = document.createElement("div");
+                r.className = "marcacao-15-slot-vazio";
                 if (!passado) r.addEventListener("click", () => this._abrirCriarMarcacao(dataHora));
                 r.style.cursor = passado ? "default" : "pointer";
                 hbox.appendChild(r);
@@ -444,14 +448,14 @@ class CalendarioModule {
             if (is15m2) {
                 hbox.appendChild(this._boxMarcacao(marc2, true));
             } else {
-                const r = document.createElement("div"); r.style.flex = "1";
+                const r = document.createElement("div");
+                r.className = "marcacao-15-slot-vazio";
                 const dt15 = new Date(dataHora.getTime() + 15 * 60000);
                 if (!passado) r.addEventListener("click", () => this._abrirCriarMarcacao(dt15));
                 r.style.cursor = passado ? "default" : "pointer";
                 hbox.appendChild(r);
             }
             cel.appendChild(hbox);
-
         } else if (marc1 && marc1.duracao >= 30) {
             // Marcação de 30+ min ocupa a célula inteira
             cel.appendChild(this._boxMarcacao(marc1, false));
@@ -492,25 +496,16 @@ class CalendarioModule {
 
     _boxMarcacao(marcacao, meia) {
         const wrap = document.createElement("div");
-        wrap.style.cssText = `flex:${meia ? "1" : "1 1 100%"};padding:4px;box-sizing:border-box;`;
+        wrap.className = meia ? "marcacao-15-slot" : "marcacao-wrap-full";
 
         const box      = document.createElement("div");
         const isFalta  = marcacao.falta;
-        box.style.cssText = `
-            border-radius:12px;
-            background:${isFalta ? "rgb(128,26,15)" : "rgb(247,221,151)"};
-            height:32px;
-            display:flex;align-items:center;padding:0 8px;
-            cursor:pointer;width:100%;box-sizing:border-box;
-        `;
+        box.className  = `marcacao${isFalta ? " falta" : ""}`;
 
         const label = document.createElement("div");
         label.textContent = marcacao.cliente ? marcacao.cliente.nome : "—";
-        label.style.cssText = `
-            font-size:13px;font-weight:bold;
-            color:${isFalta ? "white" : "rgb(43,40,40)"};
-            overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-        `;
+        label.className   = "marcacao-label";
+
         box.appendChild(label);
         box.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -750,16 +745,41 @@ class CalendarioModule {
         txaObs.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;font-size:14px;box-sizing:border-box;resize:none;";
         modal.append(lblObs, txaObs);
 
-        // Alterar hora (só se não passou)
+        // Alterar hora (disponível para marcações passadas E futuras — apenas bloqueia
+        // combinações data+hora que já passaram ou que têm conflito)
         let selDia = null, selHora = null;
-        if (!passou) {
+        // semanaAlvo: segunda-feira da semana que está a ser visualizada para alteração
+        // Por defeito, começa na semana da própria marcação
+        let semanaAlvo = getMonday(dt);
+
+        {
+            // --- Título ---
             const lblHora = document.createElement("div");
             lblHora.textContent  = "Alterar Hora";
             lblHora.style.cssText = "color:white;font-size:15px;font-weight:bold;text-align:center;margin-top:12px;";
             modal.appendChild(lblHora);
 
+            // --- Navegação de semanas ---
+            const navSemana = document.createElement("div");
+            navSemana.style.cssText = "display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;";
+
+            const btnSemAnt  = document.createElement("button");
+            btnSemAnt.textContent = "◀";
+            btnSemAnt.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:bold;";
+
+            const lblSemana  = document.createElement("div");
+            lblSemana.style.cssText = "color:white;font-size:13px;min-width:140px;text-align:center;";
+
+            const btnSemProx = document.createElement("button");
+            btnSemProx.textContent = "▶";
+            btnSemProx.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:bold;";
+
+            navSemana.append(btnSemAnt, lblSemana, btnSemProx);
+            modal.appendChild(navSemana);
+
+            // --- Combos dia + hora ---
             const hboxCombos = document.createElement("div");
-            hboxCombos.style.cssText = "display:flex;gap:16px;justify-content:center;margin-top:6px;";
+            hboxCombos.style.cssText = "display:flex;gap:16px;justify-content:center;margin-top:8px;";
 
             const mkCombo = (lbl) => {
                 const wrap = document.createElement("div");
@@ -776,44 +796,103 @@ class CalendarioModule {
             selHora = mkCombo("Hora");
             modal.appendChild(hboxCombos);
 
+            // Preencher dias da semana (Segunda → Domingo)
             DIAS_SEMANA_LONGO.forEach(d => {
                 const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
                 selDia.appendChild(opt);
             });
-            // Mapear dia da semana JS (0=Dom) para índice do array DIAS_SEMANA_LONGO (0=Seg)
-            const diaIdx = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
-            selDia.value = DIAS_SEMANA_LONGO[diaIdx];
 
-            const horaAtualStr = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+            // Seleccionar o dia da própria marcação por defeito
+            const diaIdxOriginal = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
+            selDia.value = DIAS_SEMANA_LONGO[diaIdxOriginal];
 
-            const popularHoras = async () => {
-                selHora.innerHTML = "";
-                const diaIdxSel = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                // Converter índice (0=Seg) para weekday JS (1=Seg, 0=Dom)
-                const weekdayJS = diaIdxSel === 6 ? 0 : diaIdxSel + 1;
+            const horaOriginalStr = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
 
-                const api = getApi();
-                if (api) {
-                    try {
-                        const res = await api.get_horas_disponiveis(
-                            toLocalISOString(dt),
-                            diaIdxSel,
-                            marcacao.duracao
-                        );
-                        if (res && res.success && res.horas) {
-                            res.horas.forEach(h => {
-                                const opt = document.createElement("option"); opt.value = h; opt.textContent = h;
-                                selHora.appendChild(opt);
-                            });
-                        }
-                    } catch(e) { console.error(e); }
-                }
-                // Seleccionar hora actual se disponível
-                if ([...selHora.options].some(o => o.value === horaAtualStr)) selHora.value = horaAtualStr;
+            // Formata o label da semana: "15 jun – 21 jun"
+            const formatarSemana = (segunda) => {
+                const dom = new Date(segunda.getTime() + 6 * 86400000);
+                const fmt = (d) => `${d.getDate()} ${d.toLocaleDateString("pt-PT", { month: "short" })}`;
+                return `${fmt(segunda)} – ${fmt(dom)}`;
             };
 
+            // Calcula a data concreta do dia seleccionado dentro de semanaAlvo
+            const dataDoDiaSelecionado = () => {
+                const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value); // 0=Seg … 6=Dom
+                return new Date(semanaAlvo.getTime() + idx * 86400000);
+            };
+
+            // Preenche o combo de horas com as disponíveis para a data calculada
+            const popularHoras = async () => {
+                selHora.innerHTML = "";
+                const dataAlvo = dataDoDiaSelecionado();
+                const dataAlvoStr = toLocalISOString(new Date(
+                    dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), 0, 0, 0
+                ));
+
+                const api = getApi();
+                if (!api) return;
+                try {
+                    // Passa a data-alvo completa (ISO) ao backend — sem ambiguidade de semana
+                    const res = await api.get_horas_disponiveis_data(
+                        toLocalISOString(dt),    // data/hora original da marcação
+                        dataAlvoStr,             // data-alvo (pode ser qualquer semana)
+                        marcacao.duracao
+                    );
+                    if (res && res.success && res.horas) {
+                        res.horas.forEach(h => {
+                            const opt = document.createElement("option");
+                            opt.value = h; opt.textContent = h;
+                            selHora.appendChild(opt);
+                        });
+                    }
+                } catch(e) { console.error("[popularHoras]", e); }
+
+                // Se a data-alvo é a mesma da marcação original, pré-seleccionar a hora original
+                const dataOriginal = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+                const dataAlvoNorm = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate());
+                if (dataOriginal.getTime() === dataAlvoNorm.getTime()) {
+                    if ([...selHora.options].some(o => o.value === horaOriginalStr)) {
+                        selHora.value = horaOriginalStr;
+                    }
+                }
+            };
+
+            // Actualiza label da semana e recarrega horas
+            const actualizarSemana = () => {
+                lblSemana.textContent = formatarSemana(semanaAlvo);
+                popularHoras();
+            };
+
+            // Botão semana anterior — não permite ir antes da semana actual
+            btnSemAnt.addEventListener("click", () => {
+                const semanaAtualLocal = getMonday(new Date());
+                const candidata = new Date(semanaAlvo.getTime() - 7 * 86400000);
+                // Permite ir até à semana actual (não antes)
+                if (candidata >= semanaAtualLocal) {
+                    semanaAlvo = candidata;
+                    actualizarSemana();
+                }
+                // Se a semana resultante É a semana actual, desabilita o botão ◀
+                btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
+                btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
+            });
+
+            btnSemProx.addEventListener("click", () => {
+                semanaAlvo = new Date(semanaAlvo.getTime() + 7 * 86400000);
+                actualizarSemana();
+                // Ao avançar, o botão ◀ pode ficar disponível de novo
+                const semanaAtualLocal = getMonday(new Date());
+                btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
+                btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
+            });
+
             selDia.addEventListener("change", popularHoras);
-            popularHoras();
+
+            // Inicializar
+            const semanaAtualLocal = getMonday(new Date());
+            btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
+            btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
+            actualizarSemana();
         }
 
         const errorEl = document.createElement("div");
@@ -863,17 +942,23 @@ class CalendarioModule {
         const verificarMudancas = () => {
             const obsAlterada  = txaObs.value !== obsOriginal;
             const horaAlterada = selDia && selHora && (() => {
-                const diaIdx   = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                const diaOrig  = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
-                const horaOrig = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-                return diaIdx !== diaOrig || selHora.value !== horaOrig;
+                if (!selHora.value) return false;
+                // Calcular a data concreta que o utilizador escolheu
+                const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
+                const [hh, mm] = selHora.value.split(":").map(Number);
+                const dtNova   = new Date(
+                    dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm
+                );
+                // Compara com a data/hora original da marcação
+                return dtNova.getTime() !== dt.getTime();
             })();
             btnSalvar.disabled = !obsAlterada && !horaAlterada;
         };
 
-        txaObs.addEventListener("input", verificarMudancas);
-        if (selDia)  selDia.addEventListener("change", verificarMudancas);
-        if (selHora) selHora.addEventListener("change", verificarMudancas);
+        txaObs.addEventListener("input",   verificarMudancas);
+        if (selDia)  selDia.addEventListener("change",  verificarMudancas);
+        if (selHora) selHora.addEventListener("change",  verificarMudancas);
 
         const closeModal = () => {
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
@@ -896,12 +981,10 @@ class CalendarioModule {
 
                 let dtNova = dt;
                 if (selDia && selHora && selHora.value) {
-                    const diaIdxSel  = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                    const weekdayJS  = diaIdxSel === 6 ? 0 : diaIdxSel + 1;
-                    const delta      = (weekdayJS - dt.getDay() + 7) % 7;
-                    const novaData   = new Date(dt.getTime() + delta * 86400000);
-                    const [hh, mm]   = selHora.value.split(":").map(Number);
-                    dtNova = new Date(novaData.getFullYear(), novaData.getMonth(), novaData.getDate(), hh, mm);
+                    const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                    const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
+                    const [hh, mm] = selHora.value.split(":").map(Number);
+                    dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
                 }
 
                 const res = await api.alterar_marcacao(
