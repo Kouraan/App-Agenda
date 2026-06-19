@@ -44,7 +44,7 @@ def inicializar_bd():
             CREATE TABLE IF NOT EXISTS clientes (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome             TEXT    NOT NULL UNIQUE,
-                numero_telefone  TEXT    NOT NULL,
+                numero_telefone  TEXT    NOT NULL,  
                 tipo_cliente     TEXT    NOT NULL DEFAULT 'NORMAL',
                 faltas           INTEGER NOT NULL DEFAULT 0,
                 dia_semana       TEXT,
@@ -84,6 +84,16 @@ def inicializar_bd():
 
             CREATE INDEX IF NOT EXISTS idx_logs_tipo
                 ON logs(tipo);
+                
+            CREATE TABLE IF NOT EXISTS slots_semanais_usados (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                cliente_nome TEXT    NOT NULL,
+                data_hora    TEXT    NOT NULL,
+                UNIQUE(cliente_nome, data_hora)
+            );
+            
+            CREATE INDEX IF NOT EXISTS idx_slots_semanais_cliente
+                ON slots_semanais_usados(cliente_nome);
         """)
 
 
@@ -424,3 +434,42 @@ def ler_logs(tipo: Optional[str] = None, limite: int = 200) -> list[dict]:
                 (limite,)
             ).fetchall()
         return [dict(r) for r in rows]
+   
+# slots semanais usados (para evitar duplicados ao gerar marcações recorrentes)
+ 
+def inserir_slots_semanais_bulk(slots: list[dict]) -> bool:
+    """Regista slots semanais já gerados (ignora duplicados)."""
+    try:
+        with _connect() as conn:
+            conn.executemany(
+                "INSERT OR IGNORE INTO slots_semanais_usados (cliente_nome, data_hora) VALUES (?, ?)",
+                [(s["cliente_nome"], s["data_hora"]) for s in slots]
+            )
+        return True
+    except Exception as e:
+        print(f"[Database] inserir_slots_semanais_bulk: {e}")
+        return False
+
+
+def ler_slots_semanais_usados(cliente_nome: str) -> list[str]:
+    """Devolve lista de data_hora ISO dos slots já gerados para este cliente."""
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT data_hora FROM slots_semanais_usados WHERE cliente_nome = ?",
+            (cliente_nome,)
+        ).fetchall()
+        return [r["data_hora"] for r in rows]
+
+
+def apagar_slots_semanais_cliente(cliente_nome: str) -> bool:
+    """Remove todos os slots usados de um cliente (ex: ao mudar horário semanal)."""
+    try:
+        with _connect() as conn:
+            conn.execute(
+                "DELETE FROM slots_semanais_usados WHERE cliente_nome = ?",
+                (cliente_nome,)
+            )
+        return True
+    except Exception as e:
+        print(f"[Database] apagar_slots_semanais_cliente: {e}")
+        return False

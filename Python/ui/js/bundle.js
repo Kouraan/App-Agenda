@@ -824,37 +824,32 @@ class CalendarioModule {
             // Preenche o combo de horas com as disponíveis para a data calculada
             const popularHoras = async () => {
                 selHora.innerHTML = "";
-                const dataAlvo = dataDoDiaSelecionado();
-                const dataAlvoStr = toLocalISOString(new Date(
-                    dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), 0, 0, 0
-                ));
+                const diaIdxSel = DIAS_SEMANA_LONGO.indexOf(selDia.value);
 
                 const api = getApi();
-                if (!api) return;
-                try {
-                    // Passa a data-alvo completa (ISO) ao backend — sem ambiguidade de semana
-                    const res = await api.get_horas_disponiveis_data(
-                        toLocalISOString(dt),    // data/hora original da marcação
-                        dataAlvoStr,             // data-alvo (pode ser qualquer semana)
-                        marcacao.duracao
-                    );
-                    if (res && res.success && res.horas) {
-                        res.horas.forEach(h => {
-                            const opt = document.createElement("option");
-                            opt.value = h; opt.textContent = h;
-                            selHora.appendChild(opt);
-                        });
-                    }
-                } catch(e) { console.error("[popularHoras]", e); }
-
-                // Se a data-alvo é a mesma da marcação original, pré-seleccionar a hora original
-                const dataOriginal = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-                const dataAlvoNorm = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate());
-                if (dataOriginal.getTime() === dataAlvoNorm.getTime()) {
-                    if ([...selHora.options].some(o => o.value === horaOriginalStr)) {
-                        selHora.value = horaOriginalStr;
-                    }
+                if (api) {
+                    try {
+                        const res = await api.get_horas_disponiveis(
+                            toLocalISOString(dt),
+                            diaIdxSel,
+                            marcacao.duracao
+                        );
+                        if (res && res.success && res.horas) {
+                            res.horas.forEach(h => {
+                                const opt = document.createElement("option"); opt.value = h; opt.textContent = h;
+                                selHora.appendChild(opt);
+                            });
+                        }
+                    } catch(e) { console.error(e); }
                 }
+                // Seleccionar hora original se disponível, senão a primeira disponível
+                if ([...selHora.options].some(o => o.value === horaAtualStr)) {
+                    selHora.value = horaAtualStr;
+                } else if (selHora.options.length > 0) {
+                    selHora.selectedIndex = 0;
+                }
+                // Actualizar estado do botão Salvar agora que as horas estão carregadas
+                verificarMudancas();
             };
 
             // Actualiza label da semana e recarrega horas
@@ -981,10 +976,13 @@ class CalendarioModule {
 
                 let dtNova = dt;
                 if (selDia && selHora && selHora.value) {
-                    const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                    const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
-                    const [hh, mm] = selHora.value.split(":").map(Number);
-                    dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
+                    const diaIdxSel     = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                    // Converter para weekday Python (0=Seg, 6=Dom) — igual ao backend
+                    const targetWeekday = diaIdxSel;
+                    const origWeekday   = (dt.getDay() + 6) % 7;
+                    const delta         = targetWeekday - origWeekday; // pode ser negativo (dia anterior na semana)
+                    const [hh, mm]      = selHora.value.split(":").map(Number);
+                    dtNova = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + delta, hh, mm);
                 }
 
                 const res = await api.alterar_marcacao(

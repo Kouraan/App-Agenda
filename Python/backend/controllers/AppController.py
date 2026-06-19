@@ -30,20 +30,35 @@ class AppController:
         self.marcacoes_map = Persistencia.ler_marcacoes()
         self.pendentes     = Persistencia.ler_pendentes()
 
-        # Gerar marcações semanais em falta
+        # Gerar marcações semanais em falta (respeitando slots já processados)
         try:
+            slots_a_guardar = []
             for cliente in list(self.clientes_map.values()):
+                if cliente.get_tipo_cliente() != TipoCliente.SEMANAL:
+                    continue
                 try:
+                    slots_usados = set(
+                        Database.ler_slots_semanais_usados(cliente.get_nome())
+                    )
                     novas = MarcacoesSemanais.gerar_marcacoes_semanais(
-                        cliente, self.marcacoes_map, date.today(), meses_a_frente=6
+                        cliente, self.marcacoes_map, date.today(),
+                        meses_a_frente=6, slots_usados=slots_usados
                     )
                     for m in novas:
+                        slots_a_guardar.append({
+                            "cliente_nome": cliente.get_nome(),
+                            "data_hora":    m.get_data_hora().isoformat()
+                        })
                         try:
                             Logger.log_marcacao_criada(m)
                         except Exception:
                             pass
-                except Exception:
+                except Exception as e:
+                    print(f"[AppController] initialize semanais {cliente.get_nome()}: {e}")
                     continue
+
+            if slots_a_guardar:
+                Database.inserir_slots_semanais_bulk(slots_a_guardar)
             Persistencia.guardar_marcacoes(self.marcacoes_map)
         except Exception as e:
             print(f"[AppController] initialize semanais: {e}")
@@ -227,16 +242,23 @@ class AppController:
             cliente = self.clientes_map[nome]
             hoje_dt = datetime.combine(date.today(), datetime.min.time())
 
-            to_remove = [dt for dt, m in self.marcacoes_map.items()
-                         if m.get_cliente() and self._get_nome_safe(m.get_cliente()) == nome and dt >= hoje_dt]
+            to_remove = [
+                dt for dt, m in self.marcacoes_map.items()
+                if m.get_cliente() and
+                    self._get_nome_safe(m.get_cliente()) == nome and
+                    dt >= hoje_dt
+            ]
             for dt in to_remove:
                 del self.marcacoes_map[dt]
 
             Persistencia.guardar_marcacoes(self.marcacoes_map)
             del self.clientes_map[nome]
             Persistencia.guardar_clientes(self.clientes_map)
-            Logger.log_cliente_apagado(cliente.get_nome())
 
+            # Limpar slots semanais do cliente apagado
+            Database.apagar_slots_semanais_cliente(nome)
+
+            Logger.log_cliente_apagado(cliente.get_nome())
             return {"success": True}
 
         except Exception as e:
@@ -628,14 +650,25 @@ class AppController:
 
     def _gerar_e_guardar_semanais(self, cliente: Cliente):
         try:
-            novas = MarcacoesSemanais.gerar_marcacoes_semanais(
-                cliente, self.marcacoes_map, date.today(), meses_a_frente=6
+            slots_usados = set(
+                Database.ler_slots_semanais_usados(cliente.get_nome())
             )
+            novas = MarcacoesSemanais.gerar_marcacoes_semanais(
+                cliente, self.marcacoes_map, date.today(),
+                meses_a_frente=6, slots_usados=slots_usados
+            )
+            slots_a_guardar = []
             for m in novas:
+                slots_a_guardar.append({
+                    "cliente_nome": cliente.get_nome(),
+                    "data_hora":    m.get_data_hora().isoformat()
+                })
                 try:
                     Logger.log_marcacao_criada(m)
                 except Exception:
                     pass
+            if slots_a_guardar:
+                Database.inserir_slots_semanais_bulk(slots_a_guardar)
             Persistencia.guardar_marcacoes(self.marcacoes_map)
         except Exception as e:
             print(f"[AppController] _gerar_e_guardar_semanais: {e}")
@@ -643,11 +676,19 @@ class AppController:
     def _reprocessar_semanais(self, nome_original: str, novo: Cliente):
         try:
             hoje_dt = datetime.combine(date.today(), datetime.min.time())
-            to_remove = [dt for dt, m in self.marcacoes_map.items()
-                         if m.get_cliente() and self._get_nome_safe(m.get_cliente()) == nome_original
-                         and dt >= hoje_dt]
+            to_remove = [
+                dt for dt, m in self.marcacoes_map.items()
+                if m.get_cliente() and
+                    self._get_nome_safe(m.get_cliente()) == nome_original and
+                    dt >= hoje_dt
+            ]
             for dt in to_remove:
                 del self.marcacoes_map[dt]
+
+            # Limpar slots usados para que sejam regenerados com o novo horário
+            Database.apagar_slots_semanais_cliente(nome_original)
+            if novo.get_nome() != nome_original:
+                Database.apagar_slots_semanais_cliente(novo.get_nome())
 
             if novo.get_tipo_cliente() == TipoCliente.SEMANAL:
                 self._gerar_e_guardar_semanais(novo)
