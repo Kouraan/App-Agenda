@@ -1,3 +1,12 @@
+[19/06/2026 10:38:06] Data/hora da marcação de 'bla' alterada de 27/06/2026 09:00 para 20/06/2026 09:00.
+[19/06/2026 10:37:54] Data/hora da marcação de 'bla' alterada de 20/06/2026 09:00 para 27/06/2026 09:00.
+[19/06/2026 10:05:13] Marcação de 'Nuno Silva' em 10/07/2026 09:30 apagada.
+[19/06/2026 10:04:44] Marcação criada para 'Nuno Silva' em 10/07/2026 09:30.
+[19/06/2026 10:04:38] Marcação de 'Nuno Silva' em 10/07/2026 09:30 apagada.
+[19/06/2026 10:04:07] Marcação de 'Nuno Silva' em 26/06/2026 09:30 apagada.
+[19/06/2026 10:03:53] O cliente 'bla2' faltou a marcacao na data '19/06/2026 08:45'.
+[19/06/2026 10:03:52] O cliente 'bla1' faltou a marcacao na data '19/06/2026 08:30'.
+[19/06/2026 10:03:47] O cliente 'Nuno Silva' faltou a marcacao na data '19/06/2026 08:15'.
 [19/06/2026 01:03:03] Marcação criada para 'Nuno Silva' em 26/06/2026 09:30.
 [19/06/2026 01:02:50] Marcação de 'Nuno Silva' em 26/06/2026 09:30 apagada.
 [16/06/2026 00:54:21] Marcação criada para 'experiencia' em 18/06/2026 07:00.

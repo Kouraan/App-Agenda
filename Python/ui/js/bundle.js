@@ -824,14 +824,14 @@ class CalendarioModule {
             // Preenche o combo de horas com as disponíveis para a data calculada
             const popularHoras = async () => {
                 selHora.innerHTML = "";
-                const diaIdxSel = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                const dataAlvo = dataDoDiaSelecionado();
 
                 const api = getApi();
                 if (api) {
                     try {
-                        const res = await api.get_horas_disponiveis(
+                        const res = await api.get_horas_disponiveis_data(
                             toLocalISOString(dt),
-                            diaIdxSel,
+                            toLocalISOString(dataAlvo),
                             marcacao.duracao
                         );
                         if (res && res.success && res.horas) {
@@ -843,8 +843,8 @@ class CalendarioModule {
                     } catch(e) { console.error(e); }
                 }
                 // Seleccionar hora original se disponível, senão a primeira disponível
-                if ([...selHora.options].some(o => o.value === horaAtualStr)) {
-                    selHora.value = horaAtualStr;
+                if ([...selHora.options].some(o => o.value === horaOriginalStr)) {
+                    selHora.value = horaOriginalStr;
                 } else if (selHora.options.length > 0) {
                     selHora.selectedIndex = 0;
                 }
@@ -975,14 +975,14 @@ class CalendarioModule {
                 btnSalvar.disabled = true;
 
                 let dtNova = dt;
-                if (selDia && selHora && selHora.value) {
-                    const diaIdxSel     = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                    // Converter para weekday Python (0=Seg, 6=Dom) — igual ao backend
-                    const targetWeekday = diaIdxSel;
-                    const origWeekday   = (dt.getDay() + 6) % 7;
-                    const delta         = targetWeekday - origWeekday; // pode ser negativo (dia anterior na semana)
-                    const [hh, mm]      = selHora.value.split(":").map(Number);
-                    dtNova = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate() + delta, hh, mm);
+                    if (selDia && selHora && selHora.value) {
+                    // Usa a mesma lógica de verificarMudancas: dia escolhido dentro da semanaAlvo navegada
+                    const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                    const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
+                    const [hh, mm] = selHora.value.split(":").map(Number);
+                    dtNova = new Date(
+                        dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm
+                    );
                 }
 
                 const res = await api.alterar_marcacao(
