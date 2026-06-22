@@ -1,0 +1,4 @@
+[22/06/2026 17:47:47] Utilizador 'Marco' efetuou login na sua conta.
+[22/06/2026 17:47:40] Aplicação iniciada.
+[22/06/2026 17:46:58] Aplicação terminada.
+[22/06/2026 17:46:55] Aplicação iniciada.
