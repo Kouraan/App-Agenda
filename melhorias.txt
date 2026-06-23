@@ -1,0 +1,35 @@
+Pagina Principal:
+-Mudar a palavra "Calendário" -> "Agenda"
+
+Calendario:
+-Correcao do bug do dia 24 de junho (Batalha de Sao Mamede), nao aparecer como feriado
+
+Modo Semana:
+-O cabeçalho que fala o dia da semana e o dia do semana se tornar estático e ao dar scroll apenas da parte das horas, o que
+possibilita de ver os dias da semana e mes sempre para evitar confusoes a tentar fazer marcações em horas mais pro fim do dia.
+
+Modo Dia:
+-reclamacao de estao muito "grande" acho eu e que torna um pouco feio e demasiado, tentar dividir acho eu e adicionar algo util
+no espaço restante.
+
+Area de Clientes:
+-por baixo da barra de pesquisa falar quantos clientes a base de dados possuiu
+-nos detalhes de cliente adicionar uma estatistica de vezes que o cliente ja cortou o cabelo, ou seja a quantidade de marcacoes
+totais que o cliente ja fez e que ja passaram ate ao momento, menos as faltas que o cliente possui
+-um botao que mostra marcacoes que o cliente tem em andamento e que ja passaram, dividindo por cores as que estao ativas e as 
+que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N cabem todas na tela por isso teria uma barra
+de scroll
+-problema de que ao alterar um campo de nome ou numero num cliente, todas as marcacoes que este cliente tinha sao apagadas
+em vez de apenas alterar o nome ou numero que foi alterado na edicao
+
+Marcaçoes:
+-uma marcacoes que ja passou a data nao deve ter a parte de alterar hora e dia de marcacao, visto que a marcacao ja foi, nao
+deve ser possivel alterar a sua data e hora
+-se o cliente for um cliente desconhecido, ser possivel editar o seu nome e numero atraves de um botao de editar
+-caso ao fazer uma marcacao se for um cliente desconhecido, seja possivel ter um botao de adicioanr cliente. Que no caso
+ele faz a verificacao do nome e numero e se nao coincidir com nenhum cliente existente, para alem de fazer a marcacao
+cria o cliente na base de dados e atribui-lhe essa marcacao
+-numa marcacao que ja existe ser possivel apenas alterar o cliente que fez a marcacao, por exemplo cliente x fez marcacao mas
+n pode vir e disse que um amigo vai, ou seja apenas trocou o cliente
+-possivel numa marcacao fazer a troca de marcacoes, cliente x esta a hora y e cliente w esta a hora z. Ser possivel fazer troca
+dessas duas marcacoes

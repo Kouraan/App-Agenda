@@ -1,0 +1,11 @@
+# Ignorar caches do Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignorar pasta de logs
+logs/
+logs/**
+
+# Permitir que o resto do projeto seja versionado

@@ -19,9 +19,8 @@ class MainApp:
             screen_height = root.winfo_screenheight()
             root.destroy()
             
-            # Usar 90% da largura e 85% da altura para deixar espaço
-            width = int(screen_width * 0.9)
-            height = int(screen_height * 0.85)
+            width = screen_width
+            height = screen_height
             
             # Mínimos e máximos
             width = max(1200, min(width, 1920))
@@ -32,7 +31,7 @@ class MainApp:
         except Exception as e:
             print(f"Erro ao obter dimensões do ecrã: {e}")
             # Fallback para dimensões padrão
-            return 1366, 768  
+            return 1200, 700 
     
     def start_app(self):
         """Inicia a aplicação"""
@@ -122,7 +121,7 @@ class MainApp:
                 events.closing += on_closing
         
         # Iniciar o webview
-        webview.start(debug=True)
+        webview.start(debug=False)
 
 if __name__ == '__main__':
     app = MainApp()
