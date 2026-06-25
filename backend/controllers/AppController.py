@@ -826,6 +826,37 @@ class AppController:
             return s if s else None
         except Exception:
             return None
+        
+    def alterar_cliente_desconhecido_marcacao(self, data_hora: str, novo_nome: str, novo_numero: str):
+        """Altera nome e número de um cliente DESCONHECIDO numa marcação específica."""
+        try:
+            dt = self._parse_dt(data_hora)
+            if dt is None or dt not in self.marcacoes_map:
+                return {"success": False, "error": "Marcação não encontrada."}
+
+            marcacao = self.marcacoes_map[dt]
+            cliente  = marcacao.get_cliente()
+
+            if cliente is None or cliente.get_tipo_cliente().value != "DESCONHECIDO":
+                return {"success": False, "error": "Esta marcação não pertence a um cliente desconhecido."}
+
+            novo_nome   = (novo_nome or "").strip()
+            novo_numero = (novo_numero or "").strip()
+
+            if not novo_nome:
+                return {"success": False, "error": "O nome não pode ser vazio."}
+
+            from ..models.Cliente import Cliente, TipoCliente
+            novo_cliente = Cliente(novo_nome, novo_numero, TipoCliente.DESCONHECIDO)
+            marcacao.set_cliente(novo_cliente)
+            self.marcacoes_map[dt] = marcacao
+
+            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            return {"success": True}
+
+        except Exception as e:
+            print(f"[AppController] alterar_cliente_desconhecido_marcacao: {e}")
+            return {"success": False, "error": str(e)}
     
     def _apagar_marcacoes_futuras_cliente(self, nome: str):
         """Apaga apenas marcações futuras de um cliente (hoje inclusive)."""

@@ -372,7 +372,9 @@ class CalendarioModule {
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
             for (let m = 0; m < 60; m += INTERVALO_MINUTOS) {
                 const horaStr = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-                this.grid.appendChild(this._celula(horaStr, "hour"));
+                const horaCel = this._celula(horaStr, "hour");
+                if (h === 13) horaCel.classList.add("lunch-hour");
+                this.grid.appendChild(horaCel);
                 for (let d = 0; d < 7; d++) {
                     const data     = new Date(this.semanaAtual.getTime() + d * 86400000);
                     const dataHora = new Date(data.getFullYear(), data.getMonth(), data.getDate(), h, m);
@@ -438,7 +440,9 @@ class CalendarioModule {
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
             for (let m = 0; m < 60; m += INTERVALO_MINUTOS) {
                 const horaStr = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-                this.grid.appendChild(this._celula(horaStr, "hour"));
+                const horaCelDia = this._celula(horaStr, "hour");
+                if (h === 13) horaCelDia.classList.add("lunch-hour");
+                this.grid.appendChild(horaCelDia);
                 const dataHora = new Date(
                     this.diaSelecionado.getFullYear(), this.diaSelecionado.getMonth(),
                     this.diaSelecionado.getDate(), h, m);
@@ -464,6 +468,8 @@ class CalendarioModule {
 
         // Estilo domingo
         if (dataHora.getDay() === 0) cel.classList.add("sunday-cell");
+
+        if (dataHora.getHours() === 13) cel.classList.add("lunch-cell");
 
         const marcacoes = this.getMarcacoes();
         const marc1     = this._getMarcacao(marcacoes, dataHora);
@@ -622,9 +628,11 @@ class CalendarioModule {
             api.get_clientes_map().then(m => {
                 clientesSnapshot = m || {};
                 this._popularDuracoes(selDur, dataHora, this.getMarcacoes());
+                setTimeout(() => pesquisa.focus(), 80);
             });
         } else {
             this._popularDuracoes(selDur, dataHora, this.getMarcacoes());
+            setTimeout(() => pesquisa.focus(), 80);
         }
 
         // Pesquisa dinâmica com sugestões
@@ -659,7 +667,13 @@ class CalendarioModule {
             fldTel.disabled    = !chkDesk.checked;
             pesquisa.disabled  = chkDesk.checked;
             sugestoes.style.display = "none";
-            if (!chkDesk.checked) { fldNome.value = ""; fldTel.value = ""; }
+            if (!chkDesk.checked) {
+                fldNome.value = "";
+                fldTel.value  = "";
+                setTimeout(() => pesquisa.focus(), 50);
+            } else {
+                setTimeout(() => fldNome.focus(), 50);
+            }
         });
 
         const closeModal = () => {
@@ -754,26 +768,112 @@ class CalendarioModule {
         const passou = dt < new Date();
         const dias   = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 
+        const headerRow = document.createElement("div");
+        headerRow.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;";
+
         const titulo = document.createElement("div");
         titulo.textContent = `${dias[dt.getDay()]} dia ${String(dt.getDate()).padStart(2,"0")} às ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-        titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:10px;";
-        modal.appendChild(titulo);
+        titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;flex:1;";
+        headerRow.appendChild(titulo);
 
-        const addField = (label, value) => {
-            const lbl = document.createElement("div");
-            lbl.textContent  = label;
-            lbl.style.cssText = "color:white;font-size:14px;margin-top:6px;";
-            const inp = document.createElement("input");
-            inp.type     = "text";
-            inp.value    = value || "";
-            inp.readOnly = true;
-            inp.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
-            modal.append(lbl, inp);
-        };
+        const isDesconhecido = marcacao.cliente?.tipoCliente === "DESCONHECIDO";
+        let modoEdicaoDesc = false;
 
-        addField("Nome:",     marcacao.cliente?.nome);
-        addField("Telefone:", marcacao.cliente?.numeroTelefone);
-        addField("Duração:",  `${marcacao.duracao} minutos`);
+        const btnEditarDesc = document.createElement("button");
+        btnEditarDesc.textContent = "✏️ Editar";
+        btnEditarDesc.style.cssText = `background:rgb(36,43,141);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:bold;cursor:pointer;display:${isDesconhecido ? "inline-block" : "none"};`;
+        headerRow.appendChild(btnEditarDesc);
+        modal.appendChild(headerRow);
+
+        // Campos Nome e Telefone com suporte a edição para desconhecidos
+        const lblNomeField = document.createElement("div");
+        lblNomeField.textContent = "Nome:";
+        lblNomeField.style.cssText = "color:white;font-size:14px;margin-top:6px;";
+        const inpNome = document.createElement("input");
+        inpNome.type = "text";
+        inpNome.value = marcacao.cliente?.nome || "";
+        inpNome.readOnly = true;
+        inpNome.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
+        modal.append(lblNomeField, inpNome);
+
+        const lblTelField = document.createElement("div");
+        lblTelField.textContent = "Telefone:";
+        lblTelField.style.cssText = "color:white;font-size:14px;margin-top:6px;";
+        const inpTel = document.createElement("input");
+        inpTel.type = "text";
+        inpTel.value = marcacao.cliente?.numeroTelefone || "";
+        inpTel.readOnly = true;
+        inpTel.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
+        inpTel.addEventListener("input", () => { inpTel.value = inpTel.value.replace(/[^\d+]/g, ""); });
+        modal.append(lblTelField, inpTel);
+
+        const nomeOriginalDesc = marcacao.cliente?.nome || "";
+        const telOriginalDesc  = marcacao.cliente?.numeroTelefone || "";
+
+        btnEditarDesc.addEventListener("click", async () => {
+            if (!modoEdicaoDesc) {
+                // Activar edição
+                modoEdicaoDesc = true;
+                inpNome.readOnly = false;
+                inpTel.readOnly  = false;
+                inpNome.style.border = "2px solid rgb(36,43,141)";
+                inpTel.style.border  = "2px solid rgb(36,43,141)";
+                btnEditarDesc.textContent = "✏️ Editar";
+                setTimeout(() => inpNome.focus(), 50);
+            } else {
+                // Confirmar se houve alteração
+                const nomeNovo = inpNome.value.trim();
+                const telNovo  = inpTel.value.trim();
+                if (nomeNovo === nomeOriginalDesc && telNovo === telOriginalDesc) {
+                    // Sem alterações — sair do modo edição silenciosamente
+                    modoEdicaoDesc = false;
+                    inpNome.readOnly = true;
+                    inpTel.readOnly  = true;
+                    inpNome.style.border = "none";
+                    inpTel.style.border  = "none";
+                    return;
+                }
+                if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
+                // Pedir confirmação
+                const confirmar = confirm(`Guardar alterações?\nNome: ${nomeNovo}\nTelefone: ${telNovo || "—"}`);
+                if (!confirmar) return;
+                const api = getApi();
+                if (!api) { errorEl.textContent = "API não disponível."; return; }
+                try {
+                    const res = await api.alterar_cliente_desconhecido_marcacao(
+                        toLocalISOString(dt), nomeNovo, telNovo
+                    );
+                    if (res && res.success) {
+                        modoEdicaoDesc = false;
+                        inpNome.readOnly = true;
+                        inpTel.readOnly  = true;
+                        inpNome.style.border = "none";
+                        inpTel.style.border  = "none";
+                        await this.onRefresh();
+                        this.atualizar();
+                    } else {
+                        errorEl.textContent = res?.error || "Erro ao guardar alterações.";
+                    }
+                } catch(e) {
+                    errorEl.textContent = "Erro de comunicação.";
+                }
+            }
+        });
+
+        // Campo Duração (readOnly como antes)
+        const lblDur2 = document.createElement("div");
+        lblDur2.textContent = "Duração:";
+        lblDur2.style.cssText = "color:white;font-size:14px;margin-top:6px;";
+        const inpDur2 = document.createElement("input");
+        inpDur2.type = "text";
+        inpDur2.value = `${marcacao.duracao} minutos`;
+        inpDur2.readOnly = true;
+        inpDur2.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
+        modal.append(lblDur2, inpDur2);
+
+        const errorEl = document.createElement("div");
+        errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;margin-top:4px;";
+        modal.appendChild(errorEl);
 
         const lblObs = document.createElement("div");
         lblObs.textContent  = "Observações:";
@@ -783,6 +883,7 @@ class CalendarioModule {
         txaObs.rows         = 3;
         txaObs.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;font-size:14px;box-sizing:border-box;resize:none;";
         modal.append(lblObs, txaObs);
+        setTimeout(() => txaObs.focus(), 80);
 
         // Alterar hora (disponível para marcações passadas E futuras — apenas bloqueia
         // combinações data+hora que já passaram ou que têm conflito)
@@ -910,10 +1011,6 @@ class CalendarioModule {
             btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
             actualizarSemana();
         }
-
-        const errorEl = document.createElement("div");
-        errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;margin-top:4px;";
-        modal.appendChild(errorEl);
 
         // Botões
         const btnRow    = document.createElement("div");
@@ -1451,7 +1548,13 @@ class ClientesModule {
             else alert(res?.error || "Erro ao apagar cliente.");
         });
 
+        // Elemento de erro para edição de cliente (adiciona antes dos botões no editBox)
+        const editErrorEl = document.createElement("div");
+        editErrorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;text-align:center;margin-top:4px;";
+        editBox.appendChild(editErrorEl);
+
         btnSalvar.addEventListener("click", async () => {
+            editErrorEl.textContent = "";
             const novoNome = nomeInp.value.trim();
             const novoTel  = telInp.value.trim();
             const tipo     = semanalChk.checked ? "SEMANAL" : "NORMAL";
@@ -1459,25 +1562,28 @@ class ClientesModule {
             const hora     = semanalChk.checked ? (horaSel.value || null) : null;
             const rapido   = rapidoChk.checked;
 
-            if (!novoNome) { alert("Nome inválido"); return; }
-            if (!/^\+?\d[\d\-\s()]{6,}$/.test(novoTel)) { alert("Telefone inválido"); return; }
-            if (tipo === "SEMANAL" && (!dia || !hora)) { alert("Selecione dia e hora para cliente semanal"); return; }
+            if (!novoNome) { editErrorEl.textContent = "Nome inválido."; return; }
+            if (!/^\+?\d[\d\-\s()]{6,}$/.test(novoTel)) { editErrorEl.textContent = "Telefone inválido."; return; }
+            if (tipo === "SEMANAL" && (!dia || !hora)) { editErrorEl.textContent = "Selecione dia e hora para cliente semanal."; return; }
 
-            // Verificar duplicado de nome case-insensitive no frontend antes de enviar
             const clientesAtuais = Object.values(this.getClientes());
             const nomeDuplicado = clientesAtuais.some(
                 c => c.nome.toLowerCase() === novoNome.toLowerCase() &&
                     c.nome.toLowerCase() !== clienteObj.nome.toLowerCase()
             );
-            if (nomeDuplicado) { alert("Já existe um cliente com esse nome."); return; }
+            if (nomeDuplicado) { editErrorEl.textContent = "Já existe um cliente com esse nome."; return; }
 
             const payload = {
                 nomeOriginal: clienteObj.nome, nome: novoNome, numeroTelefone: novoTel,
                 tipoCliente: tipo, diaSemana: dia, horaCorte: hora, faltas: faltasVal, rapido
             };
-            const res = await alterarCliente(payload);
-            if (res && res.success) { await this.onRefresh(); closeModal(); this.renderizar(); }
-            else alert(res?.error || "Erro ao guardar cliente.");
+            try {
+                btnSalvar.disabled = true;
+                const res = await alterarCliente(payload);
+                if (res && res.success) { await this.onRefresh(); closeModal(); this.renderizar(); }
+                else editErrorEl.textContent = res?.error || "Erro ao guardar cliente.";
+            } catch { editErrorEl.textContent = "Erro ao comunicar com o backend."; }
+            finally { btnSalvar.disabled = false; }
         });
     }
 
@@ -1493,6 +1599,7 @@ class ClientesModule {
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
             window.removeEventListener("keydown", keyH, true);
         };
+        setTimeout(() => nomeInp.focus(), 80);
         const keyH = (e) => {
             if (!document.body.contains(overlay)) return;
             if (e.key === "Escape") { e.preventDefault(); closeModal(); }
@@ -1911,6 +2018,8 @@ class PendentesModule {
         btnRow.append(btnSalvar, btnSair);
         modal.appendChild(btnRow);
 
+        setTimeout(() => pesquisa.focus(), 80);
+
         let clientesSnapshot = {};
         const api = getApi();
         if (api) api.get_clientes_map().then(m => { clientesSnapshot = m || {}; });
@@ -1947,6 +2056,11 @@ class PendentesModule {
             telField.disabled  = !chk.checked;
             pesquisa.disabled  = chk.checked;
             sugestoes.style.display = "none";
+            if (chk.checked) {
+                setTimeout(() => nomeField.focus(), 50);
+            } else {
+                setTimeout(() => pesquisa.focus(), 50);
+            }
         });
 
         btnSair.addEventListener("click", () => this._renderGestao(overlay));

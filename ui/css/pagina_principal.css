@@ -923,3 +923,24 @@ body {
     flex: 1 1 auto;
     color: inherit;
 }
+
+/* Domingo — cor distinta */
+.calendar-cell.sunday-cell {
+    background-color: rgb(60, 30, 60);   /* roxo escuro */ /* rgb(50, 20, 20) — vermelho muito escuro|rgb(30, 30, 70) — azul escuro */
+}
+
+/* Hora de almoço (label da hora 13:xx) */
+.calendar-cell.lunch-hour {
+    background-color: rgb(30, 80, 60);   /* verde escuro */ /* rgb(80, 60, 20) — dourado escuro|rgb(20, 60, 80) — azul petróleo */
+}
+
+/* Célula de horário de almoço (13:00 e 13:30) */
+.calendar-cell.lunch-cell {
+    background-color: rgb(25, 65, 50);   /* verde ainda mais escuro */
+}
+
+/* Manter hover nas lunch-cells não passadas */
+.calendar-cell.lunch-cell:not(.past):hover {
+    background-color: white;
+    color: black;
+}
