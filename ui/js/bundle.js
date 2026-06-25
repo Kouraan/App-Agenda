@@ -3,7 +3,7 @@
 // ==========================================
 
 const FERIADOS_FIXOS = [
-    "01-01", "04-25", "05-01", "06-10", "08-15",
+    "01-01", "04-25", "05-01", "06-10", "06-24", "08-15",
     "10-05", "11-01", "12-01", "12-08", "12-25"
 ];
 
@@ -239,14 +239,37 @@ class CalendarioModule {
     }
 
     atualizar() {
+        // Limpar cabeçalho fixo anterior se existir
+        const scrollEl = this.grid.closest(".calendar-scroll");
+        
+        if (scrollEl) {
+            const headerFixo = scrollEl.parentElement.querySelector(".semana-header-fixo");
+            if (headerFixo) headerFixo.remove();
+
+            // Se o grid está dentro de um inner, movê-lo de volta para scrollEl
+            const inner = scrollEl.querySelector(".calendar-scroll-inner");
+            if (inner) {
+                if (inner.contains(this.grid)) {
+                    scrollEl.insertBefore(this.grid, inner);
+                }
+                inner.remove();
+            }
+
+            // Repor scroll no scrollEl
+            scrollEl.style.overflowY = "";
+            scrollEl.style.overflow = "";
+        }
+
         this.grid.innerHTML = "";
         this.grid.className = `calendar-grid ${this.modoAtual.toLowerCase()}`;
 
-        // Ajustar classe do scroll para controlar overflow por modo
-        const scroll = this.grid.closest(".calendar-scroll");
-        if (scroll) {
-            scroll.classList.remove("modo-semana", "modo-dia", "modo-mes");
-            scroll.classList.add(`modo-${this.modoAtual.toLowerCase()}`);
+        if (scrollEl) {
+            if (this.modoAtual === "DIA" || this.modoAtual === "SEMANA") {
+                scrollEl.style.overflowY = "auto";
+                scrollEl.style.scrollbarWidth = "none";
+            } else {
+                scrollEl.style.overflowY = "hidden";
+            }
         }
 
         switch (this.modoAtual) {
@@ -257,7 +280,6 @@ class CalendarioModule {
         this._atualizarLabel();
         this._atualizarEstiloToggles();
     }
-
     setModo(modo) {
         this.modoAtual = modo;
         if (modo === "MES") {
@@ -310,8 +332,14 @@ class CalendarioModule {
     // ── Semana ────────────────────────────────────────────────────────────────
 
     _criarSemana() {
+        const scrollEl = this.grid.closest(".calendar-scroll");
+
+        // Criar cabeçalho fixo fora do scroll
+        const headerFixo = document.createElement("div");
+        headerFixo.className = "semana-header-fixo";
+
         // Célula vazia topo-esquerda
-        this.grid.appendChild(this._celula("", "header"));
+        headerFixo.appendChild(this._celula("", "header"));
 
         // Cabeçalhos dos dias
         for (let i = 0; i < 7; i++) {
@@ -326,10 +354,21 @@ class CalendarioModule {
                 this.diaSelecionado = data;
                 this.setModo("DIA");
             });
-            this.grid.appendChild(cel);
+            headerFixo.appendChild(cel);
         }
 
-        // Linhas de horas
+        // Inserir header fixo ANTES do calendar-scroll no DOM
+        if (scrollEl) {
+            scrollEl.parentElement.insertBefore(headerFixo, scrollEl);
+
+            // Envolver o grid num inner scrollável
+            const inner = document.createElement("div");
+            inner.className = "calendar-scroll-inner";
+            inner.appendChild(this.grid);
+            scrollEl.appendChild(inner);
+        }
+
+        // Linhas de horas (sem os cabeçalhos — ficam no headerFixo)
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
             for (let m = 0; m < 60; m += INTERVALO_MINUTOS) {
                 const horaStr = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
@@ -748,18 +787,15 @@ class CalendarioModule {
         // Alterar hora (disponível para marcações passadas E futuras — apenas bloqueia
         // combinações data+hora que já passaram ou que têm conflito)
         let selDia = null, selHora = null;
-        // semanaAlvo: segunda-feira da semana que está a ser visualizada para alteração
-        // Por defeito, começa na semana da própria marcação
         let semanaAlvo = getMonday(dt);
 
-        {
+        if (!passou) {
             // --- Título ---
             const lblHora = document.createElement("div");
             lblHora.textContent  = "Alterar Hora";
             lblHora.style.cssText = "color:white;font-size:15px;font-weight:bold;text-align:center;margin-top:12px;";
             modal.appendChild(lblHora);
 
-            // --- Navegação de semanas ---
             const navSemana = document.createElement("div");
             navSemana.style.cssText = "display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;";
 
@@ -777,7 +813,6 @@ class CalendarioModule {
             navSemana.append(btnSemAnt, lblSemana, btnSemProx);
             modal.appendChild(navSemana);
 
-            // --- Combos dia + hora ---
             const hboxCombos = document.createElement("div");
             hboxCombos.style.cssText = "display:flex;gap:16px;justify-content:center;margin-top:8px;";
 
@@ -794,38 +829,32 @@ class CalendarioModule {
 
             selDia  = mkCombo("Dia");
             selHora = mkCombo("Hora");
-            modal.appendChild(hboxCombos);
+         modal.appendChild(hboxCombos);
 
-            // Preencher dias da semana (Segunda → Domingo)
             DIAS_SEMANA_LONGO.forEach(d => {
                 const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
                 selDia.appendChild(opt);
             });
 
-            // Seleccionar o dia da própria marcação por defeito
             const diaIdxOriginal = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
             selDia.value = DIAS_SEMANA_LONGO[diaIdxOriginal];
 
             const horaOriginalStr = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
 
-            // Formata o label da semana: "15 jun – 21 jun"
             const formatarSemana = (segunda) => {
                 const dom = new Date(segunda.getTime() + 6 * 86400000);
                 const fmt = (d) => `${d.getDate()} ${d.toLocaleDateString("pt-PT", { month: "short" })}`;
                 return `${fmt(segunda)} – ${fmt(dom)}`;
             };
 
-            // Calcula a data concreta do dia seleccionado dentro de semanaAlvo
             const dataDoDiaSelecionado = () => {
-                const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value); // 0=Seg … 6=Dom
+                const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
                 return new Date(semanaAlvo.getTime() + idx * 86400000);
             };
 
-            // Preenche o combo de horas com as disponíveis para a data calculada
             const popularHoras = async () => {
                 selHora.innerHTML = "";
                 const dataAlvo = dataDoDiaSelecionado();
-
                 const api = getApi();
                 if (api) {
                     try {
@@ -842,32 +871,26 @@ class CalendarioModule {
                         }
                     } catch(e) { console.error(e); }
                 }
-                // Seleccionar hora original se disponível, senão a primeira disponível
                 if ([...selHora.options].some(o => o.value === horaOriginalStr)) {
                     selHora.value = horaOriginalStr;
                 } else if (selHora.options.length > 0) {
                     selHora.selectedIndex = 0;
                 }
-                // Actualizar estado do botão Salvar agora que as horas estão carregadas
                 verificarMudancas();
             };
 
-            // Actualiza label da semana e recarrega horas
             const actualizarSemana = () => {
                 lblSemana.textContent = formatarSemana(semanaAlvo);
                 popularHoras();
             };
 
-            // Botão semana anterior — não permite ir antes da semana actual
             btnSemAnt.addEventListener("click", () => {
                 const semanaAtualLocal = getMonday(new Date());
                 const candidata = new Date(semanaAlvo.getTime() - 7 * 86400000);
-                // Permite ir até à semana actual (não antes)
                 if (candidata >= semanaAtualLocal) {
                     semanaAlvo = candidata;
                     actualizarSemana();
                 }
-                // Se a semana resultante É a semana actual, desabilita o botão ◀
                 btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
                 btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
             });
@@ -875,7 +898,6 @@ class CalendarioModule {
             btnSemProx.addEventListener("click", () => {
                 semanaAlvo = new Date(semanaAlvo.getTime() + 7 * 86400000);
                 actualizarSemana();
-                // Ao avançar, o botão ◀ pode ficar disponível de novo
                 const semanaAtualLocal = getMonday(new Date());
                 btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
                 btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
@@ -883,7 +905,6 @@ class CalendarioModule {
 
             selDia.addEventListener("change", popularHoras);
 
-            // Inicializar
             const semanaAtualLocal = getMonday(new Date());
             btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
             btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
@@ -936,7 +957,7 @@ class CalendarioModule {
 
         const verificarMudancas = () => {
             const obsAlterada  = txaObs.value !== obsOriginal;
-            const horaAlterada = selDia && selHora && (() => {
+            const horaAlterada = (!passou && selDia && selHora) && (() => {
                 if (!selHora.value) return false;
                 // Calcular a data concreta que o utilizador escolheu
                 const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
@@ -1147,9 +1168,19 @@ class ClientesModule {
         search.type         = "text";
         search.placeholder  = "Pesquisar cliente...";
         search.value        = filtro;
-        // CORRECÇÃO: usar compositionend + input para não perder foco
         search.addEventListener("input", () => {
             this._atualizarTabelaFiltro(table, clientesArray, search.value);
+            // Actualizar contador com resultados filtrados
+            const filtroLower = search.value.toLowerCase();
+            const visiveis = clientesArray.filter(c =>
+                c.nome.toLowerCase().includes(filtroLower) ||
+                c.numeroTelefone.includes(filtroLower)
+            ).length;
+            if (search.value.trim()) {
+                contadorEl.textContent = `${visiveis} de ${totalClientes} cliente${totalClientes !== 1 ? "s" : ""}`;
+            } else {
+                contadorEl.textContent = `${totalClientes} cliente${totalClientes !== 1 ? "s" : ""} na base de dados`;
+            }
         });
 
         const addBtn = document.createElement("button");
@@ -1159,6 +1190,12 @@ class ClientesModule {
 
         toolbar.append(search, addBtn);
         this.content.appendChild(toolbar);
+
+        const contadorEl = document.createElement("div");
+        contadorEl.style.cssText = "color:rgba(255,255,255,0.6);font-size:13px;padding:0 4px 6px 4px;";
+        const totalClientes = clientesArray.length;
+        contadorEl.textContent = `${totalClientes} cliente${totalClientes !== 1 ? "s" : ""} na base de dados`;
+        this.content.appendChild(contadorEl);
 
         const container   = document.createElement("div");
         container.className = "clientes-table-container";
@@ -1425,6 +1462,14 @@ class ClientesModule {
             if (!novoNome) { alert("Nome inválido"); return; }
             if (!/^\+?\d[\d\-\s()]{6,}$/.test(novoTel)) { alert("Telefone inválido"); return; }
             if (tipo === "SEMANAL" && (!dia || !hora)) { alert("Selecione dia e hora para cliente semanal"); return; }
+
+            // Verificar duplicado de nome case-insensitive no frontend antes de enviar
+            const clientesAtuais = Object.values(this.getClientes());
+            const nomeDuplicado = clientesAtuais.some(
+                c => c.nome.toLowerCase() === novoNome.toLowerCase() &&
+                    c.nome.toLowerCase() !== clienteObj.nome.toLowerCase()
+            );
+            if (nomeDuplicado) { alert("Já existe um cliente com esse nome."); return; }
 
             const payload = {
                 nomeOriginal: clienteObj.nome, nome: novoNome, numeroTelefone: novoTel,

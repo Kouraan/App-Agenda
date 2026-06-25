@@ -257,17 +257,26 @@ body {
     min-height: 0;
 }
 
-/* Voltamos a permitir scroll apenas nos modos semana e dia */
-.calendar-scroll.modo-semana,
-.calendar-scroll.modo-dia {
+/* Wrapper interno apenas para semana e dia */
+.calendar-scroll-inner {
     overflow: auto;
+    flex: 1;
+    min-height: 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-.calendar-scroll.modo-semana::-webkit-scrollbar,
-.calendar-scroll.modo-dia::-webkit-scrollbar {
+.calendar-scroll-inner::-webkit-scrollbar {
     display: none;
+}
+
+.semana-header-fixo {
+    display: grid;
+    grid-template-columns: 80px repeat(7, minmax(0, 1fr));
+    gap: 6px;
+    padding: 10px 10px 0 10px;
+    background-color: rgb(15, 14, 14);
+    flex-shrink: 0;
 }
 
 /* Base do calendário */
@@ -301,6 +310,7 @@ body {
     row-gap: 10px;
     column-gap: 6px;
     padding: 10px;
+    padding-top: 4px;
 }
 
 /* Visualização diária */

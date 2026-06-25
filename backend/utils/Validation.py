@@ -65,9 +65,9 @@ class Validation:
 
     @staticmethod
     def cliente_duplicado(clientes_dict, nome, numero_telefone):
-        """Verifica se cliente já existe (por nome ou telefone)"""
+        """Verifica se cliente já existe (por nome ignorando capitalização, ou telefone)"""
         return any(
-            c.get_nome().lower() == nome.lower() or 
+            c.get_nome().lower() == nome.lower() or
             c.get_numero_telefone() == numero_telefone
             for c in clientes_dict.values()
         )
