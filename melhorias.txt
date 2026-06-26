@@ -1,27 +1,23 @@
-Modo Dia:
-B-13-reclamacao de estao muito "grande" acho eu e que torna um pouco feio e demasiado, tentar dividir acho eu e adicionar algo util
-no espaço restante.
+A-1-no calendario ele as vezes n esta a mudar o bloco quando passa de meia em meia hora. Ou seja força que quando a hora atual seja
+xx:30:00 ou xx:00:00 ele mude o bloco para o suposto bloco atual
 
-Area de Clientes:
-M-8-nos detalhes de cliente adicionar uma estatistica de vezes que o cliente ja cortou o cabelo, ou seja a quantidade de marcacoes
-totais que o cliente ja fez e que ja passaram ate ao momento, menos as faltas que o cliente possui
+A-2-quando um clinete é desconhecido e a marcacao ja passou nao deveria ser possivel ter o botao editar, unica coisa possivel
+seria o campo observacoes que n necessita do botao editiar, logo ele n deveria estar
 
-B-9-um botao que mostra marcacoes que o cliente tem em andamento e que ja passaram, dividindo por cores as que estao ativas e as 
+A-3-caso exista mudanças o botao salvar mostra a tela de guardar alteracoes, mas ele n funciona e n guarda as alteracoes. Para alem
+disso o botao editar deveria ter o msm comportamento de tela de gaurdar alteracoes que o botao salvar. Atualmente a tela de guardar
+do botao editar continua super feia e deveria ser exatamente a mesma da que esta no botao salvar. E ambas deveriam guardar os dados
+alterados de nome ou numero e mudar isso na marcacao existente
+
+M-4-numa marcacao que ja existe ser possivel apenas alterar o cliente que fez a marcacao, por exemplo cliente x fez marcacao mas
+n pode vir e disse que um amigo vai, ou seja apenas trocou o cliente
+
+M-5-possivel numa marcacao fazer a troca de marcacoes, cliente x esta a hora y e cliente w esta a hora z. Ser possivel fazer troca
+dessas duas marcacoes
+
+B-6-um botao que mostra marcacoes que o cliente tem em andamento e que ja passaram, dividindo por cores as que estao ativas e as 
 que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N cabem todas na tela por isso teria uma barra
 de scroll
 
-Marcaçoes:
-A-15-o botao salvar em marcacoes ja feitas, caso nao tenho sido nada alterado ele devera funcionar como o botao sair, caso o cliente seja desconhecido
-e esteja no modo editar caso os campos de nome e numero tenham sido mudados faz a mesma pergunta de confirmacao se quer guardar
-A-16-a tela de guardar as alteracoes do modo editar esta horrivel, aparece como se fosse uma coisa de programa sem ser bonito, podia mudar a tela de marcacao
-temporariamente e fazer a pergunta se quer guardar as alteracoes e um botao de sim ou nao em baixo azul e vermelho
-
-M-13-caso ao fazer uma marcacao se for um cliente desconhecido, seja possivel ter um botao de adicioanr cliente. Que no caso
-ele faz a verificacao do nome e numero e se nao coincidir com nenhum cliente existente, para alem de fazer a marcacao
-cria o cliente na base de dados e atribui-lhe essa marcacao
-
-B-11-numa marcacao que ja existe ser possivel apenas alterar o cliente que fez a marcacao, por exemplo cliente x fez marcacao mas
-n pode vir e disse que um amigo vai, ou seja apenas trocou o cliente
-
-B-14-possivel numa marcacao fazer a troca de marcacoes, cliente x esta a hora y e cliente w esta a hora z. Ser possivel fazer troca
-dessas duas marcacoes
+B-7-reclamacao de estao muito "grande" acho eu e que torna um pouco feio e demasiado, tentar dividir acho eu e adicionar algo util
+no espaço restante.

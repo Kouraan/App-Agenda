@@ -857,6 +857,21 @@ class AppController:
         except Exception as e:
             print(f"[AppController] alterar_cliente_desconhecido_marcacao: {e}")
             return {"success": False, "error": str(e)}
+        
+    def get_total_marcacoes_cliente(self, nome: str):
+        """Conta marcações passadas (já realizadas) de um cliente, excluindo faltas."""
+        try:
+            agora = datetime.now()
+            total = sum(
+                1 for dt, m in self.marcacoes_map.items()
+                if self._get_nome_safe(m.get_cliente()) == nome
+                and dt < agora
+                and not m.is_falta()
+            )
+            return {"success": True, "total": total}
+        except Exception as e:
+            print(f"[AppController] get_total_marcacoes_cliente: {e}")
+            return {"success": False, "error": str(e), "total": 0}
     
     def _apagar_marcacoes_futuras_cliente(self, nome: str):
         """Apaga apenas marcações futuras de um cliente (hoje inclusive)."""

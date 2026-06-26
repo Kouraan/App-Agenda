@@ -164,7 +164,7 @@ async function apagarCliente(nome)                { return callApi(api => api.ap
 async function adicionarPendente(nome, numero)    { return callApi(api => api.adicionar_pendente(nome, numero||""), {success:false}); }
 async function removerPendente(nome)              { return callApi(api => api.remover_pendente(nome), {success:false}); }
 async function guardarPendentesLista(lista)       { return callApi(api => api.guardar_pendentes_lista(lista), {success:false}); }
-
+async function getTotalMarcacoesCliente(nome)     { return callApi(api => api.get_total_marcacoes_cliente(nome), {success:false, total:0}); }
 
 // ==========================================
 // 3. AnotacoesModule.js
@@ -591,6 +591,12 @@ class CalendarioModule {
         chkRow.append(chkDesk, document.createTextNode(" Desconhecido"));
         modal.appendChild(chkRow);
 
+        const chkAddRow = document.createElement("label");
+        chkAddRow.style.cssText = "display:flex;align-items:center;gap:8px;color:white;font-size:15px;cursor:pointer;display:none;";
+        const chkAdd = document.createElement("input"); chkAdd.type = "checkbox";
+        chkAddRow.append(chkAdd, document.createTextNode(" Adicionar"));
+        modal.appendChild(chkAddRow);
+        
         const lblNome = this._mkLabel("Nome:");
         const fldNome = this._mkInput("Nome"); fldNome.disabled = true;
         const lblTel  = this._mkLabel("Telefone:");
@@ -667,6 +673,7 @@ class CalendarioModule {
             fldTel.disabled    = !chkDesk.checked;
             pesquisa.disabled  = chkDesk.checked;
             sugestoes.style.display = "none";
+            chkAddRow.style.display = chkDesk.checked ? "flex" : "none";
             if (!chkDesk.checked) {
                 fldNome.value = "";
                 fldTel.value  = "";
@@ -705,7 +712,22 @@ class CalendarioModule {
                     const nome   = fldNome.value.trim();
                     const numero = fldTel.value.trim();
                     if (!nome) { errorEl.textContent = "Nome é obrigatório."; btnSalvar.disabled = false; return; }
-                    res = await api.criar_marcacao_desconhecido(nome, numero, dhStr, duracao, txaObs.value.trim());
+                    if (chkAdd.checked) {
+                        if (!numero) { errorEl.textContent = "Telefone é obrigatório para adicionar cliente."; btnSalvar.disabled = false; return; }
+                        const addRes = await api.adicionar_cliente({
+                            nome, numeroTelefone: numero,
+                            tipoCliente: "NORMAL", faltas: 0,
+                            diaSemana: null, horaCorte: null, rapido: false
+                        });
+                        if (!addRes || !addRes.success) {
+                            errorEl.textContent = addRes?.error || "Erro ao adicionar cliente.";
+                            btnSalvar.disabled = false;
+                            return;
+                        }
+                        res = await api.criar_marcacao(nome, dhStr, duracao, txaObs.value.trim());
+                    } else {
+                        res = await api.criar_marcacao_desconhecido(nome, numero, dhStr, duracao, txaObs.value.trim());
+                    }
                 } else {
                     const clienteNome = pesquisa.value.trim();
                     if (!clienteNome) { errorEl.textContent = "Selecione um cliente."; btnSalvar.disabled = false; return; }
@@ -1052,21 +1074,20 @@ class CalendarioModule {
         const obsOriginal = txaObs.value;
         btnSalvar.disabled = true;
 
+        const calcHoraAlterada = () => {
+            if (passou || !selDia || !selHora || !selHora.value) return false;
+            const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+            const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
+            const [hh, mm] = selHora.value.split(":").map(Number);
+            const dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
+            return dtNova.getTime() !== dt.getTime();
+        };
+
         const verificarMudancas = () => {
             const obsAlterada  = txaObs.value !== obsOriginal;
-            const horaAlterada = (!passou && selDia && selHora) && (() => {
-                if (!selHora.value) return false;
-                // Calcular a data concreta que o utilizador escolheu
-                const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
-                const [hh, mm] = selHora.value.split(":").map(Number);
-                const dtNova   = new Date(
-                    dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm
-                );
-                // Compara com a data/hora original da marcação
-                return dtNova.getTime() !== dt.getTime();
-            })();
-            btnSalvar.disabled = !obsAlterada && !horaAlterada;
+            const horaAlterada = calcHoraAlterada();
+            btnSalvar.disabled = false;
+            btnSalvar.style.opacity = (!obsAlterada && !horaAlterada && !modoEdicaoDesc) ? "0.55" : "1";
         };
 
         txaObs.addEventListener("input",   verificarMudancas);
@@ -1089,18 +1110,65 @@ class CalendarioModule {
         btnSalvar.addEventListener("click", async () => {
             const api = getApi();
             if (!api) { errorEl.textContent = "API não disponível."; return; }
+
+            const obsAlterada = txaObs.value !== obsOriginal;
+            const horaAlterada = calcHoraAlterada();
+
+            if (isDesconhecido && modoEdicaoDesc) {
+                const nomeNovo = inpNome.value.trim();
+                const telNovo  = inpTel.value.trim();
+                const nomeAlterado = nomeNovo !== nomeOriginalDesc;
+                const telAlterado  = telNovo !== telOriginalDesc;
+                if (nomeAlterado || telAlterado) {
+                    if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
+                    await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
+                        if (!confirmado) return;
+                        try {
+                            btnSalvar.disabled = true;
+                            const res = await api.alterar_cliente_desconhecido_marcacao(
+                                toLocalISOString(dt), nomeNovo, telNovo
+                            );
+                            if (res && res.success) {
+                                if (obsAlterada || horaAlterada) {
+                                    let dtNova = dt;
+                                    if (horaAlterada && selDia && selHora && selHora.value) {
+                                        const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                                        const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
+                                        const [hh, mm] = selHora.value.split(":").map(Number);
+                                        dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
+                                    }
+                                    await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dtNova), txaObs.value);
+                                }
+                                await this.onRefresh();
+                                closeModal();
+                                this.atualizar();
+                            } else {
+                                errorEl.textContent = res?.error || "Erro ao guardar alterações.";
+                                btnSalvar.disabled = false;
+                            }
+                        } catch(e) {
+                            errorEl.textContent = "Erro de comunicação.";
+                            btnSalvar.disabled = false;
+                        }
+                    });
+                    return;
+                }
+            }
+            
+            if (!obsAlterada && !horaAlterada) {
+                closeModal();
+                return;
+            }
+
             try {
                 btnSalvar.disabled = true;
 
                 let dtNova = dt;
-                    if (selDia && selHora && selHora.value) {
-                    // Usa a mesma lógica de verificarMudancas: dia escolhido dentro da semanaAlvo navegada
+                if (horaAlterada && selDia && selHora && selHora.value) {
                     const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
                     const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
                     const [hh, mm] = selHora.value.split(":").map(Number);
-                    dtNova = new Date(
-                        dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm
-                    );
+                    dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
                 }
 
                 const res = await api.alterar_marcacao(
@@ -1118,8 +1186,48 @@ class CalendarioModule {
                 }
             } catch(e) {
                 errorEl.textContent = "Erro de comunicação.";
-                btnSalvar.disabled  = false;
+                btnSalvar.disabled = false;
             }
+        });
+    }
+
+    _confirmarAltracoes(modal, overlay, callback) {
+        return new Promise((reolver) => {
+            const conteudoOriginal = modal.innerHTML;
+            const styleOriginal = modal.getAttribute("style") || "";
+            modal.innerHTML = "";
+
+            const wrap = document.createElement("div");
+            wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:16px;min-height:160px;";
+            
+            const msg = document.createElement("div");
+            msg.textContent = "Deseja guardar as alterações?";
+            msg.style.cssText = "color:white;font-size:18px;font-weight:bold;text-align:center;";
+
+            const btnRow = document.createElement("div");
+            btnRow.style.cssText = "display:flex;gap:20px;justify-content:center;";
+
+            const btnSim = document.createElement("button");
+            btnSim.textContent = "Sim";
+            btnSim.style.cssText = "background:rgb(36,43,141);color:white;border:none;padding:10px 32px;border-radius:10px;cursor:pointer;font-weight:700;font-size:16px;";
+            
+            const btnNao = document.createElement("button");
+            btnNao.textContent = "Não";
+            btnNao.style.cssText = "background:rgb(128,26,15);color:white;border:none;padding:10px 32px;border-radius:10px;cursor:pointer;font-weight:700;font-size:16px;";
+
+            btnRow.append(btnSim, btnNao);
+            wrap.append(msg, btnRow);
+            modal.appendChild(wrap);
+
+            const finish = (confirmado) => {
+                modal.innerHTML = conteudoOriginal;
+                modal.setAttribute("style", styleOriginal);
+                resolve(confirmado);
+                callback(confirmado);
+            };
+
+            btnSim.addEventListener("click", () => finish(true));
+            btnNao.addEventListener("click", () => finish(false));
         });
     }
 
@@ -1398,7 +1506,7 @@ class ClientesModule {
             visualBox.append(th, vv);
         };
 
-        const populateVisual = (c) => {
+        const populateVisual = async (c) => {
             visualBox.innerHTML = "";
             addRow("Nome",     c.nome);
             addRow("Telefone", c.numeroTelefone);
@@ -1409,6 +1517,8 @@ class ClientesModule {
             }
             addRow("Rápido", (c.rapido === true || c.rapido === "true") ? "Sim" : "Não");
             addRow("Faltas",  String(c.faltas || 0));
+            const marcRes = await getTotalMarcacoesCliente(c.nome);
+            addRow("Marcações", String(marcRes?.total ?? 0));
         };
         populateVisual(clienteObj);
 
