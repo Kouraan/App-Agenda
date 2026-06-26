@@ -11,6 +11,10 @@ que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N ca
 de scroll
 
 Marcaçoes:
+A-15-o botao salvar em marcacoes ja feitas, caso nao tenho sido nada alterado ele devera funcionar como o botao sair, caso o cliente seja desconhecido
+e esteja no modo editar caso os campos de nome e numero tenham sido mudados faz a mesma pergunta de confirmacao se quer guardar
+A-16-a tela de guardar as alteracoes do modo editar esta horrivel, aparece como se fosse uma coisa de programa sem ser bonito, podia mudar a tela de marcacao
+temporariamente e fazer a pergunta se quer guardar as alteracoes e um botao de sim ou nao em baixo azul e vermelho
 
 M-13-caso ao fazer uma marcacao se for um cliente desconhecido, seja possivel ter um botao de adicioanr cliente. Que no caso
 ele faz a verificacao do nome e numero e se nao coincidir com nenhum cliente existente, para alem de fazer a marcacao
