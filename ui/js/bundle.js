@@ -289,14 +289,16 @@ class CalendarioModule {
     }
 
     iniciarHighlightLoop() {
-        this._updateCurrentSlotHighlight();
-        const now    = new Date();
-        const msTo   = ((now.getMinutes() < 30 ? 30 : 60) - now.getMinutes()) * 60000
-                       - now.getSeconds() * 1000 - now.getMilliseconds();
-        setTimeout(() => {
+        const schedule = () => {
             this._updateCurrentSlotHighlight();
-            setInterval(() => this._updateCurrentSlotHighlight(), 30 * 60000);
-        }, msTo);
+            const now = new Date();
+            const minutos = now.getMinutes();
+            const proximoBloco = minutos < 30 ? 30 : 60;
+            const msTo = (proximoBloco - minutos) * 60000
+                         - now.getSeconds() * 1000 - now.getMilliseconds();
+            setTimeout(schedule, Math.max(msTo, 1000));
+        };
+        schedule();
     }
 
     _bindNav() {
@@ -798,16 +800,18 @@ class CalendarioModule {
         titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;flex:1;";
         headerRow.appendChild(titulo);
 
-        const isDesconhecido = marcacao.cliente?.tipoCliente === "DESCONHECIDO";
-        let modoEdicaoDesc = false;
+        const isDesconhecido   = marcacao.cliente?.tipoCliente === "DESCONHECIDO";
+        const nomeClienteAtual = marcacao.cliente?.nome || "";
+        let modoEdicaoCliente  = false;
 
-        const btnEditarDesc = document.createElement("button");
-        btnEditarDesc.textContent = "✏️ Editar";
-        btnEditarDesc.style.cssText = `background:rgb(36,43,141);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:bold;cursor:pointer;display:${isDesconhecido ? "inline-block" : "none"};`;
-        headerRow.appendChild(btnEditarDesc);
+        // Botão Editar: serve para qualquer tipo de cliente,
+        // mas nunca aparece em marcações já passadas.
+        const btnEditarCliente = document.createElement("button");
+        btnEditarCliente.textContent = "✏️ Editar";
+        btnEditarCliente.style.cssText = `background:rgb(36,43,141);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:bold;cursor:pointer;display:${!passou ? "inline-block" : "none"};`;
+        headerRow.appendChild(btnEditarCliente);
         modal.appendChild(headerRow);
 
-        // Campos Nome e Telefone com suporte a edição para desconhecidos
         const lblNomeField = document.createElement("div");
         lblNomeField.textContent = "Nome:";
         lblNomeField.style.cssText = "color:white;font-size:14px;margin-top:6px;";
@@ -829,60 +833,137 @@ class CalendarioModule {
         inpTel.addEventListener("input", () => { inpTel.value = inpTel.value.replace(/[^\d+]/g, ""); });
         modal.append(lblTelField, inpTel);
 
+        const pesquisaClienteWrap = document.createElement("div");
+        pesquisaClienteWrap.style.cssText = "display:none;position:relative;margin-top:6px;";
+        const pesquisaCliente = document.createElement("input");
+        pesquisaCliente.type = "text";
+        pesquisaCliente.placeholder = "Pesquisar cliente...";
+        pesquisaCliente.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
+        const sugestoesCliente = document.createElement("div");
+        sugestoesCliente.style.cssText = "background:white;border-radius:8px;max-height:120px;overflow-y:auto;display:none;position:absolute;left:0;right:0;z-index:10;";
+        pesquisaClienteWrap.append(pesquisaCliente, sugestoesCliente);
+        modal.appendChild(pesquisaClienteWrap);
+
+        let clientesSnapshot = {};
+        const apiInicial = getApi();
+        if (apiInicial) {
+            apiInicial.get_clientes_map().then(m => { clientesSnapshot = m || {}; });
+        }
+
+        pesquisaCliente.addEventListener("input", () => {
+            const val = pesquisaCliente.value.trim().toLowerCase();
+            if (!val) { sugestoesCliente.style.display = "none"; return; }
+            const matches = Object.keys(clientesSnapshot).filter(n => n.toLowerCase().includes(val));
+            sugestoesCliente.innerHTML = "";
+            if (!matches.length) { sugestoesCliente.style.display = "none"; return; }
+            sugestoesCliente.style.display = "block";
+            matches.forEach(n => {
+                const item = document.createElement("div");
+                item.textContent  = n;
+                item.style.cssText = "padding:6px 10px;cursor:pointer;font-size:13px;color:black;border-bottom:1px solid #eee;";
+                item.addEventListener("mousedown", (e) => {
+                    e.preventDefault();
+                    pesquisaCliente.value = n;
+                    sugestoesCliente.style.display = "none";
+                });
+                sugestoesCliente.appendChild(item);
+            });
+        });
+        pesquisaCliente.addEventListener("blur", () => {
+            setTimeout(() => { sugestoesCliente.style.display = "none"; }, 150);
+        });
+
         const nomeOriginalDesc = marcacao.cliente?.nome || "";
         const telOriginalDesc  = marcacao.cliente?.numeroTelefone || "";
 
-        btnEditarDesc.addEventListener("click", async () => {
-            if (!modoEdicaoDesc) {
-                // Activar edição
-                modoEdicaoDesc = true;
-                inpNome.readOnly = false;
-                inpTel.readOnly  = false;
-                inpNome.style.border = "2px solid rgb(36,43,141)";
-                inpTel.style.border  = "2px solid rgb(36,43,141)";
-                btnEditarDesc.textContent = "✏️ Editar";
-                setTimeout(() => inpNome.focus(), 50);
-            } else {
-                // Confirmar se houve alteração
+        btnEditarCliente.addEventListener("click", async () => {
+            if (!modoEdicaoCliente) {
+                modoEdicaoCliente = true;
+                if (isDesconhecido) {
+                    inpNome.readOnly = false;
+                    inpTel.readOnly  = false;
+                    inpNome.style.border = "2px solid rgb(36,43,141)";
+                    inpTel.style.border  = "2px solid rgb(36,43,141)";
+                    setTimeout(() => inpNome.focus(), 50);
+                } else {
+                    pesquisaClienteWrap.style.display = "block";
+                    pesquisaCliente.value = "";
+                    setTimeout(() => pesquisaCliente.focus(), 50);
+                }
+                return;
+            }
+
+            if (isDesconhecido) {
                 const nomeNovo = inpNome.value.trim();
                 const telNovo  = inpTel.value.trim();
                 if (nomeNovo === nomeOriginalDesc && telNovo === telOriginalDesc) {
-                    // Sem alterações — sair do modo edição silenciosamente
-                    modoEdicaoDesc = false;
+                    modoEdicaoCliente = false;
                     inpNome.readOnly = true;
                     inpTel.readOnly  = true;
                     inpNome.style.border = "none";
                     inpTel.style.border  = "none";
-                    return;
+                return;
                 }
                 if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
-                // Pedir confirmação
-                const confirmar = confirm(`Guardar alterações?\nNome: ${nomeNovo}\nTelefone: ${telNovo || "—"}`);
-                if (!confirmar) return;
-                const api = getApi();
-                if (!api) { errorEl.textContent = "API não disponível."; return; }
-                try {
-                    const res = await api.alterar_cliente_desconhecido_marcacao(
-                        toLocalISOString(dt), nomeNovo, telNovo
-                    );
-                    if (res && res.success) {
-                        modoEdicaoDesc = false;
-                        inpNome.readOnly = true;
-                        inpTel.readOnly  = true;
-                        inpNome.style.border = "none";
-                        inpTel.style.border  = "none";
-                        await this.onRefresh();
-                        this.atualizar();
-                    } else {
-                        errorEl.textContent = res?.error || "Erro ao guardar alterações.";
+
+                await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
+                    if (!confirmado) return;
+                    const api = getApi();
+                    if (!api) { errorEl.textContent = "API não disponível."; return; }
+                    try {
+                        const res = await api.alterar_cliente_desconhecido_marcacao(toLocalISOString(dt), nomeNovo, telNovo);
+                        if (res && res.success) {
+                            modoEdicaoCliente = false;
+                            inpNome.readOnly = true;
+                            inpTel.readOnly  = true;
+                            inpNome.style.border = "none";
+                            inpTel.style.border  = "none";
+                            await this.onRefresh();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao guardar alterações.";
+                        }
+                    } catch(e) {
+                        errorEl.textContent = "Erro de comunicação.";
                     }
-                } catch(e) {
-                    errorEl.textContent = "Erro de comunicação.";
+                });
+            } else {
+                const nomeEscolhido = pesquisaCliente.value.trim();
+                if (!nomeEscolhido || nomeEscolhido === nomeClienteAtual) {
+                    modoEdicaoCliente = false;
+                    pesquisaClienteWrap.style.display = "none";
+                    sugestoesCliente.style.display = "none";
+                    return;
                 }
+                if (!clientesSnapshot[nomeEscolhido]) {
+                    errorEl.textContent = "Cliente não encontrado.";
+                    return;
+                }
+
+                await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
+                    if (!confirmado) return;
+                    const api = getApi();
+                    if (!api) { errorEl.textContent = "API não disponível."; return; }
+                    try {
+                        const res = await api.trocar_cliente_marcacao(toLocalISOString(dt), nomeEscolhido);
+                        if (res && res.success) {
+                            modoEdicaoCliente = false;
+                            pesquisaClienteWrap.style.display = "none";
+                            sugestoesCliente.style.display = "none";
+                            await this.onRefresh();
+                            closeModal();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao trocar cliente.";
+                        }
+                    } catch(e) {
+                        errorEl.textContent = "Erro de comunicação.";
+                    }
+                });
             }
         });
 
-        // Campo Duração (readOnly como antes)
+        // Duração
         const lblDur2 = document.createElement("div");
         lblDur2.textContent = "Duração:";
         lblDur2.style.cssText = "color:white;font-size:14px;margin-top:6px;";
@@ -907,17 +988,45 @@ class CalendarioModule {
         modal.append(lblObs, txaObs);
         setTimeout(() => txaObs.focus(), 80);
 
-        // Alterar hora (disponível para marcações passadas E futuras — apenas bloqueia
-        // combinações data+hora que já passaram ou que têm conflito)
-        let selDia = null, selHora = null;
+        // Alterar Hora / Troca de Marcação
+        let selDia = null, selHora = null, selHoraTroca = null;
         let semanaAlvo = getMonday(dt);
+        let modoAtivo  = "hora";
 
         if (!passou) {
-            // --- Título ---
-            const lblHora = document.createElement("div");
-            lblHora.textContent  = "Alterar Hora";
-            lblHora.style.cssText = "color:white;font-size:15px;font-weight:bold;text-align:center;margin-top:12px;";
-            modal.appendChild(lblHora);
+            const btnTrocaMarcacao = document.createElement("button");
+            btnTrocaMarcacao.textContent = "Troca de Marcação";
+            btnTrocaMarcacao.style.cssText = "background:rgb(36,43,141);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:12px;width:100%;";
+            modal.appendChild(btnTrocaMarcacao);
+
+            const painelHoraTroca = document.createElement("div");
+            painelHoraTroca.style.cssText = "display:none;flex-direction:column;gap:8px;margin-top:8px;";
+            modal.appendChild(painelHoraTroca);
+
+            const tabsRow = document.createElement("div");
+            tabsRow.style.cssText = "display:flex;gap:8px;";
+            const tabAlterarHora = document.createElement("button");
+            tabAlterarHora.textContent = "Alterar Hora";
+            const tabTrocas = document.createElement("button");
+            tabTrocas.textContent = "Trocas";
+            [tabAlterarHora, tabTrocas].forEach(b => {
+                b.style.cssText = "flex:1;background:rgb(43,40,40);color:white;border:none;border-radius:10px;padding:8px;font-size:14px;font-weight:bold;cursor:pointer;";
+            });
+            tabsRow.append(tabAlterarHora, tabTrocas);
+            painelHoraTroca.appendChild(tabsRow);
+
+            const painelAlterarHora = document.createElement("div");
+            painelAlterarHora.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:8px;";
+            painelHoraTroca.appendChild(painelAlterarHora);
+
+            const painelTrocas = document.createElement("div");
+            painelTrocas.style.cssText = "display:none;flex-direction:column;gap:6px;margin-top:8px;";
+            painelHoraTroca.appendChild(painelTrocas);
+
+            btnTrocaMarcacao.addEventListener("click", () => {
+                btnTrocaMarcacao.style.display = "none";
+                painelHoraTroca.style.display  = "flex";
+            });
 
             const navSemana = document.createElement("div");
             navSemana.style.cssText = "display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;";
@@ -934,7 +1043,7 @@ class CalendarioModule {
             btnSemProx.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:bold;";
 
             navSemana.append(btnSemAnt, lblSemana, btnSemProx);
-            modal.appendChild(navSemana);
+            painelAlterarHora.appendChild(navSemana);
 
             const hboxCombos = document.createElement("div");
             hboxCombos.style.cssText = "display:flex;gap:16px;justify-content:center;margin-top:8px;";
@@ -952,7 +1061,7 @@ class CalendarioModule {
 
             selDia  = mkCombo("Dia");
             selHora = mkCombo("Hora");
-         modal.appendChild(hboxCombos);
+            painelAlterarHora.appendChild(hboxCombos);
 
             DIAS_SEMANA_LONGO.forEach(d => {
                 const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
@@ -1002,9 +1111,60 @@ class CalendarioModule {
                 verificarMudancas();
             };
 
+            // Painel "Trocas"
+            const trocaCombosWrap = document.createElement("div");
+            trocaCombosWrap.style.cssText = "display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:8px;";
+            const lblTroca = document.createElement("div");
+            lblTroca.textContent = "Marcação para troca:";
+            lblTroca.style.cssText = "color:white;font-size:13px;";
+            selHoraTroca = document.createElement("select");
+            selHoraTroca.size = 5;
+            selHoraTroca.style.cssText = "width:260px;padding:6px;border-radius:8px;border:none;font-size:14px;background:white;";
+            trocaCombosWrap.append(lblTroca, selHoraTroca);
+            painelTrocas.appendChild(trocaCombosWrap);
+
+            const popularHorasTroca = async () => {
+                selHoraTroca.innerHTML = "";
+                const dataAlvo = dataDoDiaSelecionado();
+                const api = getApi();
+                if (!api) return;
+                try {
+                    const res = await api.get_marcacoes_trocaveis(toLocalISOString(dt), toLocalISOString(dataAlvo));
+                    if (res && res.success && res.opcoes && res.opcoes.length) {
+                        res.opcoes.forEach(o => {
+                            const opt = document.createElement("option");
+                            opt.value = o.dataHora;
+                            opt.textContent = `${o.hora} — ${o.nome}`;
+                            selHoraTroca.appendChild(opt);
+                        });
+                    } else {
+                        const opt = document.createElement("option");
+                        opt.value = "";
+                        opt.textContent = "Sem marcações compatíveis neste dia";
+                        selHoraTroca.appendChild(opt);
+                    }
+                } catch(e) { console.error(e); }
+                verificarMudancas();
+            };
+
+            const _ativarTab = (qual) => {
+                modoAtivo = qual;
+                const ativo   = "flex:1;background:rgb(60,60,60);color:white;border:none;border-radius:10px;padding:8px;font-size:14px;font-weight:bold;cursor:pointer;";
+                const inativo = "flex:1;background:rgb(43,40,40);color:white;border:none;border-radius:10px;padding:8px;font-size:14px;font-weight:bold;cursor:pointer;";
+                tabAlterarHora.style.cssText = qual === "hora"   ? ativo : inativo;
+                tabTrocas.style.cssText      = qual === "trocas" ? ativo : inativo;
+                painelAlterarHora.style.display = qual === "hora"   ? "flex" : "none";
+                painelTrocas.style.display      = qual === "trocas" ? "flex" : "none";
+                verificarMudancas();
+            };
+            tabAlterarHora.addEventListener("click", () => _ativarTab("hora"));
+            tabTrocas.addEventListener("click",      () => _ativarTab("trocas"));
+            _ativarTab("hora");
+
             const actualizarSemana = () => {
                 lblSemana.textContent = formatarSemana(semanaAlvo);
                 popularHoras();
+                popularHorasTroca();
             };
 
             btnSemAnt.addEventListener("click", () => {
@@ -1026,7 +1186,8 @@ class CalendarioModule {
                 btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
             });
 
-            selDia.addEventListener("change", popularHoras);
+            selDia.addEventListener("change", () => { popularHoras(); popularHorasTroca(); });
+            selHoraTroca.addEventListener("change", verificarMudancas);
 
             const semanaAtualLocal = getMonday(new Date());
             btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
@@ -1075,7 +1236,7 @@ class CalendarioModule {
         btnSalvar.disabled = true;
 
         const calcHoraAlterada = () => {
-            if (passou || !selDia || !selHora || !selHora.value) return false;
+            if (passou || modoAtivo !== "hora" || !selDia || !selHora || !selHora.value) return false;
             const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
             const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
             const [hh, mm] = selHora.value.split(":").map(Number);
@@ -1084,15 +1245,16 @@ class CalendarioModule {
         };
 
         const verificarMudancas = () => {
-            const obsAlterada  = txaObs.value !== obsOriginal;
-            const horaAlterada = calcHoraAlterada();
+            const obsAlterada      = txaObs.value !== obsOriginal;
+            const horaAlterada     = calcHoraAlterada();
+            const trocaSelecionada = modoAtivo === "trocas" && selHoraTroca && !!selHoraTroca.value;
             btnSalvar.disabled = false;
-            btnSalvar.style.opacity = (!obsAlterada && !horaAlterada && !modoEdicaoDesc) ? "0.55" : "1";
+            btnSalvar.style.opacity = (!obsAlterada && !horaAlterada && !trocaSelecionada && !modoEdicaoCliente) ? "0.55" : "1";
         };
 
         txaObs.addEventListener("input",   verificarMudancas);
         if (selDia)  selDia.addEventListener("change",  verificarMudancas);
-        if (selHora) selHora.addEventListener("change",  verificarMudancas);
+        if (selHora) selHora.addEventListener("change", verificarMudancas);
 
         const closeModal = () => {
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
@@ -1111,50 +1273,107 @@ class CalendarioModule {
             const api = getApi();
             if (!api) { errorEl.textContent = "API não disponível."; return; }
 
-            const obsAlterada = txaObs.value !== obsOriginal;
-            const horaAlterada = calcHoraAlterada();
-
-            if (isDesconhecido && modoEdicaoDesc) {
-                const nomeNovo = inpNome.value.trim();
-                const telNovo  = inpTel.value.trim();
-                const nomeAlterado = nomeNovo !== nomeOriginalDesc;
-                const telAlterado  = telNovo !== telOriginalDesc;
-                if (nomeAlterado || telAlterado) {
-                    if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
-                    await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
-                        if (!confirmado) return;
-                        try {
-                            btnSalvar.disabled = true;
-                            const res = await api.alterar_cliente_desconhecido_marcacao(
-                                toLocalISOString(dt), nomeNovo, telNovo
-                            );
-                            if (res && res.success) {
-                                if (obsAlterada || horaAlterada) {
-                                    let dtNova = dt;
-                                    if (horaAlterada && selDia && selHora && selHora.value) {
-                                        const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                                        const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
-                                        const [hh, mm] = selHora.value.split(":").map(Number);
-                                        dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
-                                    }
-                                    await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dtNova), txaObs.value);
-                                }
-                                await this.onRefresh();
-                                closeModal();
-                                this.atualizar();
-                            } else {
-                                errorEl.textContent = res?.error || "Erro ao guardar alterações.";
-                                btnSalvar.disabled = false;
-                            }
-                        } catch(e) {
-                            errorEl.textContent = "Erro de comunicação.";
+            // Modo "Trocas": troca os clientes entre as duas marcações
+            if (modoAtivo === "trocas" && selHoraTroca && selHoraTroca.value) {
+                await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
+                    if (!confirmado) return;
+                    try {
+                        btnSalvar.disabled = true;
+                        const res = await api.trocar_marcacoes(toLocalISOString(dt), selHoraTroca.value);
+                        if (res && res.success) {
+                            await this.onRefresh();
+                            closeModal();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao trocar marcações.";
                             btnSalvar.disabled = false;
                         }
-                    });
-                    return;
+                    } catch(e) {
+                        errorEl.textContent = "Erro de comunicação.";
+                        btnSalvar.disabled = false;
+                    }
+                });
+                return;
+            }
+
+            const obsAlterada  = txaObs.value !== obsOriginal;
+            const horaAlterada = calcHoraAlterada();
+
+            // Alteração de cliente pendente
+            if (modoEdicaoCliente) {
+                if (isDesconhecido) {
+                    const nomeNovo = inpNome.value.trim();
+                    const telNovo  = inpTel.value.trim();
+                    const nomeAlterado = nomeNovo !== nomeOriginalDesc;
+                    const telAlterado  = telNovo !== telOriginalDesc;
+                    if (nomeAlterado || telAlterado) {
+                        if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
+                        await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
+                            if (!confirmado) return;
+                            try {
+                                btnSalvar.disabled = true;
+                                const res = await api.alterar_cliente_desconhecido_marcacao(toLocalISOString(dt), nomeNovo, telNovo);
+                                if (res && res.success) {
+                                    if (obsAlterada || horaAlterada) {
+                                        let dtNova = dt;
+                                        if (horaAlterada && selDia && selHora && selHora.value) {
+                                            const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                                            const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
+                                            const [hh, mm] = selHora.value.split(":").map(Number);
+                                            dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
+                                        }
+                                        await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dtNova), txaObs.value);
+                                    }
+                                    await this.onRefresh();
+                                    closeModal();
+                                    this.atualizar();
+                                } else {
+                                    errorEl.textContent = res?.error || "Erro ao guardar alterações.";
+                                    btnSalvar.disabled = false;
+                                }
+                            } catch(e) {
+                                errorEl.textContent = "Erro de comunicação.";
+                                btnSalvar.disabled = false;
+                            }
+                        });
+                        return;
+                    }
+                } else {
+                    const nomeEscolhido = pesquisaCliente.value.trim();
+                    if (nomeEscolhido && nomeEscolhido !== nomeClienteAtual && clientesSnapshot[nomeEscolhido]) {
+                        await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
+                            if (!confirmado) return;
+                            try {
+                                btnSalvar.disabled = true;
+                                const res = await api.trocar_cliente_marcacao(toLocalISOString(dt), nomeEscolhido);
+                                if (res && res.success) {
+                                    if (obsAlterada || horaAlterada) {
+                                        let dtNova = dt;
+                                        if (horaAlterada && selDia && selHora && selHora.value) {
+                                            const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
+                                            const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
+                                            const [hh, mm] = selHora.value.split(":").map(Number);
+                                            dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
+                                        }
+                                        await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dtNova), txaObs.value);
+                                    }
+                                    await this.onRefresh();
+                                    closeModal();
+                                    this.atualizar();
+                                } else {
+                                    errorEl.textContent = res?.error || "Erro ao trocar cliente.";
+                                    btnSalvar.disabled = false;
+                                }
+                            } catch(e) {
+                                errorEl.textContent = "Erro de comunicação.";
+                                btnSalvar.disabled = false;
+                            }
+                        });
+                        return;
+                    }
                 }
             }
-            
+
             if (!obsAlterada && !horaAlterada) {
                 closeModal();
                 return;
@@ -1191,15 +1410,14 @@ class CalendarioModule {
         });
     }
 
-    _confirmarAltracoes(modal, overlay, callback) {
-        return new Promise((reolver) => {
-            const conteudoOriginal = modal.innerHTML;
-            const styleOriginal = modal.getAttribute("style") || "";
-            modal.innerHTML = "";
+    _confirmarAlteracoes(modal, overlay, callback) {
+        return new Promise((resolve) => {
+            const filhosOriginais = Array.from(modal.children);
+            filhosOriginais.forEach(el => { el.style.display = "none"; });
 
             const wrap = document.createElement("div");
             wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:16px;min-height:160px;";
-            
+
             const msg = document.createElement("div");
             msg.textContent = "Deseja guardar as alterações?";
             msg.style.cssText = "color:white;font-size:18px;font-weight:bold;text-align:center;";
@@ -1210,7 +1428,7 @@ class CalendarioModule {
             const btnSim = document.createElement("button");
             btnSim.textContent = "Sim";
             btnSim.style.cssText = "background:rgb(36,43,141);color:white;border:none;padding:10px 32px;border-radius:10px;cursor:pointer;font-weight:700;font-size:16px;";
-            
+
             const btnNao = document.createElement("button");
             btnNao.textContent = "Não";
             btnNao.style.cssText = "background:rgb(128,26,15);color:white;border:none;padding:10px 32px;border-radius:10px;cursor:pointer;font-weight:700;font-size:16px;";
@@ -1219,11 +1437,11 @@ class CalendarioModule {
             wrap.append(msg, btnRow);
             modal.appendChild(wrap);
 
-            const finish = (confirmado) => {
-                modal.innerHTML = conteudoOriginal;
-                modal.setAttribute("style", styleOriginal);
+            const finish = async (confirmado) => {
+                modal.removeChild(wrap);
+                filhosOriginais.forEach(el => { el.style.display = ""; });
+                await callback(confirmado);
                 resolve(confirmado);
-                callback(confirmado);
             };
 
             btnSim.addEventListener("click", () => finish(true));

@@ -1,9 +1,3 @@
-A-1-no calendario ele as vezes n esta a mudar o bloco quando passa de meia em meia hora. Ou seja força que quando a hora atual seja
-xx:30:00 ou xx:00:00 ele mude o bloco para o suposto bloco atual
-
-A-2-quando um clinete é desconhecido e a marcacao ja passou nao deveria ser possivel ter o botao editar, unica coisa possivel
-seria o campo observacoes que n necessita do botao editiar, logo ele n deveria estar
-
 A-3-caso exista mudanças o botao salvar mostra a tela de guardar alteracoes, mas ele n funciona e n guarda as alteracoes. Para alem
 disso o botao editar deveria ter o msm comportamento de tela de gaurdar alteracoes que o botao salvar. Atualmente a tela de guardar
 do botao editar continua super feia e deveria ser exatamente a mesma da que esta no botao salvar. E ambas deveriam guardar os dados

@@ -533,6 +533,124 @@ class AppController:
         except Exception as e:
             print(f"[AppController] marcar_falta_marcacao: {e}")
             return {"success": False, "error": str(e)}
+        
+    def trocar_cliente_marcacao(self, data_hora: str, novo_cliente_nome: str):
+        """Troca o cliente associado a uma marcação por outro já existente na BD."""
+        try:
+            dt = self._parse_dt(data_hora)
+            if dt is None or dt not in self.marcacoes_map:
+                return {"success": False, "error": "Marcação não encontrada."}
+
+            novo_cliente_nome = (novo_cliente_nome or "").strip()
+            if not novo_cliente_nome:
+                return {"success": False, "error": "Selecione um cliente."}
+            if novo_cliente_nome not in self.clientes_map:
+                return {"success": False, "error": "Cliente não encontrado na base de dados."}
+
+            marcacao = self.marcacoes_map[dt]
+            nome_atual = self._get_nome_safe(marcacao.get_cliente())
+
+            if nome_atual == novo_cliente_nome:
+                return {"success": True}
+
+            marcacao.set_cliente(self.clientes_map[novo_cliente_nome])
+            self.marcacoes_map[dt] = marcacao
+
+            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            return {"success": True}
+
+        except Exception as e:
+            print(f"[AppController] trocar_cliente_marcacao: {e}")
+            return {"success": False, "error": str(e)}
+
+
+    def _trocas_compativel(self, dt_a: datetime, dur_a: int, dt_b: datetime, dur_b: int) -> bool:
+        """Regras de compatibilidade para troca de marcações:
+        - mesma duração (15-15 ou 30-30): sempre compatível
+        - 15min com 30min: só se o outro bloco de 15min do slot de 30min estiver livre
+        """
+        if dur_a == dur_b:
+            return True
+
+        if dur_a == 15 and dur_b == 30:
+            dt_15 = dt_a
+        elif dur_b == 15 and dur_a == 30:
+            dt_15 = dt_b
+        else:
+            return False
+
+        bloco_inicio = dt_15.replace(minute=0 if dt_15.minute < 30 else 30, second=0, microsecond=0)
+        companheiro = bloco_inicio + self._td(15) if dt_15 == bloco_inicio else bloco_inicio
+
+        return self.marcacoes_map.get(companheiro) is None
+
+    def get_marcacoes_trocaveis(self, data_hora_original: str, data_alvo: str):
+        """Devolve marcações do dia-alvo compatíveis para troca com a original."""
+        try:
+            dt_orig = self._parse_dt(data_hora_original)
+            dt_alvo = self._parse_dt(data_alvo)
+            if dt_orig is None or dt_alvo is None or dt_orig not in self.marcacoes_map:
+                return {"success": False, "error": "Dados inválidos.", "opcoes": []}
+
+            marc_orig = self.marcacoes_map[dt_orig]
+            dur_orig  = marc_orig.get_duracao()
+            dia_alvo  = dt_alvo.date()
+            agora     = datetime.now()
+
+            opcoes = []
+            for dt, m in self.marcacoes_map.items():
+                if dt == dt_orig or dt.date() != dia_alvo or dt <= agora:
+                    continue
+                if not self._trocas_compativel(dt_orig, dur_orig, dt, m.get_duracao()):
+                    continue
+                opcoes.append({
+                    "dataHora": dt.isoformat(),
+                    "hora":     dt.strftime("%H:%M"),
+                    "nome":     self._get_nome_safe(m.get_cliente()) or "N/A",
+                    "duracao":  m.get_duracao(),
+                })
+
+            opcoes.sort(key=lambda o: o["dataHora"])
+            return {"success": True, "opcoes": opcoes}
+
+        except Exception as e:
+            print(f"[AppController] get_marcacoes_trocaveis: {e}")
+            return {"success": False, "error": str(e), "opcoes": []}
+
+
+    def trocar_marcacoes(self, data_hora_a: str, data_hora_b: str):
+        """Troca os clientes entre duas marcações existentes (mantém hora/observações)."""
+        try:
+            dt_a = self._parse_dt(data_hora_a)
+            dt_b = self._parse_dt(data_hora_b)
+            if dt_a is None or dt_b is None:
+                return {"success": False, "error": "Data/hora inválida."}
+            if dt_a == dt_b:
+                return {"success": False, "error": "Selecione duas marcações diferentes."}
+            if dt_a not in self.marcacoes_map or dt_b not in self.marcacoes_map:
+                return {"success": False, "error": "Marcação não encontrada."}
+
+            marc_a = self.marcacoes_map[dt_a]
+            marc_b = self.marcacoes_map[dt_b]
+
+            if not self._trocas_compativel(dt_a, marc_a.get_duracao(), dt_b, marc_b.get_duracao()):
+                return {"success": False, "error": "Estas marcações não são compatíveis para troca."}
+
+            cliente_a = marc_a.get_cliente()
+            cliente_b = marc_b.get_cliente()
+
+            marc_a.set_cliente(cliente_b)
+            marc_b.set_cliente(cliente_a)
+
+            self.marcacoes_map[dt_a] = marc_a
+            self.marcacoes_map[dt_b] = marc_b
+
+            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            return {"success": True}
+
+        except Exception as e:
+            print(f"[AppController] trocar_marcacoes: {e}")
+            return {"success": False, "error": str(e)}
 
     def get_horas_disponiveis_data(self, data_hora_original: str, data_alvo: str, duracao: int):
         """
