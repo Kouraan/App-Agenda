@@ -573,16 +573,26 @@ class AppController:
             return True
 
         if dur_a == 15 and dur_b == 30:
-            dt_15 = dt_a
+            dt_15, dt_30 = dt_a, dt_b
         elif dur_b == 15 and dur_a == 30:
-            dt_15 = dt_b
+            dt_15, dt_30 = dt_b, dt_a
         else:
             return False
 
-        bloco_inicio = dt_15.replace(minute=0 if dt_15.minute < 30 else 30, second=0, microsecond=0)
-        companheiro = bloco_inicio + self._td(15) if dt_15 == bloco_inicio else bloco_inicio
+        if dt_15.minute % 30 != 0:
+            return False
+        
+        dt_15_segundo = dt_15 + self._td(15)
+        ocupante = self.marcacoes_map.get(dt_15_segundo)
+        if ocupante is not None and dt_15_segundo != dt_30:
+            return False
 
-        return self.marcacoes_map.get(companheiro) is None
+        dt_30_segundo = dt_30 + self._td(15)
+        ocupante_30 = self.marcacoes_map.get(dt_30_segundo)
+        if ocupante_30 is not None and dt_30_segundo != dt_15:
+            return False
+
+        return True
 
     def get_marcacoes_trocaveis(self, data_hora_original: str, data_alvo: str):
         """Devolve marcações do dia-alvo compatíveis para troca com a original."""
@@ -619,7 +629,7 @@ class AppController:
 
 
     def trocar_marcacoes(self, data_hora_a: str, data_hora_b: str):
-        """Troca os clientes entre duas marcações existentes (mantém hora/observações)."""
+        """Troca os clientes entre duas marcações existentes."""
         try:
             dt_a = self._parse_dt(data_hora_a)
             dt_b = self._parse_dt(data_hora_b)
@@ -632,19 +642,50 @@ class AppController:
 
             marc_a = self.marcacoes_map[dt_a]
             marc_b = self.marcacoes_map[dt_b]
+            dur_a = marc_a.get_duracao()
+            dur_b = marc_b.get_duracao()
 
-            if not self._trocas_compativel(dt_a, marc_a.get_duracao(), dt_b, marc_b.get_duracao()):
+            if not self._trocas_compativel(dt_a, dur_a, dt_b, dur_b):
                 return {"success": False, "error": "Estas marcações não são compatíveis para troca."}
-
+            
             cliente_a = marc_a.get_cliente()
             cliente_b = marc_b.get_cliente()
+            obs_a = marc_a.get_observacoes()
+            obs_b = marc_b.get_observacoes()
+            falta_a = marc_a.is_falta()
+            falta_b = marc_b.is_falta()
+            
+            if dur_a == dur_b:
+                # Troca Simples
+                marc_a.set_cliente(cliente_b)
+                marc_b.set_cliente(cliente_a)
+                self.marcacoes_map[dt_a] = marc_a
+                self.marcacoes_map[dt_b] = marc_b
+                
+            else:
+                # Durações diferentes
+                if dur_a == 30 and dur_b == 15:
+                    dt_30, marc_30, cli_30, obs_30, falta_30 = dt_a, marc_a, cliente_a, obs_a, falta_a
+                    dt_15, marc_15, cli_15, obs_15, falta_15 = dt_b, marc_b, cliente_b, obs_b, falta_b
+                else:
+                    dt_30, marc_30, cli_30, obs_30, falta_30 = dt_b, marc_b, cliente_b, obs_b, falta_b
+                    dt_15, marc_15, cli_15, obs_15, falta_15 = dt_a, marc_a, cliente_a, obs_a, falta_a
+                    
+                dt_30_segundo = dt_30 + self._td(15)
+                
+                del self.marcacoes_map[dt_30]
+                del self.marcacoes_map[dt_15]
+                if dt_30_segundo in self.marcacoes_map:
+                    del self.marcacoes_map[dt_30_segundo]
+                    
+                nova_marc_30 = Marcacao(dt_15, cli_30, 30, obs_30)
+                nova_marc_30.set_falta(falta_30)
+                self.marcacoes_map[dt_15] = nova_marc_30
 
-            marc_a.set_cliente(cliente_b)
-            marc_b.set_cliente(cliente_a)
-
-            self.marcacoes_map[dt_a] = marc_a
-            self.marcacoes_map[dt_b] = marc_b
-
+                nova_marc_15 = Marcacao(dt_30, cli_15, 15, obs_15)
+                nova_marc_15.set_falta(falta_15)
+                self.marcacoes_map[dt_30] = nova_marc_15
+            
             Persistencia.guardar_marcacoes(self.marcacoes_map)
             return {"success": True}
 

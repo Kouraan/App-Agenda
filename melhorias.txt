@@ -1,8 +1,6 @@
-M-1-Problemas nas trocas de marcacoes, tanto cliente como horarios
-
-B-6-um botao que mostra marcacoes que o cliente tem em andamento e que ja passaram, dividindo por cores as que estao ativas e as 
+B-1-um botao que mostra marcacoes que o cliente tem em andamento e que ja passaram, dividindo por cores as que estao ativas e as 
 que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N cabem todas na tela por isso teria uma barra
 de scroll
 
-B-7-reclamacao de estao muito "grande" acho eu e que torna um pouco feio e demasiado, tentar dividir acho eu e adicionar algo util
+B-2-reclamacao de estao muito "grande" acho eu e que torna um pouco feio e demasiado, tentar dividir acho eu e adicionar algo util
 no espaço restante.

@@ -917,7 +917,17 @@ class CalendarioModule {
                     } catch(e) { errorEl.textContent = "Erro de comunicação."; }
                 });
 
-                btnRow.append(btnEditarCliente, btnAlterar, btnApagar, btnSalvar, btnSair);
+                const btnRowTop = document.createElement("div");
+                btnRowTop.style.cssText = "display:flex;gap:10px;justify-content:center;margin-bottom:10px;";
+                btnEditarCliente.style.cssText = `background:white;color:black;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;min-width:70px;`;
+                btnAlterar.style.cssText = `background:white;color:black;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;min-width:70px;`;
+                btnRowTop.append(btnEditarCliente, btnAlterar);
+
+                btnRow.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;justify-content:center;";
+                btnRow.append(btnApagar, btnSalvar, btnSair);
+
+                modal.appendChild(btnRowTop);
+                modal.appendChild(btnRow);
             }
         };
 
@@ -1057,157 +1067,315 @@ class CalendarioModule {
         // ── Vista: Alterar Hora / Troca de Marcação ─────────────────────────
         const renderVistaTrocaHorario = () => {
             overlay.innerHTML = "";
-            const modal = this._criarModal("400px");
+            const modal = this._criarModal("520px");
             overlay.appendChild(modal);
 
+            // Título placeholder (atualizado ao mudar de tab)
             const titulo = document.createElement("div");
             titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:8px;";
             modal.appendChild(titulo);
 
-            // Tabs: Alterar Hora | Trocar Marcação
+            // ── Tabs ──────────────────────────────────────────────────────────
             const tabsRow = document.createElement("div");
-            tabsRow.style.cssText = "display:flex;gap:8px;margin-bottom:12px;";
+            tabsRow.style.cssText = "display:flex;gap:10px;margin-bottom:14px;";
 
             const tabAlterarHora = document.createElement("button");
-            tabAlterarHora.textContent = "🕐 Alterar Hora";
+            tabAlterarHora.textContent = "Alterar Hora";
+
             const tabTrocas = document.createElement("button");
-            tabTrocas.textContent = "🔄 Trocar Marcação";
-            [tabAlterarHora, tabTrocas].forEach(b => {
-                b.style.cssText = "flex:1;padding:10px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;";
-            });
+            tabTrocas.textContent = "Trocar Marcação";
+
+            const estiloTabAtivo   = "flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;background:rgb(36,43,141);";
+            const estiloTabInativo = "flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;background:rgb(43,40,40);";
+
+            tabAlterarHora.style.cssText = estiloTabInativo;
+            tabTrocas.style.cssText      = estiloTabInativo;
             tabsRow.append(tabAlterarHora, tabTrocas);
             modal.appendChild(tabsRow);
 
-            const errorEl = document.createElement("div");
-            errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;";
-
-            // ── Painel Alterar Hora ──
+            // ── Painéis ───────────────────────────────────────────────────────
             const painelAlterarHora = document.createElement("div");
-            painelAlterarHora.style.cssText = "display:flex;flex-direction:column;gap:8px;";
+            painelAlterarHora.style.cssText = "display:none;flex-direction:column;gap:10px;";
 
-            // Navegação de semana (Alterar Hora)
+            const painelTrocas = document.createElement("div");
+            painelTrocas.style.cssText = "display:none;flex-direction:column;gap:10px;";
+
+            modal.appendChild(painelAlterarHora);
+            modal.appendChild(painelTrocas);
+
+            const errorEl = document.createElement("div");
+            errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;margin-top:4px;";
+            modal.appendChild(errorEl);
+
+            // Botões
+            const btnRow = document.createElement("div");
+            btnRow.style.cssText = "display:flex;gap:10px;justify-content:center;margin-top:14px;";
+            const btnConfirmar = this._mkBtn("Confirmar", "rgb(36,43,141)");
+            const btnVoltar    = this._mkBtn("Voltar",    "rgb(60,60,60)");
+            btnRow.append(btnConfirmar, btnVoltar);
+            modal.appendChild(btnRow);
+
+            btnVoltar.addEventListener("click", renderVistaPrincipal);
+
+            // ══════════════════════════════════════════════════════════════════
+            // PAINEL ALTERAR HORA
+            // ══════════════════════════════════════════════════════════════════
+
+            // Estado
             let semanaAlvoAH = getMonday(new Date());
+            const semanaMinAH = getMonday(new Date());
 
-            const navAH = this._criarNavSemana(
-                () => semanaAlvoAH,
-                (nova) => { semanaAlvoAH = nova; },
-                () => { popularHorasAH(); }
-            );
-            painelAlterarHora.appendChild(navAH.el);
+            // Nav de semana
+            const navLblAH = document.createElement("div");
+            navLblAH.style.cssText = "color:white;font-size:13px;font-weight:bold;text-align:center;min-width:180px;";
 
-            // Seletor de dia
-            const hboxCombosAH = document.createElement("div");
-            hboxCombosAH.style.cssText = "display:flex;gap:16px;justify-content:center;";
+            const btnAntAH  = document.createElement("button");
+            btnAntAH.textContent = "◀";
+            btnAntAH.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:15px;font-weight:bold;";
 
-            const { wrap: wrapDiaAH, sel: selDiaAH } = this._mkComboWrap("Dia");
-            const { wrap: wrapHoraAH, sel: selHoraAH } = this._mkComboWrap("Hora");
-            hboxCombosAH.append(wrapDiaAH, wrapHoraAH);
-            painelAlterarHora.appendChild(hboxCombosAH);
+            const btnProxAH = document.createElement("button");
+            btnProxAH.textContent = "▶";
+            btnProxAH.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:15px;font-weight:bold;";
 
-            DIAS_SEMANA_LONGO.forEach(d => {
-                const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
-                selDiaAH.appendChild(opt);
-            });
-            // Pré-selecionar o dia da marcação
-            const diaIdxOrig = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
-            selDiaAH.value = DIAS_SEMANA_LONGO[diaIdxOrig];
+            const navRowAH = document.createElement("div");
+            navRowAH.style.cssText = "display:flex;align-items:center;justify-content:center;gap:10px;";
+            navRowAH.append(btnAntAH, navLblAH, btnProxAH);
+            painelAlterarHora.appendChild(navRowAH);
 
-            const horaOriginalStr = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+            // Seletor de dia (botões de dia da semana)
+            const diasRowAH = document.createElement("div");
+            diasRowAH.style.cssText = "display:flex;gap:6px;justify-content:center;flex-wrap:wrap;";
+            painelAlterarHora.appendChild(diasRowAH);
 
-            const dataDoDiaAH = () => {
-                const idx = DIAS_SEMANA_LONGO.indexOf(selDiaAH.value);
-                return new Date(semanaAlvoAH.getTime() + idx * 86400000);
+            // Lista de horas disponíveis
+            const horasGridAH = document.createElement("div");
+            horasGridAH.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:200px;overflow-y:auto;padding:4px;";
+            painelAlterarHora.appendChild(horasGridAH);
+
+            let diaSelAH = null;         // Date do dia selecionado
+            let horaSelAH = null;        // string "HH:MM"
+
+            const atualizarNavAH = () => {
+                const fim = new Date(semanaAlvoAH.getTime() + 6 * 86400000);
+                const fmt = d => `${String(d.getDate()).padStart(2,"0")} ${d.toLocaleDateString("pt-PT",{month:"short"})}`;
+                navLblAH.textContent = `${fmt(semanaAlvoAH)} – ${fmt(fim)}`;
+                btnAntAH.disabled = semanaAlvoAH.getTime() <= semanaMinAH.getTime();
+                btnAntAH.style.opacity = btnAntAH.disabled ? "0.4" : "1";
+            };
+
+            const popularDiasAH = () => {
+                diasRowAH.innerHTML = "";
+                horasGridAH.innerHTML = "";
+                diaSelAH = null;
+                horaSelAH = null;
+                const agora = new Date();
+
+                for (let i = 0; i < 7; i++) {
+                    const data = new Date(semanaAlvoAH.getTime() + i * 86400000);
+                    const isSab = data.getDay() === 6;
+                    const isDom = data.getDay() === 0;
+                    // Dias passados (antes de hoje) não são clicáveis
+                    const dataFim = new Date(data.getFullYear(), data.getMonth(), data.getDate(), 23, 59, 59);
+                    const passado = dataFim < agora;
+
+                    const nomeDia = DIAS_SEMANA_CURTO[i];
+                    const btn = document.createElement("button");
+                    btn.textContent = `${nomeDia} ${String(data.getDate()).padStart(2,"0")}`;
+                    btn.style.cssText = `padding:7px 10px;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:${passado ? "default" : "pointer"};color:white;background:${passado ? "rgb(30,30,30)" : isDom ? "rgb(80,50,20)" : "rgb(43,40,40)"};opacity:${passado ? "0.35" : "1"};`;
+                    if (!passado) {
+                        btn.addEventListener("click", () => {
+                            // Destacar selecionado
+                            diasRowAH.querySelectorAll("button").forEach(b => {
+                                b.style.background = b === btn ? "rgb(36,43,141)" : (b._isDom ? "rgb(80,50,20)" : "rgb(43,40,40)");
+                            });
+                            diaSelAH = data;
+                            popularHorasAH();
+                        });
+                    }
+                    btn._isDom = isDom;
+                    diasRowAH.appendChild(btn);
+                }
             };
 
             const popularHorasAH = async () => {
-                selHoraAH.innerHTML = "";
-                const dataAlvo = dataDoDiaAH();
-                const api = getApi();
-                if (api) {
-                    try {
-                        const res = await api.get_horas_disponiveis_data(
-                            toLocalISOString(dt),
-                            toLocalISOString(dataAlvo),
-                            marcacao.duracao
-                        );
-                        if (res && res.success && res.horas && res.horas.length > 0) {
-                            res.horas.forEach(h => {
-                                const opt = document.createElement("option"); opt.value = h; opt.textContent = h;
-                                selHoraAH.appendChild(opt);
-                            });
-                        } else {
-                            const opt = document.createElement("option"); opt.value = ""; opt.textContent = "Sem horas disponíveis";
-                            selHoraAH.appendChild(opt);
-                        }
-                    } catch(e) { console.error(e); }
-                }
-                // Tentar pré-selecionar hora original
-                if ([...selHoraAH.options].some(o => o.value === horaOriginalStr)) {
-                    selHoraAH.value = horaOriginalStr;
-                }
-            };
+                horasGridAH.innerHTML = "";
+                horaSelAH = null;
+                if (!diaSelAH) return;
 
-            selDiaAH.addEventListener("change", popularHorasAH);
-            navAH.onChange = popularHorasAH;
-
-            // ── Painel Trocar Marcação ──
-            const painelTrocas = document.createElement("div");
-            painelTrocas.style.cssText = "display:none;flex-direction:column;gap:8px;";
-
-            let semanaAlvoTR = getMonday(new Date());
-
-            const navTR = this._criarNavSemana(
-                () => semanaAlvoTR,
-                (nova) => { semanaAlvoTR = nova; },
-                () => { popularHorasTR(); }
-            );
-            painelTrocas.appendChild(navTR.el);
-
-            // Seletor de dia para trocas
-            const hboxCombosTR = document.createElement("div");
-            hboxCombosTR.style.cssText = "display:flex;gap:16px;justify-content:center;";
-            const { wrap: wrapDiaTR, sel: selDiaTR } = this._mkComboWrap("Dia");
-            hboxCombosTR.appendChild(wrapDiaTR);
-            painelTrocas.appendChild(hboxCombosTR);
-
-            DIAS_SEMANA_LONGO.forEach(d => {
-                const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
-                selDiaTR.appendChild(opt);
-            });
-            selDiaTR.value = DIAS_SEMANA_LONGO[diaIdxOrig];
-
-            const dataDoDiaTR = () => {
-                const idx = DIAS_SEMANA_LONGO.indexOf(selDiaTR.value);
-                return new Date(semanaAlvoTR.getTime() + idx * 86400000);
-            };
-
-            // Lista de marcações trocáveis
-            const listaTrocas = document.createElement("div");
-            listaTrocas.style.cssText = "background:rgb(43,40,40);border-radius:10px;max-height:180px;overflow-y:auto;";
-            painelTrocas.appendChild(listaTrocas);
-
-            let marcacaoTrocaSelecionada = null;
-
-            const popularHorasTR = async () => {
-                listaTrocas.innerHTML = "";
-                marcacaoTrocaSelecionada = null;
-                const dataAlvo = dataDoDiaTR();
                 const api = getApi();
                 if (!api) return;
+
+                const loading = document.createElement("div");
+                loading.textContent = "A carregar...";
+                loading.style.cssText = "color:rgba(255,255,255,0.5);font-size:13px;width:100%;text-align:center;padding:10px;";
+                horasGridAH.appendChild(loading);
+
                 try {
-                    const res = await api.get_marcacoes_trocaveis(toLocalISOString(dt), toLocalISOString(dataAlvo));
+                    const res = await api.get_horas_disponiveis_data(
+                        toLocalISOString(dt),
+                        toLocalISOString(diaSelAH),
+                        marcacao.duracao
+                    );
+                    horasGridAH.innerHTML = "";
+                    if (res && res.success && res.horas && res.horas.length > 0) {
+                        res.horas.forEach(h => {
+                            const btnH = document.createElement("button");
+                            btnH.textContent = h;
+                            btnH.style.cssText = "padding:8px 14px;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;color:white;background:rgb(43,40,40);min-width:70px;";
+                            btnH.addEventListener("click", () => {
+                                horasGridAH.querySelectorAll("button").forEach(b => b.style.background = "rgb(43,40,40)");
+                                btnH.style.background = "rgb(36,43,141)";
+                                horaSelAH = h;
+                            });
+                            horasGridAH.appendChild(btnH);
+                        });
+                    } else {
+                        const vazio = document.createElement("div");
+                        vazio.textContent = "Sem horas disponíveis para este dia";
+                        vazio.style.cssText = "color:rgba(255,255,255,0.4);font-size:13px;width:100%;text-align:center;padding:10px;";
+                        horasGridAH.appendChild(vazio);
+                    }
+                } catch(e) {
+                    horasGridAH.innerHTML = "";
+                    const errDiv = document.createElement("div");
+                    errDiv.textContent = "Erro ao carregar horas";
+                    errDiv.style.cssText = "color:#ff8080;font-size:13px;text-align:center;padding:10px;";
+                    horasGridAH.appendChild(errDiv);
+                }
+            };
+
+            btnAntAH.addEventListener("click", () => {
+                const nova = new Date(semanaAlvoAH.getTime() - 7 * 86400000);
+                if (nova.getTime() >= semanaMinAH.getTime()) {
+                    semanaAlvoAH = nova;
+                    atualizarNavAH();
+                    popularDiasAH();
+                }
+            });
+            btnProxAH.addEventListener("click", () => {
+                semanaAlvoAH = new Date(semanaAlvoAH.getTime() + 7 * 86400000);
+                atualizarNavAH();
+                popularDiasAH();
+            });
+
+            // ══════════════════════════════════════════════════════════════════
+            // PAINEL TROCAR MARCAÇÃO
+            // ══════════════════════════════════════════════════════════════════
+
+            let semanaAlvoTR = getMonday(new Date());
+            const semanaMinTR = getMonday(new Date());
+
+            const navLblTR = document.createElement("div");
+            navLblTR.style.cssText = "color:white;font-size:13px;font-weight:bold;text-align:center;min-width:180px;";
+
+            const btnAntTR  = document.createElement("button");
+            btnAntTR.textContent = "◀";
+            btnAntTR.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:15px;font-weight:bold;";
+
+            const btnProxTR = document.createElement("button");
+            btnProxTR.textContent = "▶";
+            btnProxTR.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:5px 14px;cursor:pointer;font-size:15px;font-weight:bold;";
+
+            const navRowTR = document.createElement("div");
+            navRowTR.style.cssText = "display:flex;align-items:center;justify-content:center;gap:10px;";
+            navRowTR.append(btnAntTR, navLblTR, btnProxTR);
+            painelTrocas.appendChild(navRowTR);
+
+            const diasRowTR = document.createElement("div");
+            diasRowTR.style.cssText = "display:flex;gap:6px;justify-content:center;flex-wrap:wrap;";
+            painelTrocas.appendChild(diasRowTR);
+
+            const listaTrocas = document.createElement("div");
+            listaTrocas.style.cssText = "background:rgb(43,40,40);border-radius:10px;max-height:220px;overflow-y:auto;";
+            painelTrocas.appendChild(listaTrocas);
+
+            let diaSelTR = null;
+            let marcacaoTrocaSelecionada = null;
+
+            const atualizarNavTR = () => {
+                const fim = new Date(semanaAlvoTR.getTime() + 6 * 86400000);
+                const fmt = d => `${String(d.getDate()).padStart(2,"0")} ${d.toLocaleDateString("pt-PT",{month:"short"})}`;
+                navLblTR.textContent = `${fmt(semanaAlvoTR)} – ${fmt(fim)}`;
+                btnAntTR.disabled = semanaAlvoTR.getTime() <= semanaMinTR.getTime();
+                btnAntTR.style.opacity = btnAntTR.disabled ? "0.4" : "1";
+            };
+
+            const popularDiasTR = () => {
+                diasRowTR.innerHTML = "";
+                listaTrocas.innerHTML = "";
+                diaSelTR = null;
+                marcacaoTrocaSelecionada = null;
+                const agora = new Date();
+
+                for (let i = 0; i < 7; i++) {
+                    const data = new Date(semanaAlvoTR.getTime() + i * 86400000);
+                    const isDom = data.getDay() === 0;
+                    const dataFim = new Date(data.getFullYear(), data.getMonth(), data.getDate(), 23, 59, 59);
+                    const passado = dataFim < agora;
+
+                    const nomeDia = DIAS_SEMANA_CURTO[i];
+                    const btn = document.createElement("button");
+                    btn.textContent = `${nomeDia} ${String(data.getDate()).padStart(2,"0")}`;
+                    btn.style.cssText = `padding:7px 10px;border:none;border-radius:8px;font-size:13px;font-weight:bold;cursor:${passado ? "default" : "pointer"};color:white;background:${passado ? "rgb(30,30,30)" : isDom ? "rgb(80,50,20)" : "rgb(43,40,40)"};opacity:${passado ? "0.35" : "1"};`;
+                    if (!passado) {
+                        btn.addEventListener("click", () => {
+                            diasRowTR.querySelectorAll("button").forEach(b => {
+                                b.style.background = b === btn ? "rgb(36,43,141)" : (b._isDom ? "rgb(80,50,20)" : "rgb(43,40,40)");
+                            });
+                            diaSelTR = data;
+                            popularMarcacoesTR();
+                        });
+                    }
+                    btn._isDom = isDom;
+                    diasRowTR.appendChild(btn);
+                }
+            };
+
+            const popularMarcacoesTR = async () => {
+                listaTrocas.innerHTML = "";
+                marcacaoTrocaSelecionada = null;
+                if (!diaSelTR) return;
+
+                const api = getApi();
+                if (!api) return;
+
+                const loading = document.createElement("div");
+                loading.textContent = "A carregar...";
+                loading.style.cssText = "color:rgba(255,255,255,0.5);font-size:13px;text-align:center;padding:12px;";
+                listaTrocas.appendChild(loading);
+
+                try {
+                    const res = await api.get_marcacoes_trocaveis(
+                        toLocalISOString(dt),
+                        toLocalISOString(diaSelTR)
+                    );
+                    listaTrocas.innerHTML = "";
                     if (res && res.success && res.opcoes && res.opcoes.length > 0) {
                         res.opcoes.forEach(o => {
                             const item = document.createElement("div");
-                            item.style.cssText = "padding:10px 14px;cursor:pointer;color:white;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.1);transition:background 0.15s;";
-                            item.textContent = `${o.hora} — ${o.nome} (${o.duracao} min)`;
+                            item.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;color:white;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.08);transition:background 0.15s;";
+
+                            const horaSpan = document.createElement("span");
+                            horaSpan.textContent = o.hora;
+                            horaSpan.style.cssText = "font-weight:bold;color:rgba(197,130,63,0.9);min-width:48px;";
+
+                            const nomeSpan = document.createElement("span");
+                            nomeSpan.textContent = o.nome;
+                            nomeSpan.style.cssText = "flex:1;padding:0 12px;";
+
+                            const durSpan = document.createElement("span");
+                            durSpan.textContent = `${o.duracao} min`;
+                            durSpan.style.cssText = "color:rgba(255,255,255,0.5);font-size:12px;";
+
+                            item.append(horaSpan, nomeSpan, durSpan);
+
                             item.addEventListener("click", () => {
                                 listaTrocas.querySelectorAll("div").forEach(el => el.style.background = "");
                                 item.style.background = "rgb(36,43,141)";
                                 marcacaoTrocaSelecionada = o.dataHora;
                             });
                             item.addEventListener("mouseenter", () => {
-                                if (marcacaoTrocaSelecionada !== o.dataHora) item.style.background = "rgba(255,255,255,0.08)";
+                                if (marcacaoTrocaSelecionada !== o.dataHora) item.style.background = "rgba(255,255,255,0.06)";
                             });
                             item.addEventListener("mouseleave", () => {
                                 if (marcacaoTrocaSelecionada !== o.dataHora) item.style.background = "";
@@ -1216,72 +1384,79 @@ class CalendarioModule {
                         });
                     } else {
                         const vazio = document.createElement("div");
-                        vazio.style.cssText = "padding:16px;color:rgba(255,255,255,0.5);text-align:center;font-size:14px;";
                         vazio.textContent = "Sem marcações compatíveis neste dia";
+                        vazio.style.cssText = "padding:18px;color:rgba(255,255,255,0.4);text-align:center;font-size:14px;";
                         listaTrocas.appendChild(vazio);
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) {
+                    listaTrocas.innerHTML = "";
+                    const errDiv = document.createElement("div");
+                    errDiv.textContent = "Erro ao carregar marcações";
+                    errDiv.style.cssText = "color:#ff8080;font-size:13px;text-align:center;padding:12px;";
+                    listaTrocas.appendChild(errDiv);
+                }
             };
 
-            selDiaTR.addEventListener("change", popularHorasTR);
-            navTR.onChange = popularHorasTR;
+            btnAntTR.addEventListener("click", () => {
+                const nova = new Date(semanaAlvoTR.getTime() - 7 * 86400000);
+                if (nova.getTime() >= semanaMinTR.getTime()) {
+                    semanaAlvoTR = nova;
+                    atualizarNavTR();
+                    popularDiasTR();
+                }
+            });
+            btnProxTR.addEventListener("click", () => {
+                semanaAlvoTR = new Date(semanaAlvoTR.getTime() + 7 * 86400000);
+                atualizarNavTR();
+                popularDiasTR();
+            });
 
-            modal.appendChild(painelAlterarHora);
-            modal.appendChild(painelTrocas);
-            modal.appendChild(errorEl);
+            // ══════════════════════════════════════════════════════════════════
+            // LÓGICA DE TABS
+            // ══════════════════════════════════════════════════════════════════
 
-            // Botões
-            const btnRow = document.createElement("div");
-            btnRow.style.cssText = "display:flex;gap:8px;justify-content:center;margin-top:12px;";
-            const btnConfirmar = this._mkBtn("Confirmar", "rgb(36,43,141)");
-            const btnVoltar    = this._mkBtn("Voltar",    "rgb(60,60,60)");
-            btnRow.append(btnConfirmar, btnVoltar);
-            modal.appendChild(btnRow);
+            let modoTab = null; // nenhum selecionado inicialmente
 
-            btnVoltar.addEventListener("click", renderVistaPrincipal);
-
-            // Activar tab
-            let modoTab = "hora";
             const ativarTab = (modo) => {
                 modoTab = modo;
-                const estilo_ativo   = "flex:1;padding:10px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;background:rgb(60,60,60);";
-                const estilo_inativo = "flex:1;padding:10px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;background:rgb(43,40,40);";
-                tabAlterarHora.style.cssText = modo === "hora"   ? estilo_ativo : estilo_inativo;
-                tabTrocas.style.cssText      = modo === "trocas" ? estilo_ativo : estilo_inativo;
+                tabAlterarHora.style.cssText = modo === "hora"   ? estiloTabAtivo : estiloTabInativo;
+                tabTrocas.style.cssText      = modo === "trocas" ? estiloTabAtivo : estiloTabInativo;
                 painelAlterarHora.style.display = modo === "hora"   ? "flex" : "none";
                 painelTrocas.style.display      = modo === "trocas" ? "flex" : "none";
                 titulo.textContent = modo === "hora" ? "Alterar Hora da Marcação" : "Trocar Marcação";
             };
 
-            tabAlterarHora.addEventListener("click", () => ativarTab("hora"));
+            tabAlterarHora.addEventListener("click", () => {
+                ativarTab("hora");
+                atualizarNavAH();
+                popularDiasAH();
+            });
+
             tabTrocas.addEventListener("click", () => {
                 ativarTab("trocas");
-                popularHorasTR();
+                atualizarNavTR();
+                popularDiasTR();
             });
-            ativarTab("hora");
 
-            // Carregar horas disponíveis para alterar hora
-            popularHorasAH();
+            // ══════════════════════════════════════════════════════════════════
+            // CONFIRMAR
+            // ══════════════════════════════════════════════════════════════════
 
             btnConfirmar.addEventListener("click", async () => {
                 errorEl.textContent = "";
                 const api = getApi();
                 if (!api) { errorEl.textContent = "API não disponível."; return; }
 
-                if (modoTab === "hora") {
-                    if (!selHoraAH.value || selHoraAH.value === "") {
-                        errorEl.textContent = "Sem hora disponível para selecionar.";
-                        return;
-                    }
-                    const idx = DIAS_SEMANA_LONGO.indexOf(selDiaAH.value);
-                    const dataAlvo = new Date(semanaAlvoAH.getTime() + idx * 86400000);
-                    const [hh, mm] = selHoraAH.value.split(":").map(Number);
-                    const dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
+                if (!modoTab) { errorEl.textContent = "Selecione um modo (Alterar Hora ou Trocar Marcação)."; return; }
 
-                    if (dtNova.getTime() === dt.getTime()) {
-                        renderVistaPrincipal();
-                        return;
-                    }
+                if (modoTab === "hora") {
+                    if (!diaSelAH) { errorEl.textContent = "Selecione um dia."; return; }
+                    if (!horaSelAH) { errorEl.textContent = "Selecione uma hora."; return; }
+
+                    const [hh, mm] = horaSelAH.split(":").map(Number);
+                    const dtNova = new Date(diaSelAH.getFullYear(), diaSelAH.getMonth(), diaSelAH.getDate(), hh, mm);
+
+                    if (dtNova.getTime() === dt.getTime()) { renderVistaPrincipal(); return; }
 
                     try {
                         btnConfirmar.disabled = true;
@@ -1301,11 +1476,7 @@ class CalendarioModule {
                     finally { btnConfirmar.disabled = false; }
 
                 } else {
-                    // Modo trocas
-                    if (!marcacaoTrocaSelecionada) {
-                        errorEl.textContent = "Selecione uma marcação para trocar.";
-                        return;
-                    }
+                    if (!marcacaoTrocaSelecionada) { errorEl.textContent = "Selecione uma marcação para trocar."; return; }
                     try {
                         btnConfirmar.disabled = true;
                         const res = await api.trocar_marcacoes(toLocalISOString(dt), marcacaoTrocaSelecionada);
