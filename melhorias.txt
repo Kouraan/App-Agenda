@@ -1,13 +1,4 @@
-A-3-caso exista mudanças o botao salvar mostra a tela de guardar alteracoes, mas ele n funciona e n guarda as alteracoes. Para alem
-disso o botao editar deveria ter o msm comportamento de tela de gaurdar alteracoes que o botao salvar. Atualmente a tela de guardar
-do botao editar continua super feia e deveria ser exatamente a mesma da que esta no botao salvar. E ambas deveriam guardar os dados
-alterados de nome ou numero e mudar isso na marcacao existente
-
-M-4-numa marcacao que ja existe ser possivel apenas alterar o cliente que fez a marcacao, por exemplo cliente x fez marcacao mas
-n pode vir e disse que um amigo vai, ou seja apenas trocou o cliente
-
-M-5-possivel numa marcacao fazer a troca de marcacoes, cliente x esta a hora y e cliente w esta a hora z. Ser possivel fazer troca
-dessas duas marcacoes
+M-1-Problemas nas trocas de marcacoes, tanto cliente como horarios
 
 B-6-um botao que mostra marcacoes que o cliente tem em andamento e que ja passaram, dividindo por cores as que estao ativas e as 
 que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N cabem todas na tela por isso teria uma barra

@@ -93,7 +93,6 @@ function getCurrentSlotDate() {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), roundedMin, 0, 0);
 }
 
-// Converte Date local para string ISO local (sem UTC offset)
 function toLocalISOString(date) {
     const y  = date.getFullYear();
     const mo = String(date.getMonth() + 1).padStart(2, "0");
@@ -104,19 +103,14 @@ function toLocalISOString(date) {
     return `${y}-${mo}-${d}T${h}:${mi}:${s}`;
 }
 
-// Converte string ISO (possivelmente UTC) para Date local
 function parseISOToLocal(isoStr) {
     if (!isoStr) return null;
-    // Se termina em Z ou tem offset, usa new Date normalmente (converte para local)
-    // Se não tem info de timezone, trata como local
     if (isoStr.includes("Z") || /[+-]\d{2}:\d{2}$/.test(isoStr)) {
         return new Date(isoStr);
     }
-    // sem timezone — tratar como local
     return new Date(isoStr);
 }
 
-// Chave de lookup no mapa de marcações (ISO local sem Z)
 function marcacaoKey(date) {
     return toLocalISOString(date);
 }
@@ -239,14 +233,12 @@ class CalendarioModule {
     }
 
     atualizar() {
-        // Limpar cabeçalho fixo anterior se existir
         const scrollEl = this.grid.closest(".calendar-scroll");
         
         if (scrollEl) {
             const headerFixo = scrollEl.parentElement.querySelector(".semana-header-fixo");
             if (headerFixo) headerFixo.remove();
 
-            // Se o grid está dentro de um inner, movê-lo de volta para scrollEl
             const inner = scrollEl.querySelector(".calendar-scroll-inner");
             if (inner) {
                 if (inner.contains(this.grid)) {
@@ -255,7 +247,6 @@ class CalendarioModule {
                 inner.remove();
             }
 
-            // Repor scroll no scrollEl
             scrollEl.style.overflowY = "";
             scrollEl.style.overflow = "";
         }
@@ -280,6 +271,7 @@ class CalendarioModule {
         this._atualizarLabel();
         this._atualizarEstiloToggles();
     }
+
     setModo(modo) {
         this.modoAtual = modo;
         if (modo === "MES") {
@@ -336,14 +328,11 @@ class CalendarioModule {
     _criarSemana() {
         const scrollEl = this.grid.closest(".calendar-scroll");
 
-        // Criar cabeçalho fixo fora do scroll
         const headerFixo = document.createElement("div");
         headerFixo.className = "semana-header-fixo";
 
-        // Célula vazia topo-esquerda
         headerFixo.appendChild(this._celula("", "header"));
 
-        // Cabeçalhos dos dias
         for (let i = 0; i < 7; i++) {
             const data  = new Date(this.semanaAtual.getTime() + i * 86400000);
             const texto = `${DIAS_SEMANA_CURTO[i]} ${String(data.getDate()).padStart(2, "0")}`;
@@ -359,18 +348,15 @@ class CalendarioModule {
             headerFixo.appendChild(cel);
         }
 
-        // Inserir header fixo ANTES do calendar-scroll no DOM
         if (scrollEl) {
             scrollEl.parentElement.insertBefore(headerFixo, scrollEl);
 
-            // Envolver o grid num inner scrollável
             const inner = document.createElement("div");
             inner.className = "calendar-scroll-inner";
             inner.appendChild(this.grid);
             scrollEl.appendChild(inner);
         }
 
-        // Linhas de horas (sem os cabeçalhos — ficam no headerFixo)
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
             for (let m = 0; m < 60; m += INTERVALO_MINUTOS) {
                 const horaStr = `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
@@ -453,7 +439,7 @@ class CalendarioModule {
         }
     }
 
-    // ── Célula de horário (bloco principal) ───────────────────────────────────
+    // ── Célula de horário ─────────────────────────────────────────────────────
 
     _celulaHorario(dataHora) {
         const cel      = document.createElement("div");
@@ -464,11 +450,9 @@ class CalendarioModule {
         const passado = isPast(dataHora);
         if (passado) cel.classList.add("past");
 
-        // Highlight do bloco actual
         const slotAtual = getCurrentSlotDate();
         if (toLocalISOString(slotAtual) === isoLocal) cel.classList.add("current-slot");
 
-        // Estilo domingo
         if (dataHora.getDay() === 0) cel.classList.add("sunday-cell");
 
         if (dataHora.getHours() === 13) cel.classList.add("lunch-cell");
@@ -504,12 +488,9 @@ class CalendarioModule {
             }
             cel.appendChild(hbox);
         } else if (marc1 && marc1.duracao >= 30) {
-            // Marcação de 30+ min ocupa a célula inteira
             cel.appendChild(this._boxMarcacao(marc1, false));
             cel.style.cursor = "pointer";
-
         } else {
-            // Célula vazia
             if (!passado) {
                 cel.style.cursor = "pointer";
                 cel.addEventListener("click", () => this._abrirCriarMarcacao(dataHora));
@@ -523,15 +504,11 @@ class CalendarioModule {
         return cel;
     }
 
-    /** Procura a marcação cujo dataHora coincide com a data dada (por ISO local). */
     _getMarcacao(marcacoes, date) {
         const key = toLocalISOString(date);
-        // Tentar chave exacta
         if (marcacoes[key]) return marcacoes[key];
-        // Tentar variantes ISO que o backend possa devolver
         const keyZ = date.toISOString();
         if (marcacoes[keyZ]) return marcacoes[keyZ];
-        // Fallback: iterar (lento mas seguro)
         for (const [k, v] of Object.entries(marcacoes)) {
             const dt = parseISOToLocal(k);
             if (dt && Math.abs(dt.getTime() - date.getTime()) < 1000) return v;
@@ -539,7 +516,7 @@ class CalendarioModule {
         return null;
     }
 
-    // ── Box de marcação (visual) ──────────────────────────────────────────────
+    // ── Box de marcação ───────────────────────────────────────────────────────
 
     _boxMarcacao(marcacao, meia) {
         const wrap = document.createElement("div");
@@ -578,7 +555,6 @@ class CalendarioModule {
         titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:8px;";
         modal.appendChild(titulo);
 
-        // Pesquisa cliente
         const pesquisa = this._mkInput("Pesquisar cliente...");
         modal.appendChild(pesquisa);
 
@@ -586,7 +562,6 @@ class CalendarioModule {
         sugestoes.style.cssText = "background:white;border-radius:8px;max-height:90px;overflow-y:auto;display:none;margin-bottom:4px;";
         modal.appendChild(sugestoes);
 
-        // Checkbox desconhecido
         const chkRow  = document.createElement("label");
         chkRow.style.cssText = "display:flex;align-items:center;gap:8px;color:white;font-size:15px;cursor:pointer;";
         const chkDesk = document.createElement("input"); chkDesk.type = "checkbox";
@@ -629,7 +604,6 @@ class CalendarioModule {
         btnRow.append(btnSalvar, btnSair);
         modal.appendChild(btnRow);
 
-        // Carregar clientes
         let clientesSnapshot = {};
         const api = getApi();
         if (api) {
@@ -643,7 +617,6 @@ class CalendarioModule {
             setTimeout(() => pesquisa.focus(), 80);
         }
 
-        // Pesquisa dinâmica com sugestões
         pesquisa.addEventListener("input", () => {
             if (chkDesk.checked) { sugestoes.style.display = "none"; return; }
             const val = pesquisa.value.trim().toLowerCase();
@@ -657,7 +630,7 @@ class CalendarioModule {
                 item.textContent  = n;
                 item.style.cssText = "padding:6px 10px;cursor:pointer;font-size:13px;color:black;border-bottom:1px solid #eee;";
                 item.addEventListener("mousedown", (e) => {
-                    e.preventDefault(); // impede blur no pesquisa
+                    e.preventDefault();
                     pesquisa.value = n;
                     sugestoes.style.display = "none";
                 });
@@ -665,7 +638,6 @@ class CalendarioModule {
             });
         });
 
-        // Fechar sugestões ao clicar fora
         pesquisa.addEventListener("blur", () => {
             setTimeout(() => { sugestoes.style.display = "none"; }, 150);
         });
@@ -785,308 +757,371 @@ class CalendarioModule {
 
         const overlay = this._criarOverlay("detalhe-marcacao-overlay");
         document.body.appendChild(overlay);
-        const modal   = this._criarModal("360px");
-        overlay.appendChild(modal);
 
-        const dt     = parseISOToLocal(marcacao.dataHora) || new Date(marcacao.dataHora);
+        const dt    = parseISOToLocal(marcacao.dataHora) || new Date(marcacao.dataHora);
         const passou = dt < new Date();
-        const dias   = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+        const dias  = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 
-        const headerRow = document.createElement("div");
-        headerRow.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;";
+        // ── Fechar modal ────────────────────────────────────────────────────
+        const closeModal = () => {
+            if (document.body.contains(overlay)) document.body.removeChild(overlay);
+            window.removeEventListener("keydown", globalKeyH, true);
+        };
 
-        const titulo = document.createElement("div");
-        titulo.textContent = `${dias[dt.getDay()]} dia ${String(dt.getDate()).padStart(2,"0")} às ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-        titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;flex:1;";
-        headerRow.appendChild(titulo);
+        const globalKeyH = (e) => {
+            if (!document.body.contains(overlay)) return;
+            if (e.key === "Escape") { e.preventDefault(); closeModal(); }
+        };
+        window.addEventListener("keydown", globalKeyH, true);
+        overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
 
-        const isDesconhecido   = marcacao.cliente?.tipoCliente === "DESCONHECIDO";
-        const nomeClienteAtual = marcacao.cliente?.nome || "";
-        let modoEdicaoCliente  = false;
+        // ── Vista principal ─────────────────────────────────────────────────
+        const renderVistaPrincipal = () => {
+            overlay.innerHTML = "";
+            const modal = this._criarModal("380px");
+            overlay.appendChild(modal);
 
-        // Botão Editar: serve para qualquer tipo de cliente,
-        // mas nunca aparece em marcações já passadas.
-        const btnEditarCliente = document.createElement("button");
-        btnEditarCliente.textContent = "✏️ Editar";
-        btnEditarCliente.style.cssText = `background:rgb(36,43,141);color:white;border:none;border-radius:8px;padding:4px 10px;font-size:13px;font-weight:bold;cursor:pointer;display:${!passou ? "inline-block" : "none"};`;
-        headerRow.appendChild(btnEditarCliente);
-        modal.appendChild(headerRow);
+            // Título
+            const titulo = document.createElement("div");
+            titulo.textContent = `${dias[dt.getDay()]} ${String(dt.getDate()).padStart(2,"0")} às ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+            titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:4px;";
+            modal.appendChild(titulo);
 
-        const lblNomeField = document.createElement("div");
-        lblNomeField.textContent = "Nome:";
-        lblNomeField.style.cssText = "color:white;font-size:14px;margin-top:6px;";
-        const inpNome = document.createElement("input");
-        inpNome.type = "text";
-        inpNome.value = marcacao.cliente?.nome || "";
-        inpNome.readOnly = true;
-        inpNome.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
-        modal.append(lblNomeField, inpNome);
+            // Separador
+            const sep = document.createElement("div");
+            sep.style.cssText = "height:1px;background:rgba(255,255,255,0.2);margin-bottom:8px;";
+            modal.appendChild(sep);
 
-        const lblTelField = document.createElement("div");
-        lblTelField.textContent = "Telefone:";
-        lblTelField.style.cssText = "color:white;font-size:14px;margin-top:6px;";
-        const inpTel = document.createElement("input");
-        inpTel.type = "text";
-        inpTel.value = marcacao.cliente?.numeroTelefone || "";
-        inpTel.readOnly = true;
-        inpTel.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
-        inpTel.addEventListener("input", () => { inpTel.value = inpTel.value.replace(/[^\d+]/g, ""); });
-        modal.append(lblTelField, inpTel);
+            const isDesconhecido = marcacao.cliente?.tipoCliente === "DESCONHECIDO";
 
-        const pesquisaClienteWrap = document.createElement("div");
-        pesquisaClienteWrap.style.cssText = "display:none;position:relative;margin-top:6px;";
-        const pesquisaCliente = document.createElement("input");
-        pesquisaCliente.type = "text";
-        pesquisaCliente.placeholder = "Pesquisar cliente...";
-        pesquisaCliente.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
-        const sugestoesCliente = document.createElement("div");
-        sugestoesCliente.style.cssText = "background:white;border-radius:8px;max-height:120px;overflow-y:auto;display:none;position:absolute;left:0;right:0;z-index:10;";
-        pesquisaClienteWrap.append(pesquisaCliente, sugestoesCliente);
-        modal.appendChild(pesquisaClienteWrap);
+            // ── Campos de informação ──
+            const addField = (label, value) => {
+                const lbl = document.createElement("div");
+                lbl.textContent = label;
+                lbl.style.cssText = "color:rgba(255,255,255,0.7);font-size:12px;margin-top:6px;";
+                const inp = document.createElement("input");
+                inp.type = "text";
+                inp.value = value || "";
+                inp.readOnly = true;
+                inp.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:rgb(43,40,40);color:white;font-size:14px;box-sizing:border-box;";
+                modal.append(lbl, inp);
+                return inp;
+            };
 
-        let clientesSnapshot = {};
-        const apiInicial = getApi();
-        if (apiInicial) {
-            apiInicial.get_clientes_map().then(m => { clientesSnapshot = m || {}; });
-        }
+            addField("Nome", marcacao.cliente?.nome || "—");
+            addField("Telefone", marcacao.cliente?.numeroTelefone || "—");
+            addField("Duração", `${marcacao.duracao} minutos`);
 
-        pesquisaCliente.addEventListener("input", () => {
-            const val = pesquisaCliente.value.trim().toLowerCase();
-            if (!val) { sugestoesCliente.style.display = "none"; return; }
-            const matches = Object.keys(clientesSnapshot).filter(n => n.toLowerCase().includes(val));
-            sugestoesCliente.innerHTML = "";
-            if (!matches.length) { sugestoesCliente.style.display = "none"; return; }
-            sugestoesCliente.style.display = "block";
-            matches.forEach(n => {
-                const item = document.createElement("div");
-                item.textContent  = n;
-                item.style.cssText = "padding:6px 10px;cursor:pointer;font-size:13px;color:black;border-bottom:1px solid #eee;";
-                item.addEventListener("mousedown", (e) => {
-                    e.preventDefault();
-                    pesquisaCliente.value = n;
-                    sugestoesCliente.style.display = "none";
+            const lblObs = document.createElement("div");
+            lblObs.textContent = "Observações:";
+            lblObs.style.cssText = "color:rgba(255,255,255,0.7);font-size:12px;margin-top:6px;";
+            modal.appendChild(lblObs);
+
+            const txaObs = document.createElement("textarea");
+            txaObs.value = marcacao.observacoes || "";
+            txaObs.rows  = 3;
+            txaObs.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:rgb(43,40,40);color:white;font-size:14px;box-sizing:border-box;resize:none;margin-top:2px;";
+            if (passou) txaObs.readOnly = true;
+            modal.appendChild(txaObs);
+
+            const errorEl = document.createElement("div");
+            errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;margin-top:4px;";
+            modal.appendChild(errorEl);
+
+            // ── Botões de ação ──
+            const btnRow = document.createElement("div");
+            btnRow.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;";
+            modal.appendChild(btnRow);
+
+            const btnSair = this._mkBtn("Sair", "rgb(60,60,60)");
+            btnSair.addEventListener("click", closeModal);
+
+            if (passou) {
+                // Marcação passada: Faltou + Salvar obs + Sair
+                const btnFaltou = this._mkBtn("Faltou", "rgb(128,26,15)");
+                btnFaltou.disabled = marcacao.falta;
+                if (marcacao.falta) btnFaltou.style.opacity = "0.5";
+                btnFaltou.addEventListener("click", async () => {
+                    const api = getApi();
+                    if (!api) return;
+                    try {
+                        const res = await api.marcar_falta_marcacao(toLocalISOString(dt));
+                        if (res && res.success) {
+                            await this.onRefresh();
+                            closeModal();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao marcar falta.";
+                        }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
                 });
-                sugestoesCliente.appendChild(item);
-            });
-        });
-        pesquisaCliente.addEventListener("blur", () => {
-            setTimeout(() => { sugestoesCliente.style.display = "none"; }, 150);
-        });
 
-        const nomeOriginalDesc = marcacao.cliente?.nome || "";
-        const telOriginalDesc  = marcacao.cliente?.numeroTelefone || "";
+                const btnSalvarObs = this._mkBtn("Salvar", "rgb(36,43,141)");
+                btnSalvarObs.addEventListener("click", async () => {
+                    const api = getApi();
+                    if (!api) return;
+                    try {
+                        const res = await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dt), txaObs.value);
+                        if (res && res.success) {
+                            await this.onRefresh();
+                            closeModal();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao guardar.";
+                        }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                });
 
-        btnEditarCliente.addEventListener("click", async () => {
-            if (!modoEdicaoCliente) {
-                modoEdicaoCliente = true;
-                if (isDesconhecido) {
-                    inpNome.readOnly = false;
-                    inpTel.readOnly  = false;
-                    inpNome.style.border = "2px solid rgb(36,43,141)";
-                    inpTel.style.border  = "2px solid rgb(36,43,141)";
-                    setTimeout(() => inpNome.focus(), 50);
-                } else {
-                    pesquisaClienteWrap.style.display = "block";
-                    pesquisaCliente.value = "";
-                    setTimeout(() => pesquisaCliente.focus(), 50);
-                }
-                return;
+                btnRow.append(btnFaltou, btnSalvarObs, btnSair);
+            } else {
+                // Marcação futura: Editar Cliente + Alterar Hora/Troca + Apagar + Salvar obs + Sair
+                const btnEditarCliente = this._mkBtn("Editar", "rgb(43,80,120)");
+                btnEditarCliente.title = "Editar ou trocar cliente desta marcação";
+                btnEditarCliente.addEventListener("click", () => renderVistaEditarCliente());
+
+                const btnAlterar = this._mkBtn("Trocas", "rgb(43,43,100)");
+                btnAlterar.title = "Alterar hora ou trocar marcação";
+                btnAlterar.addEventListener("click", () => renderVistaTrocaHorario());
+
+                const btnApagar = this._mkBtn("Apagar", "rgb(128,26,15)");
+                btnApagar.addEventListener("click", async () => {
+                    const api = getApi();
+                    if (!api) return;
+                    try {
+                        const res = await api.apagar_marcacao(toLocalISOString(dt));
+                        if (res && res.success) {
+                            await this.onRefresh();
+                            closeModal();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao apagar.";
+                        }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                });
+
+                const btnSalvar = this._mkBtn("Salvar", "rgb(36,43,141)");
+                btnSalvar.addEventListener("click", async () => {
+                    const obsAtual = marcacao.observacoes || "";
+                    if (txaObs.value === obsAtual) { closeModal(); return; }
+                    const api = getApi();
+                    if (!api) return;
+                    try {
+                        const res = await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dt), txaObs.value);
+                        if (res && res.success) {
+                            await this.onRefresh();
+                            closeModal();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao guardar.";
+                        }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                });
+
+                btnRow.append(btnEditarCliente, btnAlterar, btnApagar, btnSalvar, btnSair);
             }
+        };
+
+        // ── Vista: Editar/Trocar Cliente ────────────────────────────────────
+        const renderVistaEditarCliente = () => {
+            overlay.innerHTML = "";
+            const modal = this._criarModal("380px");
+            overlay.appendChild(modal);
+
+            const isDesconhecido = marcacao.cliente?.tipoCliente === "DESCONHECIDO";
+
+            const titulo = document.createElement("div");
+            titulo.textContent = isDesconhecido ? "Editar Dados do Cliente" : "Trocar Cliente";
+            titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:8px;";
+            modal.appendChild(titulo);
+
+            const errorEl = document.createElement("div");
+            errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;";
+
+            let clientesSnapshot = {};
+            const apiRef = getApi();
+            if (apiRef) apiRef.get_clientes_map().then(m => { clientesSnapshot = m || {}; });
 
             if (isDesconhecido) {
-                const nomeNovo = inpNome.value.trim();
-                const telNovo  = inpTel.value.trim();
-                if (nomeNovo === nomeOriginalDesc && telNovo === telOriginalDesc) {
-                    modoEdicaoCliente = false;
-                    inpNome.readOnly = true;
-                    inpTel.readOnly  = true;
-                    inpNome.style.border = "none";
-                    inpTel.style.border  = "none";
-                return;
-                }
-                if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
+                // Editar nome e número do desconhecido
+                const lblNome = this._mkLabel("Nome:");
+                const inpNome = this._mkInput("Nome");
+                inpNome.value = marcacao.cliente?.nome || "";
+                const lblTel = this._mkLabel("Telefone:");
+                const inpTel = this._mkInput("Telefone");
+                inpTel.value = marcacao.cliente?.numeroTelefone || "";
+                inpTel.addEventListener("input", () => { inpTel.value = inpTel.value.replace(/[^\d+]/g, ""); });
+                modal.append(lblNome, inpNome, lblTel, inpTel, errorEl);
 
-                await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
-                    if (!confirmado) return;
+                const btnRow = document.createElement("div");
+                btnRow.style.cssText = "display:flex;gap:8px;justify-content:center;margin-top:12px;";
+                const btnSalvar = this._mkBtn("Guardar", "rgb(36,43,141)");
+                const btnVoltar = this._mkBtn("Voltar",  "rgb(60,60,60)");
+                btnRow.append(btnSalvar, btnVoltar);
+                modal.appendChild(btnRow);
+
+                btnVoltar.addEventListener("click", renderVistaPrincipal);
+                btnSalvar.addEventListener("click", async () => {
+                    errorEl.textContent = "";
+                    const nomeNovo = inpNome.value.trim();
+                    const telNovo  = inpTel.value.trim();
+                    if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
                     const api = getApi();
                     if (!api) { errorEl.textContent = "API não disponível."; return; }
                     try {
+                        btnSalvar.disabled = true;
                         const res = await api.alterar_cliente_desconhecido_marcacao(toLocalISOString(dt), nomeNovo, telNovo);
                         if (res && res.success) {
-                            modoEdicaoCliente = false;
-                            inpNome.readOnly = true;
-                            inpTel.readOnly  = true;
-                            inpNome.style.border = "none";
-                            inpTel.style.border  = "none";
+                            // Atualizar localmente para refletir na vista principal
+                            marcacao.cliente = { ...marcacao.cliente, nome: nomeNovo, numeroTelefone: telNovo };
                             await this.onRefresh();
+                            closeModal();
                             this.atualizar();
                         } else {
                             errorEl.textContent = res?.error || "Erro ao guardar alterações.";
                         }
-                    } catch(e) {
-                        errorEl.textContent = "Erro de comunicação.";
-                    }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                    finally { btnSalvar.disabled = false; }
                 });
-            } else {
-                const nomeEscolhido = pesquisaCliente.value.trim();
-                if (!nomeEscolhido || nomeEscolhido === nomeClienteAtual) {
-                    modoEdicaoCliente = false;
-                    pesquisaClienteWrap.style.display = "none";
-                    sugestoesCliente.style.display = "none";
-                    return;
-                }
-                if (!clientesSnapshot[nomeEscolhido]) {
-                    errorEl.textContent = "Cliente não encontrado.";
-                    return;
-                }
 
-                await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
-                    if (!confirmado) return;
+                setTimeout(() => inpNome.focus(), 50);
+
+            } else {
+                // Trocar por outro cliente registado
+                const lblPesquisa = this._mkLabel("Pesquisar cliente:");
+                const pesquisa = this._mkInput("Escreva o nome...");
+                modal.append(lblPesquisa, pesquisa, errorEl);
+
+                const sugestoes = document.createElement("div");
+                sugestoes.style.cssText = "background:white;border-radius:8px;max-height:140px;overflow-y:auto;display:none;";
+                modal.appendChild(sugestoes);
+
+                pesquisa.addEventListener("input", () => {
+                    const val = pesquisa.value.trim().toLowerCase();
+                    if (!val) { sugestoes.style.display = "none"; return; }
+                    const matches = Object.keys(clientesSnapshot).filter(n =>
+                        n.toLowerCase().includes(val) && n !== (marcacao.cliente?.nome || "")
+                    );
+                    sugestoes.innerHTML = "";
+                    if (!matches.length) { sugestoes.style.display = "none"; return; }
+                    sugestoes.style.display = "block";
+                    matches.forEach(n => {
+                        const item = document.createElement("div");
+                        item.textContent = n;
+                        item.style.cssText = "padding:8px 12px;cursor:pointer;font-size:14px;color:black;border-bottom:1px solid #eee;";
+                        item.addEventListener("mousedown", (e) => {
+                            e.preventDefault();
+                            pesquisa.value = n;
+                            sugestoes.style.display = "none";
+                        });
+                        sugestoes.appendChild(item);
+                    });
+                });
+                pesquisa.addEventListener("blur", () => {
+                    setTimeout(() => { sugestoes.style.display = "none"; }, 150);
+                });
+
+                const btnRow = document.createElement("div");
+                btnRow.style.cssText = "display:flex;gap:8px;justify-content:center;margin-top:12px;";
+                const btnSalvar = this._mkBtn("Trocar", "rgb(36,43,141)");
+                const btnVoltar = this._mkBtn("Voltar", "rgb(60,60,60)");
+                btnRow.append(btnSalvar, btnVoltar);
+                modal.appendChild(btnRow);
+
+                btnVoltar.addEventListener("click", renderVistaPrincipal);
+                btnSalvar.addEventListener("click", async () => {
+                    errorEl.textContent = "";
+                    const nomeEscolhido = pesquisa.value.trim();
+                    if (!nomeEscolhido) { errorEl.textContent = "Selecione um cliente."; return; }
+                    if (!clientesSnapshot[nomeEscolhido]) { errorEl.textContent = "Cliente não encontrado."; return; }
+                    if (nomeEscolhido === (marcacao.cliente?.nome || "")) { renderVistaPrincipal(); return; }
                     const api = getApi();
                     if (!api) { errorEl.textContent = "API não disponível."; return; }
                     try {
+                        btnSalvar.disabled = true;
                         const res = await api.trocar_cliente_marcacao(toLocalISOString(dt), nomeEscolhido);
                         if (res && res.success) {
-                            modoEdicaoCliente = false;
-                            pesquisaClienteWrap.style.display = "none";
-                            sugestoesCliente.style.display = "none";
                             await this.onRefresh();
                             closeModal();
                             this.atualizar();
                         } else {
                             errorEl.textContent = res?.error || "Erro ao trocar cliente.";
                         }
-                    } catch(e) {
-                        errorEl.textContent = "Erro de comunicação.";
-                    }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                    finally { btnSalvar.disabled = false; }
                 });
+
+                setTimeout(() => pesquisa.focus(), 50);
             }
-        });
+        };
 
-        // Duração
-        const lblDur2 = document.createElement("div");
-        lblDur2.textContent = "Duração:";
-        lblDur2.style.cssText = "color:white;font-size:14px;margin-top:6px;";
-        const inpDur2 = document.createElement("input");
-        inpDur2.type = "text";
-        inpDur2.value = `${marcacao.duracao} minutos`;
-        inpDur2.readOnly = true;
-        inpDur2.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;font-size:14px;box-sizing:border-box;";
-        modal.append(lblDur2, inpDur2);
+        // ── Vista: Alterar Hora / Troca de Marcação ─────────────────────────
+        const renderVistaTrocaHorario = () => {
+            overlay.innerHTML = "";
+            const modal = this._criarModal("400px");
+            overlay.appendChild(modal);
 
-        const errorEl = document.createElement("div");
-        errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;margin-top:4px;";
-        modal.appendChild(errorEl);
+            const titulo = document.createElement("div");
+            titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:8px;";
+            modal.appendChild(titulo);
 
-        const lblObs = document.createElement("div");
-        lblObs.textContent  = "Observações:";
-        lblObs.style.cssText = "color:white;font-size:14px;margin-top:6px;";
-        const txaObs = document.createElement("textarea");
-        txaObs.value        = marcacao.observacoes || "";
-        txaObs.rows         = 3;
-        txaObs.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;font-size:14px;box-sizing:border-box;resize:none;";
-        modal.append(lblObs, txaObs);
-        setTimeout(() => txaObs.focus(), 80);
-
-        // Alterar Hora / Troca de Marcação
-        let selDia = null, selHora = null, selHoraTroca = null;
-        let semanaAlvo = getMonday(dt);
-        let modoAtivo  = "hora";
-
-        if (!passou) {
-            const btnTrocaMarcacao = document.createElement("button");
-            btnTrocaMarcacao.textContent = "Troca de Marcação";
-            btnTrocaMarcacao.style.cssText = "background:rgb(36,43,141);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:12px;width:100%;";
-            modal.appendChild(btnTrocaMarcacao);
-
-            const painelHoraTroca = document.createElement("div");
-            painelHoraTroca.style.cssText = "display:none;flex-direction:column;gap:8px;margin-top:8px;";
-            modal.appendChild(painelHoraTroca);
-
+            // Tabs: Alterar Hora | Trocar Marcação
             const tabsRow = document.createElement("div");
-            tabsRow.style.cssText = "display:flex;gap:8px;";
+            tabsRow.style.cssText = "display:flex;gap:8px;margin-bottom:12px;";
+
             const tabAlterarHora = document.createElement("button");
-            tabAlterarHora.textContent = "Alterar Hora";
+            tabAlterarHora.textContent = "🕐 Alterar Hora";
             const tabTrocas = document.createElement("button");
-            tabTrocas.textContent = "Trocas";
+            tabTrocas.textContent = "🔄 Trocar Marcação";
             [tabAlterarHora, tabTrocas].forEach(b => {
-                b.style.cssText = "flex:1;background:rgb(43,40,40);color:white;border:none;border-radius:10px;padding:8px;font-size:14px;font-weight:bold;cursor:pointer;";
+                b.style.cssText = "flex:1;padding:10px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;";
             });
             tabsRow.append(tabAlterarHora, tabTrocas);
-            painelHoraTroca.appendChild(tabsRow);
+            modal.appendChild(tabsRow);
 
+            const errorEl = document.createElement("div");
+            errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;";
+
+            // ── Painel Alterar Hora ──
             const painelAlterarHora = document.createElement("div");
-            painelAlterarHora.style.cssText = "display:flex;flex-direction:column;gap:6px;margin-top:8px;";
-            painelHoraTroca.appendChild(painelAlterarHora);
+            painelAlterarHora.style.cssText = "display:flex;flex-direction:column;gap:8px;";
 
-            const painelTrocas = document.createElement("div");
-            painelTrocas.style.cssText = "display:none;flex-direction:column;gap:6px;margin-top:8px;";
-            painelHoraTroca.appendChild(painelTrocas);
+            // Navegação de semana (Alterar Hora)
+            let semanaAlvoAH = getMonday(new Date());
 
-            btnTrocaMarcacao.addEventListener("click", () => {
-                btnTrocaMarcacao.style.display = "none";
-                painelHoraTroca.style.display  = "flex";
-            });
+            const navAH = this._criarNavSemana(
+                () => semanaAlvoAH,
+                (nova) => { semanaAlvoAH = nova; },
+                () => { popularHorasAH(); }
+            );
+            painelAlterarHora.appendChild(navAH.el);
 
-            const navSemana = document.createElement("div");
-            navSemana.style.cssText = "display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;";
+            // Seletor de dia
+            const hboxCombosAH = document.createElement("div");
+            hboxCombosAH.style.cssText = "display:flex;gap:16px;justify-content:center;";
 
-            const btnSemAnt  = document.createElement("button");
-            btnSemAnt.textContent = "◀";
-            btnSemAnt.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:bold;";
-
-            const lblSemana  = document.createElement("div");
-            lblSemana.style.cssText = "color:white;font-size:13px;min-width:140px;text-align:center;";
-
-            const btnSemProx = document.createElement("button");
-            btnSemProx.textContent = "▶";
-            btnSemProx.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:14px;font-weight:bold;";
-
-            navSemana.append(btnSemAnt, lblSemana, btnSemProx);
-            painelAlterarHora.appendChild(navSemana);
-
-            const hboxCombos = document.createElement("div");
-            hboxCombos.style.cssText = "display:flex;gap:16px;justify-content:center;margin-top:8px;";
-
-            const mkCombo = (lbl) => {
-                const wrap = document.createElement("div");
-                wrap.style.cssText = "display:flex;flex-direction:column;gap:4px;align-items:center;";
-                const l   = document.createElement("div"); l.textContent = lbl; l.style.cssText = "color:white;font-size:13px;";
-                const sel = document.createElement("select");
-                sel.style.cssText = "padding:4px 8px;border-radius:8px;border:none;min-width:110px;background:white;";
-                wrap.append(l, sel);
-                hboxCombos.appendChild(wrap);
-                return sel;
-            };
-
-            selDia  = mkCombo("Dia");
-            selHora = mkCombo("Hora");
-            painelAlterarHora.appendChild(hboxCombos);
+            const { wrap: wrapDiaAH, sel: selDiaAH } = this._mkComboWrap("Dia");
+            const { wrap: wrapHoraAH, sel: selHoraAH } = this._mkComboWrap("Hora");
+            hboxCombosAH.append(wrapDiaAH, wrapHoraAH);
+            painelAlterarHora.appendChild(hboxCombosAH);
 
             DIAS_SEMANA_LONGO.forEach(d => {
                 const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
-                selDia.appendChild(opt);
+                selDiaAH.appendChild(opt);
             });
-
-            const diaIdxOriginal = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
-            selDia.value = DIAS_SEMANA_LONGO[diaIdxOriginal];
+            // Pré-selecionar o dia da marcação
+            const diaIdxOrig = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
+            selDiaAH.value = DIAS_SEMANA_LONGO[diaIdxOrig];
 
             const horaOriginalStr = `${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
 
-            const formatarSemana = (segunda) => {
-                const dom = new Date(segunda.getTime() + 6 * 86400000);
-                const fmt = (d) => `${d.getDate()} ${d.toLocaleDateString("pt-PT", { month: "short" })}`;
-                return `${fmt(segunda)} – ${fmt(dom)}`;
+            const dataDoDiaAH = () => {
+                const idx = DIAS_SEMANA_LONGO.indexOf(selDiaAH.value);
+                return new Date(semanaAlvoAH.getTime() + idx * 86400000);
             };
 
-            const dataDoDiaSelecionado = () => {
-                const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                return new Date(semanaAlvo.getTime() + idx * 86400000);
-            };
-
-            const popularHoras = async () => {
-                selHora.innerHTML = "";
-                const dataAlvo = dataDoDiaSelecionado();
+            const popularHorasAH = async () => {
+                selHoraAH.innerHTML = "";
+                const dataAlvo = dataDoDiaAH();
                 const api = getApi();
                 if (api) {
                     try {
@@ -1095,358 +1130,265 @@ class CalendarioModule {
                             toLocalISOString(dataAlvo),
                             marcacao.duracao
                         );
-                        if (res && res.success && res.horas) {
+                        if (res && res.success && res.horas && res.horas.length > 0) {
                             res.horas.forEach(h => {
                                 const opt = document.createElement("option"); opt.value = h; opt.textContent = h;
-                                selHora.appendChild(opt);
+                                selHoraAH.appendChild(opt);
                             });
+                        } else {
+                            const opt = document.createElement("option"); opt.value = ""; opt.textContent = "Sem horas disponíveis";
+                            selHoraAH.appendChild(opt);
                         }
                     } catch(e) { console.error(e); }
                 }
-                if ([...selHora.options].some(o => o.value === horaOriginalStr)) {
-                    selHora.value = horaOriginalStr;
-                } else if (selHora.options.length > 0) {
-                    selHora.selectedIndex = 0;
+                // Tentar pré-selecionar hora original
+                if ([...selHoraAH.options].some(o => o.value === horaOriginalStr)) {
+                    selHoraAH.value = horaOriginalStr;
                 }
-                verificarMudancas();
             };
 
-            // Painel "Trocas"
-            const trocaCombosWrap = document.createElement("div");
-            trocaCombosWrap.style.cssText = "display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:8px;";
-            const lblTroca = document.createElement("div");
-            lblTroca.textContent = "Marcação para troca:";
-            lblTroca.style.cssText = "color:white;font-size:13px;";
-            selHoraTroca = document.createElement("select");
-            selHoraTroca.size = 5;
-            selHoraTroca.style.cssText = "width:260px;padding:6px;border-radius:8px;border:none;font-size:14px;background:white;";
-            trocaCombosWrap.append(lblTroca, selHoraTroca);
-            painelTrocas.appendChild(trocaCombosWrap);
+            selDiaAH.addEventListener("change", popularHorasAH);
+            navAH.onChange = popularHorasAH;
 
-            const popularHorasTroca = async () => {
-                selHoraTroca.innerHTML = "";
-                const dataAlvo = dataDoDiaSelecionado();
+            // ── Painel Trocar Marcação ──
+            const painelTrocas = document.createElement("div");
+            painelTrocas.style.cssText = "display:none;flex-direction:column;gap:8px;";
+
+            let semanaAlvoTR = getMonday(new Date());
+
+            const navTR = this._criarNavSemana(
+                () => semanaAlvoTR,
+                (nova) => { semanaAlvoTR = nova; },
+                () => { popularHorasTR(); }
+            );
+            painelTrocas.appendChild(navTR.el);
+
+            // Seletor de dia para trocas
+            const hboxCombosTR = document.createElement("div");
+            hboxCombosTR.style.cssText = "display:flex;gap:16px;justify-content:center;";
+            const { wrap: wrapDiaTR, sel: selDiaTR } = this._mkComboWrap("Dia");
+            hboxCombosTR.appendChild(wrapDiaTR);
+            painelTrocas.appendChild(hboxCombosTR);
+
+            DIAS_SEMANA_LONGO.forEach(d => {
+                const opt = document.createElement("option"); opt.value = d; opt.textContent = d;
+                selDiaTR.appendChild(opt);
+            });
+            selDiaTR.value = DIAS_SEMANA_LONGO[diaIdxOrig];
+
+            const dataDoDiaTR = () => {
+                const idx = DIAS_SEMANA_LONGO.indexOf(selDiaTR.value);
+                return new Date(semanaAlvoTR.getTime() + idx * 86400000);
+            };
+
+            // Lista de marcações trocáveis
+            const listaTrocas = document.createElement("div");
+            listaTrocas.style.cssText = "background:rgb(43,40,40);border-radius:10px;max-height:180px;overflow-y:auto;";
+            painelTrocas.appendChild(listaTrocas);
+
+            let marcacaoTrocaSelecionada = null;
+
+            const popularHorasTR = async () => {
+                listaTrocas.innerHTML = "";
+                marcacaoTrocaSelecionada = null;
+                const dataAlvo = dataDoDiaTR();
                 const api = getApi();
                 if (!api) return;
                 try {
                     const res = await api.get_marcacoes_trocaveis(toLocalISOString(dt), toLocalISOString(dataAlvo));
-                    if (res && res.success && res.opcoes && res.opcoes.length) {
+                    if (res && res.success && res.opcoes && res.opcoes.length > 0) {
                         res.opcoes.forEach(o => {
-                            const opt = document.createElement("option");
-                            opt.value = o.dataHora;
-                            opt.textContent = `${o.hora} — ${o.nome}`;
-                            selHoraTroca.appendChild(opt);
+                            const item = document.createElement("div");
+                            item.style.cssText = "padding:10px 14px;cursor:pointer;color:white;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.1);transition:background 0.15s;";
+                            item.textContent = `${o.hora} — ${o.nome} (${o.duracao} min)`;
+                            item.addEventListener("click", () => {
+                                listaTrocas.querySelectorAll("div").forEach(el => el.style.background = "");
+                                item.style.background = "rgb(36,43,141)";
+                                marcacaoTrocaSelecionada = o.dataHora;
+                            });
+                            item.addEventListener("mouseenter", () => {
+                                if (marcacaoTrocaSelecionada !== o.dataHora) item.style.background = "rgba(255,255,255,0.08)";
+                            });
+                            item.addEventListener("mouseleave", () => {
+                                if (marcacaoTrocaSelecionada !== o.dataHora) item.style.background = "";
+                            });
+                            listaTrocas.appendChild(item);
                         });
                     } else {
-                        const opt = document.createElement("option");
-                        opt.value = "";
-                        opt.textContent = "Sem marcações compatíveis neste dia";
-                        selHoraTroca.appendChild(opt);
+                        const vazio = document.createElement("div");
+                        vazio.style.cssText = "padding:16px;color:rgba(255,255,255,0.5);text-align:center;font-size:14px;";
+                        vazio.textContent = "Sem marcações compatíveis neste dia";
+                        listaTrocas.appendChild(vazio);
                     }
                 } catch(e) { console.error(e); }
-                verificarMudancas();
             };
 
-            const _ativarTab = (qual) => {
-                modoAtivo = qual;
-                const ativo   = "flex:1;background:rgb(60,60,60);color:white;border:none;border-radius:10px;padding:8px;font-size:14px;font-weight:bold;cursor:pointer;";
-                const inativo = "flex:1;background:rgb(43,40,40);color:white;border:none;border-radius:10px;padding:8px;font-size:14px;font-weight:bold;cursor:pointer;";
-                tabAlterarHora.style.cssText = qual === "hora"   ? ativo : inativo;
-                tabTrocas.style.cssText      = qual === "trocas" ? ativo : inativo;
-                painelAlterarHora.style.display = qual === "hora"   ? "flex" : "none";
-                painelTrocas.style.display      = qual === "trocas" ? "flex" : "none";
-                verificarMudancas();
-            };
-            tabAlterarHora.addEventListener("click", () => _ativarTab("hora"));
-            tabTrocas.addEventListener("click",      () => _ativarTab("trocas"));
-            _ativarTab("hora");
+            selDiaTR.addEventListener("change", popularHorasTR);
+            navTR.onChange = popularHorasTR;
 
-            const actualizarSemana = () => {
-                lblSemana.textContent = formatarSemana(semanaAlvo);
-                popularHoras();
-                popularHorasTroca();
+            modal.appendChild(painelAlterarHora);
+            modal.appendChild(painelTrocas);
+            modal.appendChild(errorEl);
+
+            // Botões
+            const btnRow = document.createElement("div");
+            btnRow.style.cssText = "display:flex;gap:8px;justify-content:center;margin-top:12px;";
+            const btnConfirmar = this._mkBtn("Confirmar", "rgb(36,43,141)");
+            const btnVoltar    = this._mkBtn("Voltar",    "rgb(60,60,60)");
+            btnRow.append(btnConfirmar, btnVoltar);
+            modal.appendChild(btnRow);
+
+            btnVoltar.addEventListener("click", renderVistaPrincipal);
+
+            // Activar tab
+            let modoTab = "hora";
+            const ativarTab = (modo) => {
+                modoTab = modo;
+                const estilo_ativo   = "flex:1;padding:10px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;background:rgb(60,60,60);";
+                const estilo_inativo = "flex:1;padding:10px;border:none;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;color:white;background:rgb(43,40,40);";
+                tabAlterarHora.style.cssText = modo === "hora"   ? estilo_ativo : estilo_inativo;
+                tabTrocas.style.cssText      = modo === "trocas" ? estilo_ativo : estilo_inativo;
+                painelAlterarHora.style.display = modo === "hora"   ? "flex" : "none";
+                painelTrocas.style.display      = modo === "trocas" ? "flex" : "none";
+                titulo.textContent = modo === "hora" ? "Alterar Hora da Marcação" : "Trocar Marcação";
             };
 
-            btnSemAnt.addEventListener("click", () => {
-                const semanaAtualLocal = getMonday(new Date());
-                const candidata = new Date(semanaAlvo.getTime() - 7 * 86400000);
-                if (candidata >= semanaAtualLocal) {
-                    semanaAlvo = candidata;
-                    actualizarSemana();
-                }
-                btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
-                btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
+            tabAlterarHora.addEventListener("click", () => ativarTab("hora"));
+            tabTrocas.addEventListener("click", () => {
+                ativarTab("trocas");
+                popularHorasTR();
             });
+            ativarTab("hora");
 
-            btnSemProx.addEventListener("click", () => {
-                semanaAlvo = new Date(semanaAlvo.getTime() + 7 * 86400000);
-                actualizarSemana();
-                const semanaAtualLocal = getMonday(new Date());
-                btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
-                btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
-            });
+            // Carregar horas disponíveis para alterar hora
+            popularHorasAH();
 
-            selDia.addEventListener("change", () => { popularHoras(); popularHorasTroca(); });
-            selHoraTroca.addEventListener("change", verificarMudancas);
-
-            const semanaAtualLocal = getMonday(new Date());
-            btnSemAnt.disabled = (semanaAlvo.getTime() === semanaAtualLocal.getTime());
-            btnSemAnt.style.opacity = btnSemAnt.disabled ? "0.4" : "1";
-            actualizarSemana();
-        }
-
-        // Botões
-        const btnRow    = document.createElement("div");
-        btnRow.style.cssText = "display:flex;gap:12px;justify-content:center;margin-top:14px;";
-        const btnSalvar = this._mkBtn("Salvar", "rgb(36,43,141)");
-        const btnSair   = this._mkBtn("Sair",   "rgb(60,60,60)");
-        btnRow.append(btnSalvar, btnSair);
-
-        if (passou) {
-            const btnFaltou = this._mkBtn("Faltou", "rgb(128,26,15)");
-            btnFaltou.disabled = marcacao.falta;
-            if (marcacao.falta) btnFaltou.style.opacity = "0.5";
-            btnFaltou.addEventListener("click", async () => {
+            btnConfirmar.addEventListener("click", async () => {
+                errorEl.textContent = "";
                 const api = getApi();
-                if (!api) return;
-                try {
-                    const res = await api.marcar_falta_marcacao(toLocalISOString(dt));
-                    if (res && res.success) { await this.onRefresh(); closeModal(); this.atualizar(); }
-                    else errorEl.textContent = res?.error || "Erro ao marcar falta.";
-                } catch(e) { errorEl.textContent = "Erro de comunicação."; }
-            });
-            btnRow.insertBefore(btnFaltou, btnSalvar);
-        } else {
-            const btnApagar = this._mkBtn("Apagar", "rgb(128,26,15)");
-            btnApagar.addEventListener("click", async () => {
-                const api = getApi();
-                if (!api) return;
-                try {
-                    const res = await api.apagar_marcacao(toLocalISOString(dt));
-                    if (res && res.success) { await this.onRefresh(); closeModal(); this.atualizar(); }
-                    else errorEl.textContent = res?.error || "Erro ao apagar.";
-                } catch(e) { errorEl.textContent = "Erro de comunicação."; }
-            });
-            btnRow.insertBefore(btnApagar, btnSalvar);
-        }
+                if (!api) { errorEl.textContent = "API não disponível."; return; }
 
-        modal.appendChild(btnRow);
+                if (modoTab === "hora") {
+                    if (!selHoraAH.value || selHoraAH.value === "") {
+                        errorEl.textContent = "Sem hora disponível para selecionar.";
+                        return;
+                    }
+                    const idx = DIAS_SEMANA_LONGO.indexOf(selDiaAH.value);
+                    const dataAlvo = new Date(semanaAlvoAH.getTime() + idx * 86400000);
+                    const [hh, mm] = selHoraAH.value.split(":").map(Number);
+                    const dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
 
-        const obsOriginal = txaObs.value;
-        btnSalvar.disabled = true;
+                    if (dtNova.getTime() === dt.getTime()) {
+                        renderVistaPrincipal();
+                        return;
+                    }
 
-        const calcHoraAlterada = () => {
-            if (passou || modoAtivo !== "hora" || !selDia || !selHora || !selHora.value) return false;
-            const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-            const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
-            const [hh, mm] = selHora.value.split(":").map(Number);
-            const dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
-            return dtNova.getTime() !== dt.getTime();
-        };
-
-        const verificarMudancas = () => {
-            const obsAlterada      = txaObs.value !== obsOriginal;
-            const horaAlterada     = calcHoraAlterada();
-            const trocaSelecionada = modoAtivo === "trocas" && selHoraTroca && !!selHoraTroca.value;
-            btnSalvar.disabled = false;
-            btnSalvar.style.opacity = (!obsAlterada && !horaAlterada && !trocaSelecionada && !modoEdicaoCliente) ? "0.55" : "1";
-        };
-
-        txaObs.addEventListener("input",   verificarMudancas);
-        if (selDia)  selDia.addEventListener("change",  verificarMudancas);
-        if (selHora) selHora.addEventListener("change", verificarMudancas);
-
-        const closeModal = () => {
-            if (document.body.contains(overlay)) document.body.removeChild(overlay);
-            window.removeEventListener("keydown", keyH, true);
-        };
-        const keyH = (e) => {
-            if (!document.body.contains(overlay)) return;
-            if (e.key === "Escape") { e.preventDefault(); closeModal(); }
-            if (e.key === "Enter" && !btnSalvar.disabled) { e.preventDefault(); btnSalvar.click(); }
-        };
-        window.addEventListener("keydown", keyH, true);
-        overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
-        btnSair.addEventListener("click", closeModal);
-
-        btnSalvar.addEventListener("click", async () => {
-            const api = getApi();
-            if (!api) { errorEl.textContent = "API não disponível."; return; }
-
-            // Modo "Trocas": troca os clientes entre as duas marcações
-            if (modoAtivo === "trocas" && selHoraTroca && selHoraTroca.value) {
-                await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
-                    if (!confirmado) return;
                     try {
-                        btnSalvar.disabled = true;
-                        const res = await api.trocar_marcacoes(toLocalISOString(dt), selHoraTroca.value);
+                        btnConfirmar.disabled = true;
+                        const res = await api.alterar_marcacao(
+                            toLocalISOString(dt),
+                            toLocalISOString(dtNova),
+                            marcacao.observacoes || ""
+                        );
+                        if (res && res.success) {
+                            await this.onRefresh();
+                            closeModal();
+                            this.atualizar();
+                        } else {
+                            errorEl.textContent = res?.error || "Erro ao alterar hora.";
+                        }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                    finally { btnConfirmar.disabled = false; }
+
+                } else {
+                    // Modo trocas
+                    if (!marcacaoTrocaSelecionada) {
+                        errorEl.textContent = "Selecione uma marcação para trocar.";
+                        return;
+                    }
+                    try {
+                        btnConfirmar.disabled = true;
+                        const res = await api.trocar_marcacoes(toLocalISOString(dt), marcacaoTrocaSelecionada);
                         if (res && res.success) {
                             await this.onRefresh();
                             closeModal();
                             this.atualizar();
                         } else {
                             errorEl.textContent = res?.error || "Erro ao trocar marcações.";
-                            btnSalvar.disabled = false;
                         }
-                    } catch(e) {
-                        errorEl.textContent = "Erro de comunicação.";
-                        btnSalvar.disabled = false;
-                    }
-                });
-                return;
-            }
-
-            const obsAlterada  = txaObs.value !== obsOriginal;
-            const horaAlterada = calcHoraAlterada();
-
-            // Alteração de cliente pendente
-            if (modoEdicaoCliente) {
-                if (isDesconhecido) {
-                    const nomeNovo = inpNome.value.trim();
-                    const telNovo  = inpTel.value.trim();
-                    const nomeAlterado = nomeNovo !== nomeOriginalDesc;
-                    const telAlterado  = telNovo !== telOriginalDesc;
-                    if (nomeAlterado || telAlterado) {
-                        if (!nomeNovo) { errorEl.textContent = "O nome não pode ser vazio."; return; }
-                        await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
-                            if (!confirmado) return;
-                            try {
-                                btnSalvar.disabled = true;
-                                const res = await api.alterar_cliente_desconhecido_marcacao(toLocalISOString(dt), nomeNovo, telNovo);
-                                if (res && res.success) {
-                                    if (obsAlterada || horaAlterada) {
-                                        let dtNova = dt;
-                                        if (horaAlterada && selDia && selHora && selHora.value) {
-                                            const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                                            const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
-                                            const [hh, mm] = selHora.value.split(":").map(Number);
-                                            dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
-                                        }
-                                        await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dtNova), txaObs.value);
-                                    }
-                                    await this.onRefresh();
-                                    closeModal();
-                                    this.atualizar();
-                                } else {
-                                    errorEl.textContent = res?.error || "Erro ao guardar alterações.";
-                                    btnSalvar.disabled = false;
-                                }
-                            } catch(e) {
-                                errorEl.textContent = "Erro de comunicação.";
-                                btnSalvar.disabled = false;
-                            }
-                        });
-                        return;
-                    }
-                } else {
-                    const nomeEscolhido = pesquisaCliente.value.trim();
-                    if (nomeEscolhido && nomeEscolhido !== nomeClienteAtual && clientesSnapshot[nomeEscolhido]) {
-                        await this._confirmarAltracoes(modal, overlay, async (confirmado) => {
-                            if (!confirmado) return;
-                            try {
-                                btnSalvar.disabled = true;
-                                const res = await api.trocar_cliente_marcacao(toLocalISOString(dt), nomeEscolhido);
-                                if (res && res.success) {
-                                    if (obsAlterada || horaAlterada) {
-                                        let dtNova = dt;
-                                        if (horaAlterada && selDia && selHora && selHora.value) {
-                                            const idx = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                                            const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
-                                            const [hh, mm] = selHora.value.split(":").map(Number);
-                                            dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
-                                        }
-                                        await api.alterar_marcacao(toLocalISOString(dt), toLocalISOString(dtNova), txaObs.value);
-                                    }
-                                    await this.onRefresh();
-                                    closeModal();
-                                    this.atualizar();
-                                } else {
-                                    errorEl.textContent = res?.error || "Erro ao trocar cliente.";
-                                    btnSalvar.disabled = false;
-                                }
-                            } catch(e) {
-                                errorEl.textContent = "Erro de comunicação.";
-                                btnSalvar.disabled = false;
-                            }
-                        });
-                        return;
-                    }
+                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                    finally { btnConfirmar.disabled = false; }
                 }
-            }
+            });
+        };
 
-            if (!obsAlterada && !horaAlterada) {
-                closeModal();
-                return;
-            }
-
-            try {
-                btnSalvar.disabled = true;
-
-                let dtNova = dt;
-                if (horaAlterada && selDia && selHora && selHora.value) {
-                    const idx      = DIAS_SEMANA_LONGO.indexOf(selDia.value);
-                    const dataAlvo = new Date(semanaAlvo.getTime() + idx * 86400000);
-                    const [hh, mm] = selHora.value.split(":").map(Number);
-                    dtNova = new Date(dataAlvo.getFullYear(), dataAlvo.getMonth(), dataAlvo.getDate(), hh, mm);
-                }
-
-                const res = await api.alterar_marcacao(
-                    toLocalISOString(dt),
-                    toLocalISOString(dtNova),
-                    txaObs.value
-                );
-                if (res && res.success) {
-                    await this.onRefresh();
-                    closeModal();
-                    this.atualizar();
-                } else {
-                    errorEl.textContent = res?.error || "Erro ao guardar.";
-                    btnSalvar.disabled = false;
-                }
-            } catch(e) {
-                errorEl.textContent = "Erro de comunicação.";
-                btnSalvar.disabled = false;
-            }
-        });
+        // Iniciar com a vista principal
+        renderVistaPrincipal();
     }
 
-    _confirmarAlteracoes(modal, overlay, callback) {
-        return new Promise((resolve) => {
-            const filhosOriginais = Array.from(modal.children);
-            filhosOriginais.forEach(el => { el.style.display = "none"; });
+    // ── Helper: Navegação de Semana ──────────────────────────────────────────
 
-            const wrap = document.createElement("div");
-            wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:16px;min-height:160px;";
+    _criarNavSemana(getSemana, setSemana, onChange) {
+        const obj = { el: null, onChange: onChange };
 
-            const msg = document.createElement("div");
-            msg.textContent = "Deseja guardar as alterações?";
-            msg.style.cssText = "color:white;font-size:18px;font-weight:bold;text-align:center;";
+        const nav = document.createElement("div");
+        nav.style.cssText = "display:flex;align-items:center;justify-content:center;gap:8px;";
 
-            const btnRow = document.createElement("div");
-            btnRow.style.cssText = "display:flex;gap:20px;justify-content:center;";
+        const btnAnt  = document.createElement("button");
+        btnAnt.textContent = "◀";
+        btnAnt.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:4px 12px;cursor:pointer;font-size:15px;font-weight:bold;";
 
-            const btnSim = document.createElement("button");
-            btnSim.textContent = "Sim";
-            btnSim.style.cssText = "background:rgb(36,43,141);color:white;border:none;padding:10px 32px;border-radius:10px;cursor:pointer;font-weight:700;font-size:16px;";
+        const lblSem = document.createElement("div");
+        lblSem.style.cssText = "color:white;font-size:13px;min-width:160px;text-align:center;font-weight:bold;";
 
-            const btnNao = document.createElement("button");
-            btnNao.textContent = "Não";
-            btnNao.style.cssText = "background:rgb(128,26,15);color:white;border:none;padding:10px 32px;border-radius:10px;cursor:pointer;font-weight:700;font-size:16px;";
+        const btnProx = document.createElement("button");
+        btnProx.textContent = "▶";
+        btnProx.style.cssText = "background:rgb(43,40,40);color:white;border:none;border-radius:8px;padding:4px 12px;cursor:pointer;font-size:15px;font-weight:bold;";
 
-            btnRow.append(btnSim, btnNao);
-            wrap.append(msg, btnRow);
-            modal.appendChild(wrap);
+        nav.append(btnAnt, lblSem, btnProx);
 
-            const finish = async (confirmado) => {
-                modal.removeChild(wrap);
-                filhosOriginais.forEach(el => { el.style.display = ""; });
-                await callback(confirmado);
-                resolve(confirmado);
-            };
+        const semanaMin = getMonday(new Date());
 
-            btnSim.addEventListener("click", () => finish(true));
-            btnNao.addEventListener("click", () => finish(false));
+        const atualizar = () => {
+            const s = getSemana();
+            const dom = new Date(s.getTime() + 6 * 86400000);
+            const fmt = (d) => `${d.getDate()} ${d.toLocaleDateString("pt-PT", { month: "short" })}`;
+            lblSem.textContent = `${fmt(s)} – ${fmt(dom)}`;
+            btnAnt.disabled = s.getTime() <= semanaMin.getTime();
+            btnAnt.style.opacity = btnAnt.disabled ? "0.4" : "1";
+            if (obj.onChange) obj.onChange();
+        };
+
+        btnAnt.addEventListener("click", () => {
+            const nova = new Date(getSemana().getTime() - 7 * 86400000);
+            if (nova.getTime() >= semanaMin.getTime()) {
+                setSemana(nova);
+                atualizar();
+            }
         });
+
+        btnProx.addEventListener("click", () => {
+            setSemana(new Date(getSemana().getTime() + 7 * 86400000));
+            atualizar();
+        });
+
+        atualizar();
+        obj.el = nav;
+        return obj;
+    }
+
+    // ── Helper: Combo com label ───────────────────────────────────────────────
+
+    _mkComboWrap(label) {
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:flex;flex-direction:column;gap:4px;align-items:center;";
+        const lbl = document.createElement("div");
+        lbl.textContent = label;
+        lbl.style.cssText = "color:rgba(255,255,255,0.7);font-size:12px;";
+        const sel = document.createElement("select");
+        sel.style.cssText = "padding:6px 10px;border-radius:8px;border:none;min-width:120px;background:white;font-size:14px;";
+        wrap.append(lbl, sel);
+        return { wrap, sel };
     }
 
     _updateCurrentSlotHighlight() {
@@ -1520,6 +1462,7 @@ class CalendarioModule {
             color: "white",
             display: "flex", flexDirection: "column", gap: "6px",
             maxHeight: "90vh", overflowY: "auto",
+            boxSizing: "border-box",
         });
         return el;
     }
@@ -1528,21 +1471,21 @@ class CalendarioModule {
         const inp = document.createElement("input");
         inp.type        = "text";
         inp.placeholder = placeholder;
-        inp.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;font-size:14px;box-sizing:border-box;";
+        inp.style.cssText = "width:100%;padding:6px 10px;border-radius:8px;border:none;background:white;color:black;font-size:14px;box-sizing:border-box;";
         return inp;
     }
 
     _mkLabel(texto) {
         const lbl = document.createElement("div");
         lbl.textContent  = texto;
-        lbl.style.cssText = "color:white;font-size:14px;margin-top:4px;";
+        lbl.style.cssText = "color:rgba(255,255,255,0.7);font-size:12px;margin-top:4px;";
         return lbl;
     }
 
     _mkBtn(texto, bg) {
         const btn = document.createElement("button");
         btn.textContent = texto;
-        btn.style.cssText = `background:${bg};color:white;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:700;font-size:15px;min-width:80px;`;
+        btn.style.cssText = `background:${bg};color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:14px;min-width:70px;`;
         return btn;
     }
 }
@@ -1593,7 +1536,6 @@ class ClientesModule {
         search.value        = filtro;
         search.addEventListener("input", () => {
             this._atualizarTabelaFiltro(table, clientesArray, search.value);
-            // Actualizar contador com resultados filtrados
             const filtroLower = search.value.toLowerCase();
             const visiveis = clientesArray.filter(c =>
                 c.nome.toLowerCase().includes(filtroLower) ||
@@ -1639,8 +1581,6 @@ class ClientesModule {
         container.appendChild(table);
         this.content.appendChild(container);
 
-        // Focar automaticamente o campo de pesquisa após render
-        // sem roubar foco se o utilizador estiver a interagir com outra coisa
         setTimeout(() => {
             if (document.activeElement === document.body ||
                 document.activeElement === this.content) {
@@ -1650,7 +1590,6 @@ class ClientesModule {
     }
 
     _atualizarTabelaFiltro(table, clientesArray, filtro) {
-        // Remover linhas antigas (manter apenas os headers: primeiros 6 filhos)
         const headers = Array.from(table.children).slice(0, 6);
         table.innerHTML = "";
         headers.forEach(h => table.appendChild(h));
@@ -1876,7 +1815,6 @@ class ClientesModule {
             else alert(res?.error || "Erro ao apagar cliente.");
         });
 
-        // Elemento de erro para edição de cliente (adiciona antes dos botões no editBox)
         const editErrorEl = document.createElement("div");
         editErrorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;text-align:center;margin-top:4px;";
         editBox.appendChild(editErrorEl);
@@ -2254,7 +2192,6 @@ class PendentesModule {
         barra.append(btnAdicionar, btnRemover, spacer, btnSair);
         modal.appendChild(barra);
 
-        // Tabela
         const tabelaWrap = document.createElement("div");
         Object.assign(tabelaWrap.style, {
             background: "rgb(43,40,40)", borderRadius: "12px", padding: "10px",
