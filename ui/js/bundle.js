@@ -283,6 +283,7 @@ class CalendarioModule {
     iniciarHighlightLoop() {
         const schedule = () => {
             this._updateCurrentSlotHighlight();
+            this._updatePastCells();
             const now = new Date();
             const minutos = now.getMinutes();
             const proximoBloco = minutos < 30 ? 30 : 60;
@@ -1568,6 +1569,30 @@ class CalendarioModule {
         const iso = toLocalISOString(getCurrentSlotDate());
         const el  = document.querySelector(`.calendar-cell[data-datetime="${iso}"]`);
         if (el) el.classList.add("current-slot");
+    }
+
+    _updatePastCells() {
+        const agora = new Date();
+        document.querySelectorAll(".calendar-cell[data-datetime]").forEach(cel => {
+            const iso = cel.getAttribute("data-datetime");
+            if (!iso) return;
+            const dt = new Date(iso);
+            if (dt < agora) {
+                if (!cel.classList.contains("past")) {
+                    cel.classList.add("past");
+                    cel.style.cursor = "default";
+                    const clone = cel.cloneNode(true);
+                    cel.parentNode.replaceChild(clone, cel);
+                }
+            }
+        });
+
+        // Escurecer marcações dentro de células passadas
+        document.querySelectorAll(".calendar-cell.past .marcacao").forEach(m => {
+            if (!m.classList.contains("falta")) {
+                m.style.opacity = "0.7";
+            }
+        });
     }
 
     _atualizarLabel() {
