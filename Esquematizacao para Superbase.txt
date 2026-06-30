@@ -1,0 +1,76 @@
+┌─────────────────────────────────────────────────────────────┐
+│                        SUPABASE                             │
+│                    (Base de dados na nuvem)                 │
+│                                                             │
+│  clientes | marcacoes | pendentes | anotacoes | logs        │
+│  sync_pendente (fila offline)                               │
+└──────────────┬──────────────────────────┬───────────────────┘
+               │ sync (quando online)      │ REST API
+               │                          │
+┌──────────────▼──────────┐    ┌──────────▼───────────────────┐
+│   APP DESKTOP           │    │   SITE (GitHub Pages)        │
+│   (PC do teu pai)       │    │   teuuser.github.io/agenda   │
+│                         │    │                              │
+│   SQLite local          │    │   Login → Agenda completa    │
+│   Funciona offline      │    │   Lê e ESCREVE no Supabase   │
+│   Sync em background    │    │   Funciona em qualquer lado  │
+└─────────────────────────┘    └──────────────────────────────┘
+
+
+ACTUALMENTE NO GITHUB          O QUE VAIS ADICIONAR
+──────────────────────         ─────────────────────
+backend/                       backend/utils/SupabaseSync.py (novo)
+  controllers/                 backend/utils/SyncQueue.py (novo)
+  models/                      .env (local, no .gitignore)
+  utils/
+ui/
+  html/
+  css/
+  js/
+    bundle.js                  web/               ← pasta nova
+main.py                          index.html       (site completo)
+build.py                         bundle_web.js    (JS adaptado)
+requirements.txt               ← adicionar: supabase, python-dotenv
+
+
+COMPLEXIDADE POR PARTE:
+
+1. Supabase (configuração)        ██░░░░░  Fácil
+   └── Criar tabelas, copiar keys
+
+2. Migração inicial (script)      ███░░░░  Médio
+   └── Lê SQLite → envia tudo para Supabase uma vez
+
+3. Sync na app desktop            ████░░░  Médio
+   └── Novo ficheiro SupabaseSync.py
+   └── Modificar Database.py para chamar o sync
+   └── Fila para quando está offline
+
+4. Site web                       █████░░  O maior trabalho
+   └── Adaptar o bundle.js actual
+   └── Em vez de chamar pywebview.api chama Supabase directamente
+   └── Login page
+   └── A lógica do calendário já existe, só muda a fonte dos dados
+
+
+Ordem de Implementação
+
+PASSO 1 ── Configurar Supabase
+           └── Criar conta, criar tabelas, copiar keys
+           └── Tempo estimado: 30 minutos
+
+PASSO 2 ── Script de migração inicial
+           └── Corre uma vez, envia tudo o que já tens
+           └── Tempo estimado: já feito por mim, corres e pronto
+
+PASSO 3 ── Módulo de sync na app desktop
+           └── Transparente, funciona em background
+           └── Tempo estimado: já feito por mim, adicionas ao projecto
+
+PASSO 4 ── Site web no GitHub Pages
+           └── O maior passo mas a lógica já existe no bundle.js
+           └── Tempo estimado: o mais demorado
+
+PASSO 5 ── Build novo da app desktop
+           └── Corres build.py novamente com as alterações
+           └── Substituis no PC do teu pai

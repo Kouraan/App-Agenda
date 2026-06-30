@@ -1,11 +1,8 @@
-# Ignorar caches do Python
-__pycache__/
-**/__pycache__/
-*.py[cod]
-*$py.class
-
-# Ignorar pasta de logs
+.env
+data/
 logs/
 logs/**
-
-# Permitir que o resto do projeto seja versionado
+__pycache__/
+*.pyc
+dist/
+build/
