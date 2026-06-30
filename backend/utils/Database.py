@@ -8,6 +8,14 @@ from typing import Optional
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB_PATH = os.path.join(BASE_DIR, "data", "agenda.db")
 
+# Sync com Supabase
+def _sync(operacao: str, tabela: str, dados: dict):
+    try:
+        from . import SupabaseSync
+        SupabaseSync.sincronizar(operacao, tabela, dados)
+    except Exception:
+        pass    # sync nunca bloqueia a app
+
 
 # Ligação
 
@@ -125,6 +133,7 @@ def guardar_utilizador(nome: str, password: str) -> bool:
                     "INSERT INTO utilizador (nome, password) VALUES (?, ?)",
                     (nome, password)
                 )
+        _sync("upsert", "utilizador", {"nome": nome, "password": password})
         return True
     except Exception as e:
         print(f"[Database] guardar_utilizador: {e}")
@@ -155,6 +164,12 @@ def inserir_cliente(nome: str, numero_telefone: str, tipo_cliente: str,
                 (nome, numero_telefone, tipo_cliente, faltas,
                  dia_semana, hora_corte, int(rapido))
             )
+        _sync("upsert", "clientes", {
+            "nome": nome, "numero_telefone": numero_telefone,
+            "tipo_cliente": tipo_cliente, "faltas": faltas,
+            "dia_semana": dia_semana, "hora_corte": hora_corte,
+            "rapido": int(rapido)
+        })
         return True
     except Exception as e:
         print(f"[Database] inserir_cliente: {e}")
@@ -174,6 +189,14 @@ def atualizar_cliente(nome_original: str, nome: str, numero_telefone: str,
                 (nome, numero_telefone, tipo_cliente, faltas,
                  dia_semana, hora_corte, int(rapido), nome_original)
             )
+        if nome != nome_original:
+            _sync("delete", "clientes", {"_campo": "nome", "_valor": nome_original})
+        _sync("upsert", "clientes", {
+            "nome": nome, "numero_telefone": numero_telefone,
+            "tipo_cliente": tipo_cliente, "faltas": faltas,
+            "dia_semana": dia_semana, "hora_corte": hora_corte,
+            "rapido": int(rapido)
+        })
         return True
     except Exception as e:
         print(f"[Database] atualizar_cliente: {e}")
@@ -184,6 +207,7 @@ def apagar_cliente(nome: str) -> bool:
     try:
         with _connect() as conn:
             conn.execute("DELETE FROM clientes WHERE nome=?", (nome,))
+        _sync("delete", "clientes", {"_campo": "nome", "_valor": nome})
         return True
     except Exception as e:
         print(f"[Database] apagar_cliente: {e}")
@@ -253,6 +277,8 @@ def inserir_marcacoes_bulk(marcacoes: list[dict]) -> bool:
                            :observacoes, :falta)""",
                 marcacoes
             )
+        for m in marcacoes:
+            _sync("upsert", "marcacoes", m)
         return True
     except Exception as e:
         print(f"[Database] inserir_marcacoes_bulk: {e}")
@@ -272,6 +298,12 @@ def atualizar_marcacao(data_hora_original: str, data_hora: str,
                 (data_hora, cliente_nome, duracao,
                  observacoes, int(falta), data_hora_original)
             )
+        if data_hora != data_hora_original:
+            _sync("delete", "marcacoes", {"_campo": "data_hora", "_valor": data_hora_original})
+        _sync("upsert", "marcacoes", {
+            "data_hora": data_hora, "cliente_nome": cliente_nome,
+            "duracao": duracao, "observacoes": observacoes, "falta": int(falta)
+        })
         return True
     except Exception as e:
         print(f"[Database] atualizar_marcacao: {e}")
@@ -284,6 +316,7 @@ def apagar_marcacao(data_hora: str) -> bool:
             conn.execute(
                 "DELETE FROM marcacoes WHERE data_hora=?", (data_hora,)
             )
+        _sync("delete", "marcacoes", {"_campo": "data_hora", "_valor": data_hora})
         return True
     except Exception as e:
         print(f"[Database] apagar_marcacao: {e}")
@@ -300,6 +333,10 @@ def apagar_marcacoes_futuras_cliente(cliente_nome: str,
                    WHERE cliente_nome=? AND data_hora >= ?""",
                 (cliente_nome, a_partir_de)
             )
+        _sync("delete_futuras_cliente", "marcacoes", {
+            "cliente_nome": cliente_nome,
+            "a_partir_de": a_partir_de
+        })
         return True
     except Exception as e:
         print(f"[Database] apagar_marcacoes_futuras_cliente: {e}")
@@ -344,6 +381,7 @@ def guardar_anotacoes(texto: str) -> bool:
                     "INSERT INTO anotacoes (id, texto) VALUES (1, ?)",
                     (texto,)
                 )
+        _sync("upsert", "anotacoes", {"id": 1, "texto": texto})
         return True
     except Exception as e:
         print(f"[Database] guardar_anotacoes: {e}")
@@ -386,7 +424,6 @@ def apagar_pendente_por_nome(nome: str) -> bool:
 
 
 def guardar_pendentes(pendentes: list[dict]) -> bool:
-    """Substitui toda a lista de pendentes (apaga e reinsere)."""
     try:
         with _connect() as conn:
             conn.execute("DELETE FROM pendentes")
@@ -394,6 +431,15 @@ def guardar_pendentes(pendentes: list[dict]) -> bool:
                 "INSERT INTO pendentes (nome, numero_telefone) VALUES (?, ?)",
                 [(p["nome"], p.get("numero_telefone", "")) for p in pendentes]
             )
+        try:
+            from . import SupabaseSync
+            client = SupabaseSync._get_cliente()
+            if client:
+                client.table("pendentes").delete().neq("id", 0).execute()
+                if pendentes:
+                    client.table("pendentes").insert(pendentes).execute()
+        except Exception:
+            pass
         return True
     except Exception as e:
         print(f"[Database] guardar_pendentes: {e}")
@@ -413,6 +459,9 @@ def inserir_log(tipo: str, mensagem: str) -> bool:
                 "INSERT INTO logs (data_hora, tipo, mensagem) VALUES (?, ?, ?)",
                 (data_hora, tipo, mensagem)
             )
+        _sync("upsert", "logs", {
+            "data_hora": data_hora, "tipo": tipo, "mensagem": mensagem
+        })
         return True
     except Exception as e:
         print(f"[Database] inserir_log: {e}")

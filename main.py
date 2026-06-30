@@ -3,6 +3,7 @@ import threading
 import time
 import os
 from backend.controllers.AppController import AppController
+from backend.utils.SupabaseSync import iniciar_sync_background
 
 class MainApp:
     def __init__(self):
@@ -36,6 +37,7 @@ class MainApp:
     def start_app(self):
         """Inicia a aplicação"""
         # Inicializar dados da aplicação
+        iniciar_sync_background()
         self.app_controller.initialize()
         
         # Determinar página inicial
