@@ -1,6 +1,7 @@
 """
 SupabaseSync.py — sincroniza alterações locais com o Supabase em background.
 Funciona offline: guarda numa fila local e envia quando a internet voltar.
+TODAS as operações são feitas em background para não bloquear a UI.
 """
 
 import os
@@ -17,18 +18,19 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.path.join(BASE_DIR, "data", "agenda.db")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DB_PATH  = os.path.join(BASE_DIR, "data", "agenda.db")
 
 _supabase_client = None
 _client_lock     = threading.Lock()
 _sync_thread     = None
-_online          = False
+_fila_lock       = threading.Lock()
+_iniciado        = False
 
 
 # Cliente Supabase
-def _get_cliente():
+
+def _get_client():
     global _supabase_client
     if _supabase_client is None:
         with _client_lock:
@@ -41,10 +43,14 @@ def _get_cliente():
                     print(f"[Sync] Erro ao criar cliente Supabase: {e}")
     return _supabase_client
 
+
 # Fila offline
 
 @contextmanager
 def _sqlite():
+    """Abre a BD local apenas se a pasta data/ já existir."""
+    if not os.path.exists(os.path.dirname(DB_PATH)):
+        raise RuntimeError("Pasta data/ ainda não existe")
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -55,47 +61,51 @@ def _sqlite():
         raise
     finally:
         conn.close()
-        
+
+
 def _garantir_tabela_fila():
     """Garante que a tabela sync_pendente existe no SQLite local."""
     try:
         with _sqlite() as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS sync_pendente (
-                    id          INTEGER PRIMARY KET AUTOINCREMENT,
-                    operacao    TEXT NOT NULL,
-                    tabela      TEXT NOT NULL,
-                    dados       TEXT NOT NULL,
-                    criado_em   TEXT NOT NULL
+                    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                    operacao  TEXT NOT NULL,
+                    tabela    TEXT NOT NULL,
+                    dados     TEXT NOT NULL,
+                    criado_em TEXT NOT NULL
                 )
             """)
     except Exception as e:
         print(f"[Sync] Erro ao garantir tabela fila: {e}")
-        
+
+
 def _adicionar_fila(operacao: str, tabela: str, dados: dict):
     """Adiciona uma operação à fila offline."""
     try:
         with _sqlite() as conn:
             conn.execute(
-                "INSERT INTO sync_pendente (operacao, tabela, dados, criado_em) VALUES (?, ?, ?, ?)",
+                """INSERT INTO sync_pendente 
+                   (operacao, tabela, dados, criado_em) 
+                   VALUES (?, ?, ?, ?)""",
                 (operacao, tabela, json.dumps(dados), datetime.now().isoformat())
             )
     except Exception as e:
         print(f"[Sync] Erro ao adicionar à fila: {e}")
-        
+
+
 def _ler_fila():
-    """Lê todas as operações à fila offline."""
     try:
         with _sqlite() as conn:
             rows = conn.execute(
-                "SELECT * FROM sync_pendente ORDER BY id ASC"
+                "SELECT * FROM sync_pendente ORDER BY id ASC LIMIT 50"
             ).fetchall()
             return [dict(r) for r in rows]
     except Exception:
         return []
-    
+
+
 def _remover_fila(ids: list):
-    """Remove operações já enviadas da fila."""
     if not ids:
         return
     try:
@@ -106,28 +116,26 @@ def _remover_fila(ids: list):
             )
     except Exception as e:
         print(f"[Sync] Erro ao limpar fila: {e}")
-        
-# Envio para Supabase
+
+
+# Envio para o Supabase
 
 def _enviar_operacao(client, operacao: str, tabela: str, dados: dict) -> bool:
-    """Envia uma operação para o Supabase. Retorna True se sucesso."""
     try:
         if operacao == "upsert":
             if tabela == "clientes":
                 client.table(tabela).upsert(dados, on_conflict="nome").execute()
             elif tabela == "marcacoes":
                 client.table(tabela).upsert(dados, on_conflict="data_hora").execute()
-            elif tabela == "anotacoes":
-                client.table(tabela).upsert(dados).execute()
             else:
                 client.table(tabela).upsert(dados).execute()
-                
+
         elif operacao == "delete":
             campo = dados.get("_campo")
             valor = dados.get("_valor")
             if campo and valor:
                 client.table(tabela).delete().eq(campo, valor).execute()
-                
+
         elif operacao == "delete_futuras_cliente":
             nome     = dados.get("cliente_nome")
             a_partir = dados.get("a_partir_de")
@@ -136,27 +144,32 @@ def _enviar_operacao(client, operacao: str, tabela: str, dados: dict) -> bool:
                     .eq("cliente_nome", nome)\
                     .gte("data_hora", a_partir)\
                     .execute()
-                    
+
+        elif operacao == "delete_pendentes_todos":
+            client.table("pendentes").delete().neq("id", 0).execute()
+
+        elif operacao == "insert_pendentes":
+            if dados.get("lista"):
+                client.table("pendentes").insert(dados["lista"]).execute()
+
         return True
-    
+
     except Exception as e:
         print(f"[Sync] Erro ao enviar {operacao} em {tabela}: {e}")
         return False
-    
+
+
 def _processar_fila():
-    """Tentar enviar tudo o que está na fila offline."""
-    global _online
-    client= _get_cliente()
+    """Tenta enviar tudo o que está na fila offline."""
+    client = _get_client()
     if not client:
         return
-    
+
     pendentes = _ler_fila()
     if not pendentes:
         return
-    
-    print(f"[Sync] A processar {len(pendentes)} operação(ões) pendente(s)...")
+
     ids_ok = []
-    
     for item in pendentes:
         try:
             dados = json.loads(item["dados"])
@@ -165,49 +178,60 @@ def _processar_fila():
                 ids_ok.append(item["id"])
         except Exception as e:
             print(f"[Sync] Erro ao processar item {item['id']}: {e}")
-            
+
     if ids_ok:
         _remover_fila(ids_ok)
-        print(f"[Sync] {len(ids_ok)} operação(ões) sincronizada(s) com sucesso.")
-        
-    _online = len(ids_ok) == len(pendentes)
-    
-# Função principal de sync
+        print(f"[Sync] {len(ids_ok)} operação(ões) sincronizada(s).")
+
+
+# Função principal
 
 def sincronizar(operacao: str, tabela: str, dados: dict):
     """
-    Ponto de entrada principal.
-    Tenta enviar imediatamente; se falhar, guarda na fila.
+    Adiciona à fila e processa em background.
+    NUNCA bloqueia a thread principal.
     """
     if not SUPABASE_URL or not SUPABASE_KEY:
         return
-    
-    client = _get_cliente()
-    if not client:
-        _adicionar_fila(operacao, tabela, dados)
-        return
-    
-    ok = _enviar_operacao(client, operacao, tabela, dados)
-    if not ok:
-        _adicionar_fila(operacao, tabela, dados)
-        
-# Thread de background
+
+    def _tarefa():
+        with _fila_lock:
+            _adicionar_fila(operacao, tabela, dados)
+            _processar_fila()
+
+    threading.Thread(target=_tarefa, daemon=True).start()
+
+
+# Loop de background
 
 def _loop_background():
-    """Corre em background: tenta processar a fila a cada 5 minutos."""
+    """
+    Corre em background continuamente.
+    Aguarda a BD estar disponível antes de começar.
+    """
+    # Espera até a pasta data/ existir (pode demorar no arranque)
+    for _ in range(30):
+        if os.path.exists(DB_PATH):
+            break
+        time.sleep(1)
+
     _garantir_tabela_fila()
+
     while True:
         try:
-            _processar_fila()
+            with _fila_lock:
+                _processar_fila()
         except Exception as e:
             print(f"[Sync] Erro no loop background: {e}")
-        time.sleep(300)
-        
+        time.sleep(120)
+
+
 def iniciar_sync_background():
-    """Inicia a thread de sync em background"""
-    global _sync_thread
-    if _sync_thread is not None and _sync_thread.is_alive():
+    """Inicia a thread de sync em background. Chamar uma vez no arranque."""
+    global _sync_thread, _iniciado
+    if _iniciado:
         return
+    _iniciado = True
     _sync_thread = threading.Thread(target=_loop_background, daemon=True)
     _sync_thread.start()
     print("[Sync] Thread de sincronização iniciada.")

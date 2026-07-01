@@ -47,7 +47,7 @@ class MainApp:
             initial_file = 'registo.html'
         
         # Caminho absoluto para o ficheiro HTML
-        base_dir = os.path.dirname(os.path.abspath(__file__))
+        base_dir  = os.path.dirname(os.path.abspath(__file__))
         html_path = os.path.join(base_dir, 'ui', 'html', initial_file)
         
         # Verificar se o ficheiro existe
@@ -81,33 +81,31 @@ class MainApp:
                 import ctypes
 
                 def _set_windows_icon(window_title, ico_path, retries=10, delay=0.25):
-                    WM_SETICON = 0x0080
-                    ICON_SMALL = 0
-                    ICON_BIG = 1
+                    WM_SETICON      = 0x0080
+                    ICON_SMALL      = 0
+                    ICON_BIG        = 1
                     LR_LOADFROMFILE = 0x00000010
-                    IMAGE_ICON = 1
-
+                    IMAGE_ICON      = 1
                     for _ in range(retries):
-                        # encontra a janela pelo título
                         hwnd = ctypes.windll.user32.FindWindowW(None, window_title)
                         if hwnd:
-                            # carrega o .ico a partir de ficheiro
-                            hicon = ctypes.windll.user32.LoadImageW(None, ico_path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE)
+                            hicon = ctypes.windll.user32.LoadImageW(
+                                None, ico_path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE
+                            )
                             if hicon:
-                                # definir tanto o ícone grande como o pequeno
-                                ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon)
+                                ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG,   hicon)
                                 ctypes.windll.user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon)
                             return True
                         time.sleep(delay)
                     return False
 
-                # arrancar a tarefa em background (não bloqueia o webview.start)
-                threading.Thread(target=_set_windows_icon, args=('App-Agenda', icon_path), daemon=True).start()
+                threading.Thread(
+                    target=_set_windows_icon,
+                    args=('App-Agenda', icon_path),
+                    daemon=True
+                ).start()
             except Exception as e:
                 print(f"Não foi possível definir ícone Windows: {e}")
-        else:
-            # Em Linux/macOS não tentamos usar windll (não aplicável)
-            pass
         
         # Log de aplicação iniciada
         from backend.utils import Logger
@@ -117,14 +115,20 @@ class MainApp:
         def on_closing():
             Logger.log_app_terminada()
         
-        if window is not None:
-            events = getattr(window, "events", None)
-            if events is not None:
-                events.closing += on_closing
-        
-        # Iniciar o webview
-        webview.start(debug=False)
+        def _registar_eventos():
+            for _ in range(20):
+                try:
+                    if window and hasattr(window, "events"):
+                        window.events.closing += on_closing
+                        return
+                except Exception:
+                    pass
+                time.sleep(0.25)
 
+        threading.Thread(target=_registar_eventos, daemon=True).start()
+
+        webview.start(debug=False)
+        
 if __name__ == '__main__':
     app = MainApp()
     app.start_app()

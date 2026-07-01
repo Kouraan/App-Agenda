@@ -153,31 +153,40 @@ class AppController:
 
             if not nome:
                 return {"success": False, "error": "Campo 'nome' obrigatório."}
+            if not Validation.nome_valido(nome):
+                return {"success": False, "error": "Nome inválido."}
+            if not Validation.numero_telefone_valido(numero):
+                return {"success": False, "error": "Número de telefone inválido."}
+
+            if Database.cliente_existe_por_nome(nome):
+                return {"success": False, "error": "Já existe um cliente com esse nome."}
+            if Database.cliente_existe_por_telefone(numero):
+                return {"success": False, "error": "Já existe um cliente com esse número de telefone."}
 
             tipo = self._converter_tipo(tipo_raw)
 
             if tipo == TipoCliente.SEMANAL:
+                if not dia or not hora:
+                    return {"success": False, "error": "Dia e hora obrigatórios para cliente semanal."}
+                if not Validation.pode_cliente_semanal(self.clientes_map, dia, hora):
+                    return {"success": False, "error": "Já existe cliente semanal nesse horário."}
                 novo = Cliente(nome, numero, tipo, dia, hora, rapido)
             else:
                 novo = Cliente(nome, numero, tipo)
 
-            if not Validation.cliente_valido(novo, self.clientes_map):
-                return {"success": False, "error": "Dados do cliente inválidos ou duplicados."}
-
-            nome_normalizado = novo.get_nome().strip()
-            # Procurar chave existente com mesmo nome ignorando case
-            chave_existente = next(
-                (k for k in self.clientes_map if k.lower() == nome_normalizado.lower()),
-                None
+            ok = Database.inserir_cliente(
+                nome=novo.get_nome(),
+                numero_telefone=novo.get_numero_telefone(),
+                tipo_cliente=novo.get_tipo_cliente().value,
+                faltas=0,
+                dia_semana=novo.get_dia_semana(),
+                hora_corte=novo.get_hora_corte(),
+                rapido=novo.is_rapido()
             )
-            if chave_existente and chave_existente != nome_normalizado:
-                return {"success": False, "error": "Já existe um cliente com esse nome."}
-            self.clientes_map[nome_normalizado] = novo
-
-            if not Persistencia.guardar_clientes(self.clientes_map):
-                del self.clientes_map[novo.get_nome()]
+            if not ok:
                 return {"success": False, "error": "Erro ao guardar cliente."}
 
+            self.clientes_map[novo.get_nome()] = novo
             Logger.log_cliente_criado(novo.get_nome())
 
             if novo.get_tipo_cliente() == TipoCliente.SEMANAL:
@@ -209,36 +218,36 @@ class AppController:
             faltas    = int(cliente_dict.get("faltas", 0))
             rapido    = bool(cliente_dict.get("rapido", False))
 
+            if not Validation.nome_valido(novo_nome):
+                return {"success": False, "error": "Nome inválido."}
+            if not Validation.numero_telefone_valido(numero):
+                return {"success": False, "error": "Número de telefone inválido."}
+
+            # Verificação de duplicados directa na BD (rápido)
+            # Exclui o próprio cliente da verificação
+            if novo_nome.lower() != nome_original.lower():
+                if Database.cliente_existe_por_nome(novo_nome, excluir_nome=nome_original):
+                    return {"success": False, "error": "Já existe um cliente com esse nome."}
+
+            if numero != cliente_atual.get_numero_telefone():
+                if Database.cliente_existe_por_telefone(numero, excluir_nome=nome_original):
+                    return {"success": False, "error": "Já existe um cliente com esse número de telefone."}
+
             tipo_novo = self._converter_tipo(tipo_raw)
 
-            # Validar duplicados excluindo o próprio cliente
-            outros = {k: v for k, v in self.clientes_map.items() if k != nome_original}
-            if novo_nome.lower() != nome_original.lower() and any(
-                c.get_nome().lower() == novo_nome.lower() for c in outros.values()
-            ):
-                return {"success": False, "error": "Já existe um cliente com esse nome."}
-            if any(c.get_numero_telefone() == numero for c in outros.values()):
-                return {"success": False, "error": "Já existe um cliente com esse número de telefone."}
-
-            # Construir novo objeto cliente
             if tipo_novo == TipoCliente.SEMANAL:
                 novo = Cliente(novo_nome, numero, tipo_novo, dia, hora, rapido)
             else:
                 novo = Cliente(novo_nome, numero, tipo_novo)
             novo.set_faltas(faltas)
 
-            if not Validation.cliente_valido(novo, outros):
-                return {"success": False, "error": "Dados do cliente inválidos ou duplicados."}
-
-        # ── Atualizar marcações existentes com o novo nome ──────────────────
-        # Faz isto ANTES de alterar o clientes_map para não perder a referência
+            # Actualizar marcações com novo nome
             if novo_nome != nome_original:
                 for dt, m in self.marcacoes_map.items():
                     c = m.get_cliente()
                     if c and self._get_nome_safe(c) == nome_original:
                         c_atualizado = Cliente(
-                            novo_nome,
-                            numero,
+                            novo_nome, numero,
                             c.get_tipo_cliente(),
                             c.get_dia_semana(),
                             c.get_hora_corte(),
@@ -248,74 +257,72 @@ class AppController:
                         m.set_cliente(c_atualizado)
                 Logger.log_nome_alterado(nome_original, novo_nome)
 
-        # ── Atualizar mapa de clientes ──────────────────────────────────────
+            # Actualiza directamente na BD (rápido)
+            Database.atualizar_cliente(
+                nome_original=nome_original,
+                nome=novo_nome,
+                numero_telefone=numero,
+                tipo_cliente=tipo_novo.value,
+                faltas=faltas,
+                dia_semana=dia,
+                hora_corte=hora,
+                rapido=rapido
+            )
+
+            # Actualiza o mapa em memória
             if novo_nome != nome_original:
                 del self.clientes_map[nome_original]
             self.clientes_map[novo_nome] = novo
 
-        # ── Tratar marcações semanais consoante a mudança de tipo ───────────
-            tipo_atual_val  = tipo_atual
-            tipo_novo_val   = tipo_novo
-
+            # Tratar marcações semanais
             horario_semanal_mudou = (
-                tipo_novo_val == TipoCliente.SEMANAL and
-                tipo_atual_val == TipoCliente.SEMANAL and
+                tipo_novo == TipoCliente.SEMANAL and
+                tipo_atual == TipoCliente.SEMANAL and
                 (cliente_atual.get_dia_semana() != dia or
-                cliente_atual.get_hora_corte() != hora or
-                cliente_atual.is_rapido() != rapido)
+                 cliente_atual.get_hora_corte() != hora or
+                 cliente_atual.is_rapido() != rapido)
             )
 
-            if tipo_atual_val == TipoCliente.SEMANAL and tipo_novo_val != TipoCliente.SEMANAL:
-            # SEMANAL → NORMAL: apagar apenas marcações futuras semanais
+            if tipo_atual == TipoCliente.SEMANAL and tipo_novo != TipoCliente.SEMANAL:
                 self._apagar_marcacoes_futuras_cliente(novo_nome)
                 Database.apagar_slots_semanais_cliente(nome_original)
-                if novo_nome != nome_original:
-                    Database.apagar_slots_semanais_cliente(novo_nome)
-
-            elif tipo_atual_val != TipoCliente.SEMANAL and tipo_novo_val == TipoCliente.SEMANAL:
-            # NORMAL → SEMANAL: gerar novas marcações semanais
+            elif tipo_atual != TipoCliente.SEMANAL and tipo_novo == TipoCliente.SEMANAL:
                 self._gerar_e_guardar_semanais(novo)
-
             elif horario_semanal_mudou:
-            # SEMANAL → SEMANAL com horário diferente: apagar futuras e regenerar
                 self._apagar_marcacoes_futuras_cliente(novo_nome)
                 Database.apagar_slots_semanais_cliente(nome_original)
-                if novo_nome != nome_original:
-                    Database.apagar_slots_semanais_cliente(novo_nome)
                 self._gerar_e_guardar_semanais(novo)
 
-        # ── Persistir tudo ──────────────────────────────────────────────────
-            Persistencia.guardar_clientes(self.clientes_map)
             Persistencia.guardar_marcacoes(self.marcacoes_map)
-
             return {"success": True}
 
         except Exception as e:
             print(f"[AppController] alterar_cliente: {e}")
             return {"success": False, "error": str(e)}
-
+        
     def apagar_cliente(self, nome: str):
         try:
             if not nome or nome not in self.clientes_map:
                 return {"success": False, "error": "Cliente não encontrado"}
 
-            cliente = self.clientes_map[nome]
-            hoje_dt = datetime.combine(date.today(), datetime.min.time())
+            cliente  = self.clientes_map[nome]
+            hoje_dt  = datetime.combine(date.today(), datetime.min.time())
 
+            # Remove marcações futuras do mapa em memória
             to_remove = [
                 dt for dt, m in self.marcacoes_map.items()
                 if m.get_cliente() and
                     self._get_nome_safe(m.get_cliente()) == nome and
-                    dt >= hoje_dt
+                dt >= hoje_dt
             ]
             for dt in to_remove:
                 del self.marcacoes_map[dt]
 
             Persistencia.guardar_marcacoes(self.marcacoes_map)
-            del self.clientes_map[nome]
-            Persistencia.guardar_clientes(self.clientes_map)
 
-            # Limpar slots semanais do cliente apagado
+            # Apaga directamente na BD (rápido)
+            del self.clientes_map[nome]
+            Database.apagar_cliente(nome)
             Database.apagar_slots_semanais_cliente(nome)
 
             Logger.log_cliente_apagado(cliente.get_nome())

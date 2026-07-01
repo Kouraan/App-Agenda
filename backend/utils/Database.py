@@ -14,7 +14,7 @@ def _sync(operacao: str, tabela: str, dados: dict):
         from . import SupabaseSync
         SupabaseSync.sincronizar(operacao, tabela, dados)
     except Exception:
-        pass    # sync nunca bloqueia a app
+        pass
 
 
 # Ligação
@@ -102,6 +102,12 @@ def inicializar_bd():
             
             CREATE INDEX IF NOT EXISTS idx_slots_semanais_cliente
                 ON slots_semanais_usados(cliente_nome);
+                
+            CREATE INDEX IF NOT EXISTS idx_clientes_nome_lower
+                ON clientes(LOWER(nome));
+
+            CREATE INDEX IF NOT EXISTS idx_clientes_telefone
+                ON clientes(numero_telefone);
         """)
 
 
@@ -433,7 +439,7 @@ def guardar_pendentes(pendentes: list[dict]) -> bool:
             )
         try:
             from . import SupabaseSync
-            client = SupabaseSync._get_cliente()
+            client = SupabaseSync._get_client()
             if client:
                 client.table("pendentes").delete().neq("id", 0).execute()
                 if pendentes:
@@ -522,3 +528,44 @@ def apagar_slots_semanais_cliente(cliente_nome: str) -> bool:
     except Exception as e:
         print(f"[Database] apagar_slots_semanais_cliente: {e}")
         return False
+    
+def cliente_existe_por_nome(nome: str, excluir_nome: str = None) -> bool:
+    """Verifica se existe cliente com este nome (ignora capitalização)."""
+    with _connect() as conn:
+        if excluir_nome:
+            row = conn.execute(
+                """SELECT 1 FROM clientes 
+                   WHERE LOWER(nome) = LOWER(?) 
+                   AND LOWER(nome) != LOWER(?)
+                   LIMIT 1""",
+                (nome, excluir_nome)
+            ).fetchone()
+        else:
+            row = conn.execute(
+                """SELECT 1 FROM clientes 
+                   WHERE LOWER(nome) = LOWER(?) 
+                   LIMIT 1""",
+                (nome,)
+            ).fetchone()
+        return row is not None
+
+
+def cliente_existe_por_telefone(numero: str, excluir_nome: str = None) -> bool:
+    """Verifica se existe cliente com este número de telefone."""
+    with _connect() as conn:
+        if excluir_nome:
+            row = conn.execute(
+                """SELECT 1 FROM clientes 
+                   WHERE numero_telefone = ? 
+                   AND LOWER(nome) != LOWER(?)
+                   LIMIT 1""",
+                (numero, excluir_nome)
+            ).fetchone()
+        else:
+            row = conn.execute(
+                """SELECT 1 FROM clientes 
+                   WHERE numero_telefone = ? 
+                   LIMIT 1""",
+                (numero,)
+            ).fetchone()
+        return row is not None
