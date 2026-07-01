@@ -4,30 +4,65 @@
 import os
 import sys
 import subprocess
+import shutil
 
 def main():
-    print("Build helper: cria bundle com PyInstaller (se instalado).")
+    print("=" * 50)
+    print("Build — App Agenda")
+    print("=" * 50)
+
     entry = "main.py"
     if not os.path.exists(entry):
-        print("main.py não encontrado no diretório atual.")
+        print("ERRO: main.py não encontrado.")
         return
+
+    # Verifica se o .env existe
+    if not os.path.exists(".env"):
+        print("AVISO: .env não encontrado — o sync com Supabase não vai funcionar!")
+        print("Cria o ficheiro .env antes de fazer o build.")
+        resposta = input("Continuar mesmo assim? (s/n): ")
+        if resposta.lower() != "s":
+            return
+
+    separador = ";" if sys.platform == "win32" else ":"
+
     args = [
         "pyinstaller",
         "--noconfirm",
         "--clean",
         "--windowed",
-        "--add-data", "ui{}ui".format(os.pathsep),  # inclui pasta ui
-        "--add-data", "backend{}backend".format(os.pathsep),
         "--name", "AppAgenda",
+        "--add-data", f"ui{separador}ui",
+        "--add-data", f"backend{separador}backend",
+        "--add-data", f".env{separador}.",
         entry
     ]
+
     try:
         subprocess.check_call(args)
-        print("PyInstaller executado. Verifique a pasta dist/AppAgenda.")
+        print("\n✓ PyInstaller concluído.")
+
+        # Criar pasta data junto ao executável se não existir
+        dist_path = os.path.join("dist", "AppAgenda")
+        data_path = os.path.join(dist_path, "data")
+        os.makedirs(data_path, exist_ok=True)
+        print(f"✓ Pasta data criada em: {data_path}")
+
+        # Copiar .env para junto do executável (redundância)
+        if os.path.exists(".env"):
+            shutil.copy(".env", os.path.join(dist_path, ".env"))
+            print(f"✓ .env copiado para: {dist_path}")
+
+        print("\n" + "=" * 50)
+        print("BUILD CONCLUÍDO")
+        print(f"Executável em: dist/AppAgenda/")
+        print("=" * 50)
+
     except FileNotFoundError:
-        print("PyInstaller não encontrado. Instale com: pip install pyinstaller")
+        print("ERRO: PyInstaller não encontrado.")
+        print("Instala com: pip install pyinstaller")
     except subprocess.CalledProcessError as e:
-        print("Erro ao executar PyInstaller:", e)
+        print(f"ERRO ao executar PyInstaller: {e}")
 
 if __name__ == "__main__":
     main()

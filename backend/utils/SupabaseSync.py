@@ -11,9 +11,42 @@ import time
 import sqlite3
 from datetime import datetime
 from contextlib import contextmanager
-from dotenv import load_dotenv
 
-load_dotenv()
+def _carregar_env():
+    """
+    Carrega as variáveis de ambiente.
+    Procura o .env em múltiplos locais para funcionar
+    tanto em desenvolvimento como no executável.
+    """
+    # Locais onde procurar o .env
+    possiveis = []
+
+    import sys
+    if getattr(sys, 'frozen', False):
+        possiveis.append(os.path.join(os.path.dirname(sys.executable), '.env'))
+        possiveis.append(os.path.join(os.path.dirname(sys.executable), 'config.env'))
+    
+    base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    possiveis.append(os.path.join(base, '.env'))
+    possiveis.append(os.path.join(base, 'config.env'))
+    
+    possiveis.append(os.path.join(os.getcwd(), '.env'))
+    possiveis.append(os.path.join(os.getcwd(), 'config.env'))
+
+    for caminho in possiveis:
+        if os.path.exists(caminho):
+            try:
+                from dotenv import load_dotenv
+                load_dotenv(caminho)
+                print(f"[Sync] Configuração carregada de: {caminho}")
+                return True
+            except Exception as e:
+                print(f"[Sync] Erro ao carregar {caminho}: {e}")
+    
+    print("[Sync] Ficheiro .env não encontrado — sync desactivado")
+    return False
+
+_carregar_env()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
