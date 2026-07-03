@@ -108,7 +108,18 @@ def inicializar_bd():
 
             CREATE INDEX IF NOT EXISTS idx_clientes_telefone
                 ON clientes(numero_telefone);
+                
+            CREATE TABLE IF NOT EXISTS sync_meta (
+                chave TEXT PRIMARY KEY,
+                valor TEXT
+            )
         """)
+    with _connect() as conn:
+        for tabela in ("clientes", "marcacoes"):
+            try:
+                conn.execute(f"ALTER TABLE {tabela} ADD COLUMN updated_at TEXT")
+            except sqlite3.OperationalError:
+                pass
 
 
 # Utilizador
@@ -161,14 +172,15 @@ def inserir_cliente(nome: str, numero_telefone: str, tipo_cliente: str,
                     faltas: int = 0, dia_semana=None, hora_corte=None,
                     rapido: bool = False) -> bool:
     try:
+        agora = datetime.now().isoformat()
         with _connect() as conn:
             conn.execute(
                 """INSERT INTO clientes
                    (nome, numero_telefone, tipo_cliente, faltas,
-                    dia_semana, hora_corte, rapido)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    dia_semana, hora_corte, rapido, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (nome, numero_telefone, tipo_cliente, faltas,
-                 dia_semana, hora_corte, int(rapido))
+                 dia_semana, hora_corte, int(rapido), agora)
             )
         _sync("upsert", "clientes", {
             "nome": nome, "numero_telefone": numero_telefone,
@@ -186,14 +198,15 @@ def atualizar_cliente(nome_original: str, nome: str, numero_telefone: str,
                       tipo_cliente: str, faltas: int, dia_semana=None,
                       hora_corte=None, rapido: bool = False) -> bool:
     try:
+        agora = datetime.now().isoformat()
         with _connect() as conn:
             conn.execute(
                 """UPDATE clientes
                    SET nome=?, numero_telefone=?, tipo_cliente=?,
-                       faltas=?, dia_semana=?, hora_corte=?, rapido=?
+                       faltas=?, dia_semana=?, hora_corte=?, rapido=?, updated_at=?
                    WHERE nome=?""",
                 (nome, numero_telefone, tipo_cliente, faltas,
-                 dia_semana, hora_corte, int(rapido), nome_original)
+                 dia_semana, hora_corte, int(rapido), agora, nome_original)
             )
         if nome != nome_original:
             _sync("delete", "clientes", {"_campo": "nome", "_valor": nome_original})
@@ -275,12 +288,15 @@ def inserir_marcacao(data_hora: str, cliente_nome: str, duracao: int,
 def inserir_marcacoes_bulk(marcacoes: list[dict]) -> bool:
     """Insere múltiplas marcações de uma vez (ignora duplicados)."""
     try:
+        agora = datetime.now().isoformat()
+        for m in marcacoes:
+            m["updated_at"] = agora
         with _connect() as conn:
             conn.executemany(
                 """INSERT OR IGNORE INTO marcacoes
-                   (data_hora, cliente_nome, duracao, observacoes, falta)
+                   (data_hora, cliente_nome, duracao, observacoes, falta, updated_at)
                    VALUES (:data_hora, :cliente_nome, :duracao,
-                           :observacoes, :falta)""",
+                           :observacoes, :falta, :updated_at)""",
                 marcacoes
             )
         for m in marcacoes:
@@ -295,14 +311,15 @@ def atualizar_marcacao(data_hora_original: str, data_hora: str,
                        cliente_nome: str, duracao: int,
                        observacoes: str, falta: bool) -> bool:
     try:
+        agora = datetime.now().isoformat()
         with _connect() as conn:
             conn.execute(
                 """UPDATE marcacoes
                    SET data_hora=?, cliente_nome=?, duracao=?,
-                       observacoes=?, falta=?
+                       observacoes=?, falta=?, updated_at=?
                    WHERE data_hora=?""",
                 (data_hora, cliente_nome, duracao,
-                 observacoes, int(falta), data_hora_original)
+                 observacoes, int(falta), agora, data_hora_original)
             )
         if data_hora != data_hora_original:
             _sync("delete", "marcacoes", {"_campo": "data_hora", "_valor": data_hora_original})
@@ -437,15 +454,9 @@ def guardar_pendentes(pendentes: list[dict]) -> bool:
                 "INSERT INTO pendentes (nome, numero_telefone) VALUES (?, ?)",
                 [(p["nome"], p.get("numero_telefone", "")) for p in pendentes]
             )
-        try:
-            from . import SupabaseSync
-            client = SupabaseSync._get_client()
-            if client:
-                client.table("pendentes").delete().neq("id", 0).execute()
-                if pendentes:
-                    client.table("pendentes").insert(pendentes).execute()
-        except Exception:
-            pass
+        _sync("delete_pendentes_todos", "pendentes", {})
+        if pendentes:
+            _sync("insert_pendentes", "pendentes", {"lista": pendentes})
         return True
     except Exception as e:
         print(f"[Database] guardar_pendentes: {e}")
@@ -569,3 +580,27 @@ def cliente_existe_por_telefone(numero: str, excluir_nome: str = None) -> bool:
                 (numero,)
             ).fetchone()
         return row is not None
+    
+def ler_meta(chave: str) -> Optional[str]:
+    with _connect() as conn:
+        row = conn.execute("SELECT valor FROM sync_meta WHERE chave=?", (chave,)).fetchone()
+        return row["valor"] if row else None
+    
+def guardar_meta(chave: str, valor: str) -> bool:
+    try:
+        with _connect() as conn:
+            conn.execute(
+                "INSERT INTO sync_meta (chave, valor) VALUES (?, ?) "
+                "ON CONFLICT(chave) DO UPDATE SET valor=excluded.valor",
+                (chave, valor)
+            )
+        return True
+    except Exception as e:
+        print(f"[Database] guardar_meta: {e}")
+        return False
+    
+def ler_cliente_bruto(nome: str) -> Optional[dict]:
+    with _connect() as conn:
+        row = conn.execute("SELECT * FROM clientes WHERE nome=?", (nome,)).fetchone()
+        return dict(row) if row else None
+    

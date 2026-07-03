@@ -48,6 +48,8 @@ def _carregar_env():
 
 _carregar_env()
 
+_sessao_valida_ate = 0
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -60,6 +62,28 @@ _sync_thread     = None
 _fila_lock       = threading.Lock()
 _iniciado        = False
 
+
+def _autenticar(client) -> bool:
+    """Garante que o cliente tem uma sessão válida. Só reautentica se necessário."""
+    global _sessao_valida_ate
+    agora = time.time()
+    if agora < _sessao_valida_ate - 60:
+        return True
+    
+    email = os.getenv("SUPABASE_SERVICE_EMAIL")
+    password = os.getenv("SUPABASE_SERVICE_PASSWORD")
+    if not email or not password:
+        print("[Sync] SUPABASE_SERVICE_EMAIL/PASSWORD não configurados no .env")
+        return False
+    
+    try:
+        res = client.auth.sign_in_with_password({"email": email, "password": password})
+        if res and res.session:
+            _sessao_valida_ate = agora + res.session.expires_in
+            return True
+    except Exception as e:
+        print(f"[Sync] Falha na autenticação Supabase (provavelmente sem internet): {e}")
+    return False
 
 # Cliente Supabase
 
@@ -75,6 +99,16 @@ def _get_client():
                 except Exception as e:
                     print(f"[Sync] Erro ao criar cliente Supabase: {e}")
     return _supabase_client
+
+def _get_client_autenticado():
+    """Devolve o cliente Supabase já autenticado, ou None se não for possível
+    (sem internet, credenciais em falta, ou falha de autenticação)."""
+    client = _get_client()
+    if not client:
+        return None
+    if not _autenticar(client):
+        return None
+    return client
 
 
 # Fila offline
@@ -194,7 +228,7 @@ def _enviar_operacao(client, operacao: str, tabela: str, dados: dict) -> bool:
 
 def _processar_fila():
     """Tenta enviar tudo o que está na fila offline."""
-    client = _get_client()
+    client = _get_client_autenticado()
     if not client:
         return
 
