@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Agenda (Web)</title>
+    <link rel="stylesheet" href="css/site.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Overlay de login, visível por defeito -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="auth-content">
+            <h1 class="title">AGENDA</h1>
+            <p class="auth-subtitle">Acesso de emergência</p>
+            <div id="authError" class="error-message"></div>
+            <form id="authForm" class="form">
+                <div class="form-group">
+                    <label for="authEmail">Email:</label>
+                    <input type="email" id="authEmail" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">Password:</label>
+                    <input type="password" id="authPassword" required autocomplete="current-password">
+                </div>
+                <div class="button-container">
+                    <button type="submit" id="authEntrarBtn">Entrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Página Principal, escondida até o login ter sucesso-->>
+    <div id="appRoot" style="display:none;">
+        <header class="top-bar">
+            <div class="logo">Agenda (Web)</div>
+            <div class="spacer"></div>
+            <div id="userLabel" class="user-info">Acesso de emergência</div>
+            <button id="logoutBtn" class="logout-btn">Sair</button>
+        </header>
+
+        <main class="main-content">
+            <aside class="left-sidebar">
+                <div class="navigation-buttons">
+                    <button id="calendarioToggle" class="nav-btn active">Agenda</button>
+                    <button id="clientesToggle" class="nav-btn">Clientes</button>
+                </div>
+                <div class="anotacoes-box">
+                    <div class="anotacoes-header">
+                        <span class="title">Anotações</span>
+                        <button id="blurToggleBtn" class="blur-toggle">👁</button>
+                    </div>
+                    <div class="separator"></div>
+                    <textarea id="anotacoesArea" placeholder="Escreva suas anotações aqui..." class="anotacoes-text blurred"></textarea>
+                </div>
+            </aside>
+
+            <section class="center-area">
+                <div id="areaCentral" class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="navigation-controls">
+                            <button id="todayBtn" class="control-btn">Hoje</button>
+                            <button id="semanaAnteriorBtn" class="control-btn">◀</button>
+                            <button id="semanaSeguinteBtn" class="control-btn">▶</button>
+                        </div>
+                        <div class="spacer"></div>
+                        <div id="semanaLabel" class="perior-label"></div>
+                        <div class="spacer"></div>
+                        <div class="view-toggles">
+                            <button id="diaToggle" class="view-btn">Dia</button>
+                            <button id="semanaToggle" class="view-btn active">Semana</button>
+                            <button id="mesToggle" class="view-btn">Mês</button>
+                        </div>
+                    </div>
+                    <div class="calendar-scroll">
+                        <div id="calendarGrid" class="calendar-grid"></div>
+                    </div>
+                </div>
+                <div id="areaClientes" class="clientes-container hidden">
+                    <div id="clientesContent" class="clientes-content"></div>
+                </div>
+            </section>
+
+            <aside class="right-sidebar">
+                <h3 class="section-title">Clientes Pendentes</h3>
+                <div class="separator"></div>
+                <div class="pendentes-scroll">
+                    <div id="caixaClientesPendentes" class="pendentes-container"></div>
+                </div>
+                <div class="separator"></div>
+                <div id="relogioLabel" class="clock">00:00:00</div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/apiAdapter.js"></script>
+    <script src="js/AuthModule.js"></script>
+    <script src="js/logic/Feriados.js"></script>
+    <script src="js/logic/Validation.js"></script>
+    <script src="js/logic/MarcacoesSemanais.js"></script>
+    <script src="js/bundle.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const auth = new AuthModule(() => {
+                document.getElementById("appRoot").style.display = "block";
+                window.paginaController = new PaginaPrincipalController();
+                window.paginaController.init();
+            });
+        });
+    </script>
+</body>
+</html>

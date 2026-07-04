@@ -159,3 +159,39 @@ create policy "acesso_autenticado" on public.sync_tombstones
     for all to authenticated using (true) with check (true);
 grant select, insert, update, delete on public.sync_tombstones to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
+
+// CORRIGIR CONFLITOS
+
+drop trigger if exists trg_clientes_key_change on public.clientes;
+drop trigger if exists trg_marcacoes_key_change on public.marcacoes;
+drop function if exists public.tombstone_on_key_change();
+
+------------------
+
+create or replace function public.tombstone_cliente_renomeado()
+returns trigger as $$
+begin
+  if OLD.nome is distinct from NEW.nome then
+    insert into public.sync_tombstones (tabela, chave) values ('clientes', OLD.nome);
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+create or replace function public.tombstone_marcacao_remarcada()
+returns trigger as $$
+begin
+  if OLD.data_hora is distinct from NEW.data_hora then
+    insert into public.sync_tombstones (tabela, chave) values ('marcacoes', OLD.data_hora);
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger trg_clientes_key_change
+  after update on public.clientes
+  for each row execute function public.tombstone_cliente_renomeado();
+
+create trigger trg_marcacoes_key_change
+  after update on public.marcacoes
+  for each row execute function public.tombstone_marcacao_remarcada();
