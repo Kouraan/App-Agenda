@@ -540,7 +540,7 @@ def apagar_slots_semanais_cliente(cliente_nome: str) -> bool:
         print(f"[Database] apagar_slots_semanais_cliente: {e}")
         return False
     
-def cliente_existe_por_nome(nome: str, excluir_nome: str = None) -> bool:
+def cliente_existe_por_nome(nome: str, excluir_nome: Optional[str] = None) -> bool:
     """Verifica se existe cliente com este nome (ignora capitalização)."""
     with _connect() as conn:
         if excluir_nome:
@@ -561,7 +561,7 @@ def cliente_existe_por_nome(nome: str, excluir_nome: str = None) -> bool:
         return row is not None
 
 
-def cliente_existe_por_telefone(numero: str, excluir_nome: str = None) -> bool:
+def cliente_existe_por_telefone(numero: str, excluir_nome: Optional[str] = None) -> bool:
     """Verifica se existe cliente com este número de telefone."""
     with _connect() as conn:
         if excluir_nome:
@@ -604,3 +604,111 @@ def ler_cliente_bruto(nome: str) -> Optional[dict]:
         row = conn.execute("SELECT * FROM clientes WHERE nome=?", (nome,)).fetchone()
         return dict(row) if row else None
     
+def upsert_cliente_sem_sync(dados: dict) -> bool:
+    try:
+        with _connect() as conn:
+            existe = conn.execute("SELECT id FROM clientes WHERE nome=?", (dados["nome"],)).fetchone()
+            if existe:
+                conn.execute(
+                    """UPDATE clientes SET numero_telefone=?, tipo_cliente=?, faltas=?,
+                       dia_semana=?, hora_corte=?, rapido=?, updated_at=? WHERE nome=?""",
+                    (dados.get("numero_telefone", ""), dados.get("tipo_cliente", "NORMAL"),
+                     dados.get("faltas", 0), dados.get("dia_semana"), dados.get("hora_corte"),
+                     int(dados.get("rapido", 0)), dados.get("updated_at"), dados["nome"])
+                )
+            else:
+                conn.execute(
+                    """INSERT INTO clientes (nome, numero_telefone, tipo_cliente, faltas,
+                       dia_semana, hora_corte, rapido, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (dados["nome"], dados.get("numero_telefone", ""), dados.get("tipo_cliente", "NORMAL"),
+                     dados.get("faltas", 0), dados.get("dia_semana"), dados.get("hora_corte"),
+                     int(dados.get("rapido", 0)), dados.get("updated_at"))
+                )
+        return True
+    except Exception as e:
+        print(f"[Database] upsert_cliente_sem_sync: {e}")
+        return False
+    
+def apagar_cliente_sem_sync(nome: str) ->bool:
+    try:
+        with _connect() as conn:
+            row = conn.execute("DELETE FROM clientes WHERE nome=?", (nome,))
+        return True
+    except Exception as e:
+        print(f"[Database] apagar_cliente_sem_sync: {e}")
+        return False
+    
+def ler_marcacao_bruta(data_hora: str) -> Optional[dict]:
+    with _connect() as conn:
+        row = conn.execute("SELECT * FROM marcacoes WHERE data_hora=?", (data_hora,)).fetchone()
+        return dict(row) if row else None
+    
+def upsert_marcacao_sem_sync(dados: dict) -> bool:
+    try:
+        with _connect() as conn:
+            existe = conn.execute("SELECT id FROM marcacoes WHERE data_hora=?", (dados["data_hora"],)).fetchone()
+            if existe:
+                conn.execute(
+                    """UPDATE marcacoes SET cliente_nome=?, duracao=?, observacoes=?,
+                       falta=?, updated_at=? WHERE data_hora=?""",
+                    (dados.get("cliente_nome", ""), dados.get("duracao", 30),
+                     dados.get("observacoes", ""), int(dados.get("falta", 0)),
+                     dados.get("updated_at"), dados["data_hora"])
+                )
+            else:
+                conn.execute(
+                    """INSERT INTO marcacoes (data_hora, cliente_nome, duracao,
+                       observacoes, falta, updated_at) VALUES (?, ?, ?, ?, ?, ?)""",
+                    (dados["data_hora"], dados.get("cliente_nome", ""), dados.get("duracao", 30),
+                     dados.get("observacoes", ""), int(dados.get("falta", 0)), dados.get("updated_at"))
+                )
+        return True
+    except Exception as e:
+        print(f"[Database] upsert_marcacao_sem_sync: {e}")
+        return False
+    
+def apagar_marcacao_sem_sync(data_hora: str) -> bool:
+    try:
+        with _connect() as conn:
+            conn.execute("DELETE FROM marcacoes WHERE data_hora=?", (data_hora,))
+        return True
+    except Exception as e:
+        print(f"[Database] apagar_marcacao_sem_sync: {e}")
+        return False
+    
+def guardar_pendentes_sem_sync(pendentes: list[dict]) -> bool:
+    try:
+        with _connect() as conn:
+            conn.execute("DELETE FROM pendentes")
+            conn.executemany(
+                "INSERT INTO pendentes (nome, numero_telefone) VALUES (?, ?)",
+                [(p.get("nome", ""), p.get("numero_telefone", "")) for p in pendentes]
+            )
+        return True
+    except Exception as e:
+        print(f"[Database] guardar_pendentes_sem_sync: {e}")
+        return False
+    
+def guardar_anotacoes_sem_sync(texto: str) -> bool:
+    try:
+        with _connect() as conn:
+            existe = conn.execute("SELECT id FROM anotacoes WHERE id=1").fetchone()
+            if existe:
+                conn.execute("UPDATE anotacoes SET texto=? WHERE id=1", (texto,))
+            else:
+                conn.execute("INSERT INTO anotacoes (id, texto) VALUES (1, ?)", (texto,))
+        return True
+    except Exception as e:
+        print(f"[Database] guardar_anotacoes_sem_sync: {e}")
+        return False
+    
+def ha_fila_pendente_para(tabela: str) -> bool:
+    """Verifica se há operações dessa tabela ainda por enviar na fila offline."""
+    try:
+        with _connect() as conn:
+            row = conn.execute(
+                "SELECT 1 FROM sync_pendente WHERE tabela=? LIMIT 1", (tabela,)
+            ).fetchone()
+            return row is not None
+    except Exception as e:
+        return False

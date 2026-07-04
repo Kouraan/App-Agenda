@@ -10,6 +10,7 @@ import threading
 import time
 import sqlite3
 from datetime import datetime
+from typing import Any, Dict, List, cast
 from contextlib import contextmanager
 
 def _carregar_env():
@@ -202,15 +203,23 @@ def _enviar_operacao(client, operacao: str, tabela: str, dados: dict) -> bool:
             valor = dados.get("_valor")
             if campo and valor:
                 client.table(tabela).delete().eq(campo, valor).execute()
+                client.table("sync_tombstones").insert({"tabela": tabela, "chave": valor}).execute()
 
         elif operacao == "delete_futuras_cliente":
             nome     = dados.get("cliente_nome")
             a_partir = dados.get("a_partir_de")
             if nome and a_partir:
+                res = client.table("marcacoes").select("data_hora")\
+                    .eq("cliente_nome", nome).gte("data_hora", a_partir).execute()
+                chaves = [r["data_hora"] for r in (res.data or [])]
                 client.table("marcacoes").delete()\
                     .eq("cliente_nome", nome)\
                     .gte("data_hora", a_partir)\
                     .execute()
+                if chaves:
+                    client.table("sync_tombstones").insert(
+                        [{"tabela": "marcacoes", "chave": k} for k in chaves]
+                    ).execute()
 
         elif operacao == "delete_pendentes_todos":
             client.table("pendentes").delete().neq("id", 0).execute()
@@ -302,3 +311,88 @@ def iniciar_sync_background():
     _sync_thread = threading.Thread(target=_loop_background, daemon=True)
     _sync_thread.start()
     print("[Sync] Thread de sincronização iniciada.")
+    
+def puxar_alteracoes() -> dict:
+    """
+    Puxa alterações da Supabase desde o último pull e aplica-as ao SQLite local.
+    Silenciosamente não faz nada se não houver internet/credenciais — não afeta
+    o funcionamento offline da app.
+    """
+    from . import Database
+
+    resumo = {"sucesso": False, "clientes": 0, "marcacoes": 0,
+              "pendentes": 0, "anotacoes": False, "conflitos": []}
+
+    client = _get_client_autenticado()
+    if not client:
+        return resumo
+
+    ultimo_pull = Database.ler_meta("last_pull_timestamp") or "1970-01-01T00:00:00+00:00"
+    agora_iso = datetime.utcnow().isoformat() + "+00:00"
+
+    try:
+        res = client.table("clientes").select("*").gt("updated_at", ultimo_pull).execute()
+        for row in cast(List[Dict[str, Any]], res.data or []):
+            _merge_cliente(row, ultimo_pull, resumo)
+
+        res = client.table("marcacoes").select("*").gt("updated_at", ultimo_pull).execute()
+        for row in cast(List[Dict[str, Any]], res.data or []):
+            _merge_marcacao(row, ultimo_pull, resumo)
+
+        res = client.table("sync_tombstones").select("*").gt("apagado_em", ultimo_pull).execute()
+        for row in cast(List[Dict[str, Any]], res.data or []):
+            if row["tabela"] == "clientes":
+                Database.apagar_cliente_sem_sync(row["chave"])
+            elif row["tabela"] == "marcacoes":
+                Database.apagar_marcacao_sem_sync(row["chave"])
+
+        if not Database.ha_fila_pendente_para("pendentes"):
+            res = client.table("pendentes").select("*").execute()
+            pendentes_data = cast(List[Dict[str, Any]], res.data or [])
+            Database.guardar_pendentes_sem_sync(pendentes_data)
+            resumo["pendentes"] = len(pendentes_data)
+
+        if not Database.ha_fila_pendente_para("anotacoes"):
+            res = client.table("anotacoes").select("texto").eq("id", 1).execute()
+            anotacoes_data = cast(List[Dict[str, Any]], res.data or [])
+            if anotacoes_data:
+                Database.guardar_anotacoes_sem_sync(anotacoes_data[0]["texto"])
+                resumo["anotacoes"] = True
+
+        Database.guardar_meta("last_pull_timestamp", agora_iso)
+        resumo["sucesso"] = True
+
+    except Exception as e:
+        print(f"[Sync] Erro ao puxar alterações: {e}")
+
+    return resumo
+
+
+def _merge_cliente(row: dict, ultimo_pull: str, resumo: dict):
+    from . import Database
+    local = Database.ler_cliente_bruto(row["nome"])
+    if local and local.get("updated_at") and local["updated_at"] > ultimo_pull:
+        remoto_ganha = row.get("updated_at", "") > local["updated_at"]
+        resumo["conflitos"].append({
+            "tabela": "clientes", "chave": row["nome"],
+            "resolucao": "remoto" if remoto_ganha else "local"
+        })
+        if not remoto_ganha:
+            return
+    Database.upsert_cliente_sem_sync(row)
+    resumo["clientes"] += 1
+
+
+def _merge_marcacao(row: dict, ultimo_pull: str, resumo: dict):
+    from . import Database
+    local = Database.ler_marcacao_bruta(row["data_hora"])
+    if local and local.get("updated_at") and local["updated_at"] > ultimo_pull:
+        remoto_ganha = row.get("updated_at", "") > local["updated_at"]
+        resumo["conflitos"].append({
+            "tabela": "marcacoes", "chave": row["data_hora"],
+            "resolucao": "remoto" if remoto_ganha else "local"
+        })
+        if not remoto_ganha:
+            return
+    Database.upsert_marcacao_sem_sync(row)
+    resumo["marcacoes"] += 1

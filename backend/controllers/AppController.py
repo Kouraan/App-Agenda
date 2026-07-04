@@ -24,6 +24,20 @@ class AppController:
     def initialize(self):
         """Carrega dados iniciais a partir da base de dados SQLite."""
         Database.inicializar_bd()
+        
+        # Tenta sincronizar com a Supabase (silenciosamente ignora se não houver internet)
+        try:
+            from ..utils import SupabaseSync
+            resumo_pull = SupabaseSync.puxar_alteracoes()
+            if resumo_pull.get("conflitos"):
+                for c in resumo_pull["conflitos"]:
+                    Logger.log_sync_conflito(c["tabela"], c["chave"], c["resolucao"])
+                self.ultimo_resumo_sync = resumo_pull
+            else:
+                self.ultimo_resumo_sync = None
+        except Exception as e:
+            print(f"[AppController] Erro ao puxar alterações: {e}")
+            self.ultimo_resumo_sync = None
 
         self.utilizador    = Persistencia.ler_utilizador()
         self.clientes_map  = Persistencia.ler_clientes()

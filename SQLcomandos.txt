@@ -127,3 +127,35 @@ drop policy if exists "acesso_autenticado" on public.marcacoes;
 drop policy if exists "acesso_autenticado" on public.anotacoes;
 drop policy if exists "acesso_autenticado" on public.pendentes;
 drop policy if exists "acesso_autenticado" on public.logs;
+
+
+//  Colunas updated_at + triggers automáticos
+alter table public.clientes  add column if not exists updated_at timestamptz not null default now();
+alter table public.marcacoes add column if not exists updated_at timestamptz not null default now();
+alter table public.pendentes add column if not exists updated_at timestamptz not null default now();
+alter table public.anotacoes add column if not exists updated_at timestamptz not null default now();
+
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger trg_clientes_updated_at  before update on public.clientes  for each row execute function public.set_updated_at();
+create trigger trg_marcacoes_updated_at before update on public.marcacoes for each row execute function public.set_updated_at();
+
+// Tabela de Tombstones
+create table if not exists public.sync_tombstones (
+    id         bigserial primary key,
+    tabela     text not null,
+    chave      text not null,
+    apagado_em timestamptz not null default now()
+);
+
+alter table public.sync_tombstones enable row level security;
+create policy "acesso_autenticado" on public.sync_tombstones
+    for all to authenticated using (true) with check (true);
+grant select, insert, update, delete on public.sync_tombstones to authenticated;
+grant usage, select on all sequences in schema public to authenticated;

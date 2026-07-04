@@ -167,3 +167,9 @@ def log_pendente_adicionado(pendente: Pendente):
 
 def log_pendente_removido(pendente: Pendente):
     log_pendente(f"Cliente Pendente removido: '{pendente.get_nome()}'.")
+    
+def log_sync(mensagem: str):
+    _escrever_log("Sync", "sync", mensagem)
+
+def log_sync_conflito(tabela: str, chave: str, resolucao: str):
+    log_sync(f"Conflito em '{tabela}' (chave: '{chave}') — resolvido a favor de: {resolucao}.")
