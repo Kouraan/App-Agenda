@@ -1,0 +1,538 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: rgb(60, 60, 60);
+    overflow-x: hidden;
+}
+
+/* ============================================================
+   OVERLAY DE AUTENTICAÇÃO (login inline, sem página separada)
+   ============================================================ */
+
+.auth-overlay {
+    position: fixed;
+    inset: 0;
+    background-image: url('../images/fundo.jpg');
+    background-size: cover;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.auth-content {
+    background: rgba(15, 14, 14, 0.85);
+    border-radius: 20px;
+    padding: 40px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 360px;
+    max-width: 90vw;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+
+.auth-content .title {
+    color: white;
+    font-size: 40px;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 2px;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+}
+
+.auth-subtitle {
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.auth-content .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-content .form-group label {
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.auth-content .form-group input {
+    width: 100%;
+    height: 44px;
+    padding: 8px 14px;
+    background-color: white;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.auth-content .form-group input:focus {
+    border-color: rgb(36, 43, 141);
+    box-shadow: 0 0 0 2px rgba(36, 43, 141, 0.3);
+}
+
+.auth-content .button-container {
+    margin-top: 10px;
+}
+
+#authEntrarBtn {
+    width: 100%;
+    height: 46px;
+    background-color: rgb(36, 43, 141);
+    border: 2px solid white;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#authEntrarBtn:disabled {
+    background-color: rgb(100, 100, 100);
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: rgb(255, 140, 130);
+    font-size: 14px;
+    font-weight: bold;
+    min-height: 20px;
+    text-align: center;
+}
+
+.error-message.visible {
+    visibility: visible;
+}
+
+/* ============================================================
+   ESTRUTURA PRINCIPAL (reaproveitado de pagina_principal.css)
+   ============================================================ */
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: rgb(15, 14, 14);
+    padding: 10px 16px;
+}
+
+.logo { color: white; font-size: 20px; font-weight: bold; }
+.spacer { flex: 1; }
+.user-info { color: white; font-size: 14px; font-weight: bold; }
+
+.logout-btn {
+    background-color: rgb(128, 26, 15);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 40px;
+}
+
+.main-content {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+.left-sidebar, .right-sidebar {
+    width: 200px;
+    min-width: 200px;
+    background-color: rgb(15, 14, 14);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.left-sidebar { gap: 12px; }
+.right-sidebar { gap: 16px; }
+
+.navigation-buttons { display: flex; flex-direction: column; gap: 8px; }
+
+.nav-btn {
+    background-color: rgb(43, 40, 40);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    min-height: 44px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.nav-btn.active { background-color: rgb(60, 60, 60); }
+
+.anotacoes-box {
+    flex: 1;
+    background-color: rgb(43, 40, 40);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.anotacoes-header { display: flex; align-items: center; gap: 8px; }
+.anotacoes-header .title { flex: 1; color: white; font-size: 16px; font-weight: bold; }
+
+.blur-btn {
+    width: 40px; height: 32px;
+    background-color: rgb(60, 60, 60);
+    color: white; border: none; border-radius: 12px;
+    font-size: 16px; cursor: pointer;
+}
+
+.separator { height: 1px; width: 100%; background-color: white; }
+
+.anotacoes-text {
+    flex: 1;
+    background-color: rgb(60, 60, 60);
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+}
+
+.anotacoes-text.blurred { filter: blur(6px); pointer-events: none; }
+
+.calendar-container, .clientes-container {
+    height: 100%;
+    background-color: rgb(15, 14, 14);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.clientes-container.hidden { display: none; }
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 50px;
+    padding-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.control-btn, .view-btn {
+    background-color: rgb(43, 40, 40);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 40px;
+}
+
+.view-btn.active { background-color: rgb(60, 60, 60); }
+.period-label { flex: 1; color: white; font-weight: bold; text-align: center; }
+
+.calendar-scroll {
+    flex: 1;
+    overflow: hidden;
+    background-color: rgb(15, 14, 14);
+    border-radius: 8px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.calendar-scroll-inner {
+    overflow: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+.semana-header-fixo {
+    display: grid;
+    grid-template-columns: 70px repeat(7, minmax(100px, 1fr));
+    gap: 6px;
+    padding: 10px 10px 0 10px;
+    background-color: rgb(15, 14, 14);
+    flex-shrink: 0;
+}
+
+.calendar-grid.semana, .calendar-grid.dia {
+    display: grid;
+    gap: 6px;
+    min-height: 100%;
+}
+
+.calendar-grid.semana {
+    grid-template-columns: 70px repeat(7, minmax(100px, 1fr));
+    grid-auto-rows: 40px;
+    row-gap: 10px;
+    column-gap: 6px;
+    padding: 10px;
+}
+
+.calendar-grid.dia {
+    grid-template-columns: 70px 1fr;
+    grid-auto-rows: 40px;
+    padding: 10px;
+}
+
+.calendar-grid.mes {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    flex: 1;
+    min-height: 0;
+}
+
+.mes-header {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.mes-weeks { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; }
+.mes-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; flex: 1; min-height: 0; }
+
+.calendar-cell {
+    position: relative;
+    min-width: 0;
+    min-height: 40px;
+    background-color: rgb(43, 40, 40);
+    border: 1px solid rgba(197, 130, 63, 0.86);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.calendar-cell.header { background-color: rgba(197, 130, 63, 0.86); min-height: 44px; cursor: default; }
+.calendar-cell.hour { background-color: rgba(197, 130, 63, 0.86); cursor: default; }
+.calendar-cell.today, .calendar-cell.current-slot { background-color: rgb(189, 166, 35); }
+.calendar-cell.holiday { background-color: rgb(36, 43, 141); }
+.calendar-cell.past { opacity: 0.7; cursor: default; }
+.calendar-cell.lunch-hour, .calendar-cell.lunch-cell, .calendar-cell.sunday-cell { background-color: rgb(245, 174, 103); }
+
+.marcacao {
+    flex: 1 1 0%;
+    min-width: 0;
+    width: 100%;
+    height: 30px;
+    border-radius: 12px;
+    background-color: rgb(247, 221, 151);
+    color: rgb(43, 40, 40);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.marcacao.falta { background-color: rgb(128, 26, 15); color: white; }
+.marcacao-label { font-size: 12px; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.marcacao-wrap-full { width: 100%; height: 100%; padding: 4px; display: flex; align-items: center; }
+.marcacao-15-container { display: flex; flex-direction: row; width: 100%; height: 100%; gap: 2px; padding: 4px; }
+.marcacao-15-slot, .marcacao-15-slot-vazio { flex: 1 1 0%; min-width: 0; max-width: 50%; height: 100%; display: flex; align-items: center; }
+
+.section-title { color: white; font-size: 17px; font-weight: bold; }
+
+.pendentes-scroll {
+    flex: 1;
+    background-color: rgb(43, 40, 40);
+    border: 2px solid rgba(197, 130, 63, 0.86);
+    border-radius: 16px;
+    padding: 4px;
+    overflow: auto;
+}
+
+.pendentes-container { display: flex; flex-direction: column; }
+.pendente-item { color: white; font-size: 15px; font-weight: bold; padding: 10px 8px; cursor: pointer; }
+.pendente-separator { height: 2px; margin: 0 4px; background-color: rgba(197, 130, 63, 0.86); }
+.clock { width: 100%; color: white; text-align: center; font-size: 36px; font-weight: 900; }
+
+.clientes-content { height: 100%; display: flex; flex-direction: column; gap: 16px; }
+.clientes-toolbar { display: flex; align-items: center; gap: 10px; padding-bottom: 15px; }
+
+.search-field {
+    flex: 1; height: 44px;
+    background-color: rgb(43, 40, 40);
+    color: white; border: none; border-radius: 12px;
+    padding: 8px 16px; font-size: 16px; outline: none;
+}
+
+.add-client-btn {
+    width: 44px; height: 44px;
+    background-color: rgb(43, 40, 40);
+    color: white; border: none; border-radius: 12px;
+    font-size: 18px; font-weight: bold; cursor: pointer;
+}
+
+.clientes-table-container { flex: 1; background-color: rgb(15, 14, 14); border-radius: 12px; overflow: auto; }
+
+.clientes-table {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(90px, 1fr));
+    gap: 8px;
+    background-color: rgb(43, 40, 40);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.table-header {
+    background-color: rgba(197, 130, 63, 0.86);
+    color: white;
+    border-radius: 12px;
+    padding: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.table-cell {
+    background-color: rgb(60, 60, 60);
+    color: white;
+    border: 1px solid rgba(197, 130, 63, 0.86);
+    border-radius: 12px;
+    padding: 8px;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* ============================================================
+   MOBILE — ponto de quebra principal: 900px
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .auth-content {
+        padding: 28px 24px;
+        width: 100%;
+    }
+
+    .auth-content .title { font-size: 30px; }
+
+    .main-content {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+        padding: 8px;
+        gap: 8px;
+    }
+
+    /* Sidebars viram "abas" horizontais no topo, compactas */
+    .left-sidebar {
+        width: 100%;
+        min-width: 100%;
+        flex-direction: row;
+        gap: 8px;
+        padding: 8px;
+        order: 1;
+    }
+
+    .navigation-buttons {
+        flex-direction: row;
+        flex: 1;
+        gap: 8px;
+    }
+
+    .nav-btn { flex: 1; font-size: 13px; padding: 10px 6px; }
+
+    /* Anotações escondidas por defeito em mobile, para poupar espaço —
+       ainda acessíveis via scroll, mas não competem com o calendário */
+    .anotacoes-box {
+        display: none;
+    }
+
+    .right-sidebar {
+        width: 100%;
+        min-width: 100%;
+        flex-direction: row;
+        align-items: center;
+        height: auto;
+        order: 3;
+        gap: 12px;
+    }
+
+    .pendentes-scroll {
+        max-height: 120px;
+    }
+
+    .clock { font-size: 26px; }
+
+    .center-area, .calendar-container, .clientes-container {
+        order: 2;
+        height: 65vh;
+    }
+
+    /* Calendário: em vez de espremer 7 colunas, permite scroll horizontal
+       mantendo cada dia com largura legível (mín. 90px) */
+    .calendar-scroll { overflow-x: auto; }
+    .semana-header-fixo,
+    .calendar-grid.semana {
+        grid-template-columns: 56px repeat(7, minmax(90px, 1fr));
+        min-width: 700px;
+    }
+
+    .calendar-grid.dia {
+        grid-template-columns: 56px 1fr;
+    }
+
+    .calendar-cell { font-size: 12px; }
+    .marcacao-label { font-size: 11px; }
+
+    /* Botões de controlo do calendário — alvo de toque maior, quebra de linha */
+    .calendar-header { gap: 6px; }
+    .control-btn, .view-btn {
+        min-height: 44px;
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .period-label { font-size: 13px; width: 100%; order: -1; }
+
+    /* Tabela de clientes: scroll horizontal em vez de colunas espremidas */
+    .clientes-table-container { overflow-x: auto; }
+    .clientes-table { min-width: 640px; }
+
+    .search-field, .add-client-btn { min-height: 48px; }
+}
+
+@media (max-width: 480px) {
+    .auth-content .title { font-size: 26px; }
+    .clock { font-size: 22px; }
+    .nav-btn { font-size: 12px; }
+}
