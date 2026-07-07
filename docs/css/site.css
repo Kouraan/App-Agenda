@@ -259,20 +259,16 @@ body {
 
 .calendar-scroll {
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
     background-color: rgb(15, 14, 14);
     border-radius: 8px;
     padding: 5px;
-    display: flex;
-    flex-direction: column;
     min-height: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-.calendar-scroll-inner {
-    overflow: auto;
-    flex: 1;
-    min-height: 0;
-}
+.calendar-scroll::-webkit-scrollbar { display: none; }
 
 .semana-header-fixo {
     display: grid;
@@ -379,9 +375,9 @@ body {
 }
 
 .pendentes-container { display: flex; flex-direction: column; }
-.pendente-item { color: white; font-size: 15px; font-weight: bold; padding: 10px 8px; cursor: pointer; }
+.pendente-item { color: white; font-size: 15px; font-weight: bold; padding: 12px 10px; cursor: pointer; }
 .pendente-separator { height: 2px; margin: 0 4px; background-color: rgba(197, 130, 63, 0.86); }
-.clock { width: 100%; color: white; text-align: center; font-size: 36px; font-weight: 900; }
+.clock { display: none; }
 
 .clientes-content { height: 100%; display: flex; flex-direction: column; gap: 16px; }
 .clientes-toolbar { display: flex; align-items: center; gap: 10px; padding-bottom: 15px; }
@@ -522,15 +518,16 @@ body {
     .right-sidebar {
         width: 100%;
         min-width: 100%;
-        flex-direction: row;
-        align-items: center;
+        flex-direction: column;
+        align-items: stretch;
         height: auto;
         order: 3;
-        gap: 12px;
+        gap: 8px;
+        padding: 10px;
     }
 
     .pendentes-scroll {
-        max-height: 120px;
+        max-height: 160px;
     }
 
     .clock { font-size: 26px; }
@@ -564,7 +561,26 @@ body {
         font-size: 13px;
     }
 
-    .period-label { font-size: 13px; width: 100%; order: -1; }
+    .calendar-header {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .calendar-header .spacer {
+        display: none;
+    }
+    
+    .navigation-controls, .view-toggles {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .period-label {
+        font-size: 14px;
+        width: 100%;
+        order: -1;
+    }
 
     /* Tabela de clientes: scroll horizontal em vez de colunas espremidas */
     .clientes-table-container { overflow-x: auto; }
