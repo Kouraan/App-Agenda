@@ -51,7 +51,7 @@ function _construirSiteApi() {
             const { data, error } = await supabaseClient.from("clientes").select("*").eq("nome", nome).maybeSingle();
             if (error || !data) return { success: false, error: "Cliente não encontrado." };
             return {
-                sucess: true,
+                success: true,
                 cliente: {
                     nome: data.nome, numeroTelefone: data.numero_telefone,
                     tipoCliente: data.tipo_cliente, faltas: data.faltas,
@@ -62,7 +62,7 @@ function _construirSiteApi() {
         },
         
         // Clientes
-        adicionar_cliente: async (cliente) => {
+        adicionar_cliente: async (clienteDict) => {
             const nome = (clienteDict.nome || "").trim();
             const numero = (clienteDict.numeroTelefone || "").trim();
             const tipo = clienteDict.tipoCliente || "NORMAL";

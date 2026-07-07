@@ -8,7 +8,7 @@ class AuthModule {
         this.errorLabel = document.getElementById("authError");
         this.entrarBtn = document.getElementById("authEntrarBtn");
 
-        this.from.addEventListener("submit", (e) => this._handleLogin(e));
+        this.form.addEventListener("submit", (e) => this._handleLogin(e));
     }
 
     async _handleLogin(e) {

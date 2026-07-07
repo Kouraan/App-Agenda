@@ -344,6 +344,7 @@ body {
 .calendar-cell.holiday { background-color: rgb(36, 43, 141); }
 .calendar-cell.past { opacity: 0.7; cursor: default; }
 .calendar-cell.lunch-hour, .calendar-cell.lunch-cell, .calendar-cell.sunday-cell { background-color: rgb(245, 174, 103); }
+.calendar-cell.sunday:not(.header) { background-color: rgb(43, 40, 40); }
 
 .marcacao {
     flex: 1 1 0%;
@@ -409,6 +410,47 @@ body {
     background-color: rgb(43, 40, 40);
     border-radius: 12px;
     padding: 10px;
+}
+
+.clientes-empty {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+
+    background-color: rgb(15, 14, 14);
+    border-radius: 24px;
+    padding: 32px;
+}
+
+.clientes-empty-message {
+    color: white;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.clientes-add-btn {
+    background-color: rgb(43, 40, 40);
+    color: white;
+
+    border: none;
+    border-radius: 12px;
+
+    padding: 10px 32px;
+
+    font-size: 18px;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.clientes-add-btn:hover {
+    background-color: rgb(60, 60, 60);
 }
 
 .table-header {
