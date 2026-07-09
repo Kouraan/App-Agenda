@@ -28,6 +28,7 @@ class AppController:
         # Tenta sincronizar com a Supabase (silenciosamente ignora se não houver internet)
         try:
             from ..utils import SupabaseSync
+            SupabaseSync.processar_fila_bloqueante()
             resumo_pull = SupabaseSync.puxar_alteracoes()
             if resumo_pull.get("conflitos"):
                 for c in resumo_pull["conflitos"]:

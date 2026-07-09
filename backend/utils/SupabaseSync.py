@@ -9,7 +9,8 @@ import json
 import threading
 import time
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
+from dateutil import parser as date_parser
 from typing import Any, Dict, List, cast
 from contextlib import contextmanager
 
@@ -63,6 +64,15 @@ _sync_thread     = None
 _fila_lock       = threading.Lock()
 _iniciado        = False
 
+
+def _parse_ts(valor: str):
+    """Converte um ISO string (com ou sem offset) para datetime aware em UTC."""
+    if not valor:
+        return None
+    dt = date_parser.isoparse(valor)
+    if dt.tzinfo is None:
+        dt = dt.astimezone()
+    return dt.astimezone(timezone.utc)
 
 def _autenticar(client) -> bool:
     """Garante que o cliente tem uma sessão válida. Só reautentica se necessário."""
@@ -259,22 +269,34 @@ def _processar_fila():
         _remover_fila(ids_ok)
         print(f"[Sync] {len(ids_ok)} operação(ões) sincronizada(s).")
 
+def processar_fila_bloqueante():
+    """
+    Versão síncrona de _processar_fila, para ser chamada explicitamente
+    no arranque da app, ANTES de qualquer pull — garante que as
+    alterações feitas offline (ou na sessão anterior) são enviadas
+    primeiro, evitando que o pull as sobreponha com dados desatualizados.
+    """
+    _garantir_tabela_fila()
+    with _fila_lock:
+        _processar_fila()
 
 # Função principal
 
 def sincronizar(operacao: str, tabela: str, dados: dict):
     """
-    Adiciona à fila e processa em background.
-    NUNCA bloqueia a thread principal.
+    Grava na fila de forma SÍNCRONA (garante a ordem cronológica real das
+    operações) e só delega para background o envio de rede.
     """
     if not SUPABASE_URL or not SUPABASE_KEY:
         return
 
+    _garantir_tabela_fila()
+    _adicionar_fila(operacao, tabela, dados)
+    
     def _tarefa():
         with _fila_lock:
-            _adicionar_fila(operacao, tabela, dados)
             _processar_fila()
-
+    
     threading.Thread(target=_tarefa, daemon=True).start()
 
 
@@ -341,10 +363,7 @@ def puxar_alteracoes() -> dict:
 
         res = client.table("sync_tombstones").select("*").gt("apagado_em", ultimo_pull).execute()
         for row in cast(List[Dict[str, Any]], res.data or []):
-            if row["tabela"] == "clientes":
-                Database.apagar_cliente_sem_sync(row["chave"])
-            elif row["tabela"] == "marcacoes":
-                Database.apagar_marcacao_sem_sync(row["chave"])
+            _aplicar_tombstone(row)
 
         if not Database.ha_fila_pendente_para("pendentes"):
             res = client.table("pendentes").select("*").execute()
@@ -371,14 +390,18 @@ def puxar_alteracoes() -> dict:
 def _merge_cliente(row: dict, ultimo_pull: str, resumo: dict):
     from . import Database
     local = Database.ler_cliente_bruto(row["nome"])
-    if local and local.get("updated_at") and local["updated_at"] > ultimo_pull:
-        remoto_ganha = row.get("updated_at", "") > local["updated_at"]
-        resumo["conflitos"].append({
-            "tabela": "clientes", "chave": row["nome"],
-            "resolucao": "remoto" if remoto_ganha else "local"
-        })
-        if not remoto_ganha:
-            return
+    if local and local.get("updated_at"):
+        dt_local  = _parse_ts(local["updated_at"])
+        dt_pull   = _parse_ts(ultimo_pull)
+        if dt_local and dt_pull and dt_local > dt_pull:
+            dt_remoto = _parse_ts(row.get("updated_at", ""))
+            remoto_ganha = bool(dt_remoto) and dt_remoto > dt_local
+            resumo["conflitos"].append({
+                "tabela": "clientes", "chave": row["nome"],
+                "resolucao": "remoto" if remoto_ganha else "local"
+            })
+            if not remoto_ganha:
+                return
     Database.upsert_cliente_sem_sync(row)
     resumo["clientes"] += 1
 
@@ -386,13 +409,43 @@ def _merge_cliente(row: dict, ultimo_pull: str, resumo: dict):
 def _merge_marcacao(row: dict, ultimo_pull: str, resumo: dict):
     from . import Database
     local = Database.ler_marcacao_bruta(row["data_hora"])
-    if local and local.get("updated_at") and local["updated_at"] > ultimo_pull:
-        remoto_ganha = row.get("updated_at", "") > local["updated_at"]
-        resumo["conflitos"].append({
-            "tabela": "marcacoes", "chave": row["data_hora"],
-            "resolucao": "remoto" if remoto_ganha else "local"
-        })
-        if not remoto_ganha:
-            return
+    if local and local.get("updated_at"):
+        dt_local  = _parse_ts(local["updated_at"])
+        dt_pull   = _parse_ts(ultimo_pull)
+        if dt_local and dt_pull and dt_local > dt_pull:
+            dt_remoto = _parse_ts(row.get("updated_at", ""))
+            remoto_ganha = bool(dt_remoto) and dt_remoto > dt_local
+            resumo["conflitos"].append({
+                "tabela": "marcacoes", "chave": row["data_hora"],
+                "resolucao": "remoto" if remoto_ganha else "local"
+            })
+            if not remoto_ganha:
+                return
     Database.upsert_marcacao_sem_sync(row)
     resumo["marcacoes"] += 1
+    
+def _aplicar_tombstone(row: dict):
+    """Só apaga localmente se não houver uma versão MAIS RECENTE nessa
+       mesma 'chave' - evita apagar um registo que reutilizou a mesma
+       data_hora/nome depois de um delete anterior."""
+    from . import Database
+    
+    tabela = row["tabela"]
+    chave = row["chave"]
+    apagado_em = _parse_ts(row.get("apagado_em", ""))
+    
+    if tabela == "clientes":
+        local = Database.ler_cliente_bruto(chave)
+        if local and local.get("updated_at"):
+            dt_local = _parse_ts(local["updated_at"])
+            if dt_local and apagado_em and dt_local > apagado_em:
+                return
+        Database.apagar_cliente_sem_sync(chave)
+        
+    elif tabela == "marcacoes":
+        local = Database.ler_marcacao_bruta(chave)
+        if local and local.get("updated_at"):
+            dt_local = _parse_ts(local["updated_at"])
+            if dt_local and apagado_em and dt_local > apagado_em:
+                return
+        Database.apagar_marcacao_sem_sync(chave)

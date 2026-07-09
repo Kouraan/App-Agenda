@@ -33,21 +33,31 @@ body {
 
 .content {
     position: absolute;
-    top: 120px;
-    left: 80px;
+    top: 48%;
+    left: 28.5%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    width: 260px;  
+    height: auto;
+    gap: 12px;
     z-index: 10;
+    animation: ballFadeIn 0.8s ease-out;
 }
 
 .title {
-    color: white;
-    font-size: 56px;
+    color: #e5c158;
+    font-size: 32px;
     font-weight: 900;
-    margin: 0 0 0 60px;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-    letter-spacing: 2px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px rgba(229, 193, 88, 0.6), 
+                 2px 2px 4px rgba(0, 0, 0, 0.9);
+    animation: none; 
 }
 
 .error-message {
@@ -67,47 +77,48 @@ body {
 .form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
 }
 
 .form-group {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    height: 40px; /* Altura fixa para alinhamento */
+    gap: 2px;
+    width: 100%;
 }
 
 .form-group label {
-    color: white;
-    font-size: 20px;
+    color: #cccccc;
+    font-size: 13px;
     font-weight: bold;
-    width: 110px; /* Largura fixa para alinhamento perfeito */
-    text-align: left;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-    display: flex;
-    align-items: center;
+    width: auto;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .form-group input {
-    width: 140px;
-    max-width: 140px;
-    height: 32px; /* Altura reduzida - mais fino */
-    padding: 6px 12px; /* Padding reduzido */
-    background-color: white;
-    border: 2px solid transparent;
-    border-radius: 10px; /* Raio reduzido */
-    font-size: 16px; /* Fonte ligeiramente menor */
-    font-weight: bold;
+    width: 180px;
+    max-width: 180px;
+    height: 34px;
+    padding: 6px 12px;
+    background-color: rgba(20, 20, 20, 0.75);
+    border: 1px solid #e5c158;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
     outline: none;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    line-height: 1; /* Controlo da altura da linha */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .form-group input:focus {
-    border-color: rgb(36, 43, 141);
-    box-shadow: 0 0 0 2px rgba(36, 43, 141, 0.3);
-    transform: scale(1.02);
+    border-color: #ffffff;
+    box-shadow: 0 0 12px rgba(229, 193, 88, 0.8), inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    transform: scale(1.03);
 }
 
 .form-group input:hover {
@@ -115,35 +126,37 @@ body {
 }
 
 .button-container {
-    margin-top: 15px;
-    padding-left: 120px; /* Alinhado com os inputs */
-    height: 50px;
+    margin-top: 8px;
+    padding-left: 0;
+    height: auto;
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 #registoBtn {
-    background-color: rgb(36, 43, 141);
-    border: 2px solid white;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
+    background: linear-gradient(135deg, #e5c158 0%, #b89332 100%);
+    border: 1px solid #fff3cd;
+    border-radius: 20px;
+    color: #111111;
+    font-size: 14px;
     font-weight: bold;
-    padding: 10px 20px;
+    padding: 8px 24px;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 100px;
-    height: 38px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    min-width: 120px;
+    height: 36px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 #registoBtn:hover {
-    background-color: rgb(46, 53, 161);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    background: linear-gradient(135deg, #fff3cf 0%, #e5c158 100%);
+    box-shadow: 0 0 15px rgba(229, 193, 88, 0.8);
 }
 
 #registoBtn:active {
@@ -160,15 +173,7 @@ body {
 
 /* Efeitos adicionais para parecer mais com JavaFX */
 .content::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    left: -20px;
-    right: -20px;
-    bottom: -20px;
-    background: rgba(0,0,0,0.1);
-    border-radius: 20px;
-    z-index: -1;
+    display: none;
 }
 
 /* Animações de entrada */
@@ -183,12 +188,15 @@ body {
     }
 }
 
-.content {
-    animation: fadeInUp 0.8s ease-out;
-}
-
-.title {
-    animation: fadeInUp 0.8s ease-out 0.2s both;
+@keyframes ballFadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -40%); 
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
 }
 
 .form-group:nth-child(1) {
@@ -203,72 +211,127 @@ body {
     animation: fadeInUp 0.8s ease-out 0.8s both;
 }
 
-/* Responsividade melhorada */
+/* Responsividade */
+/* Para ecrãs intermédios (Portáteis) */
 @media (max-width: 1366px) {
     .content {
-        top: 80px;
-        left: 60px;
+        top: 48%;
+        left: 28.5%;
+        transform: translate(-50%, -50%);
+        height: auto;
     }
     
     .title {
-        font-size: 48px;
-        margin-left: 40px;
+        font-size: 28px;
+    }
+
+    .form-group input {
+        width: 160px;
+        height: 32px;
+        font-size: 13px;
+    }
+    
+    #entrarBtn, #registoBtn {
+        min-width: 110px;
+        height: 34px;
+        font-size: 13px;
     }
 }
 
+/* Para ecrãs pequenos (Tablets) */
 @media (max-width: 1024px) {
     .content {
-        top: 60px;
-        left: 40px;
+        top: 48%;
+        left: 28.5%;
+        transform: translate(-50%, -50%);
+        height: auto;
     }
     
     .title {
-        font-size: 40px;
-        margin-left: 20px;
+        font-size: 24px;
     }
     
     .form-group {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+        flex-direction: column; 
+        align-items: center;
+        gap: 2px;
         height: auto;
     }
     
     .form-group label {
         width: auto;
+        font-size: 11px;
     }
-    
+
+    .form-group input {
+        width: 140px;
+        height: 30px;
+        font-size: 12px;
+        border-radius: 15px;
+    }
+
     .button-container {
+        margin-top: 4px;
         padding-left: 0;
+    }
+
+    #entrarBtn, #registoBtn {
+        min-width: 100px;
+        height: 32px;
+        font-size: 12px;
+        border-radius: 15px;
     }
 }
 
+/* Para ecrãs muito pequenos (Telemóveis < 768px) */
 @media (max-width: 768px) {
+    body {
+        background-position: 30% center; 
+    }
+
     .content {
-        position: relative;
-        top: auto;
-        left: auto;
-        margin: 20px;
-        align-items: center;
+        position: absolute;
+        top: 50%;
+        left: 50%; /* No telemóvel, centralizamos no meio do ecrã para melhor leitura */
+        transform: translate(-50%, -50%);
+        width: 280px;
+        height: auto;
+        padding: 24px;
+        background: rgba(15, 14, 14, 0.9); 
+        border: 1px solid #e5c158;
+        border-radius: 24px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.8);
     }
     
     .title {
-        font-size: 32px;
+        font-size: 30px;
         margin-left: 0;
         text-align: center;
     }
-    
+
+    .form-group {
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+    }
+
     .form-group label {
-        font-size: 18px;
+        font-size: 13px;
         width: auto;
     }
-    
+
     .form-group input {
-        width: 200px;
-        max-width: 200px;
+        width: 180px;
+        max-width: 180px;
+        height: 34px;
     }
-    
-    .form-group {
-        height: auto;
+
+    .button-container {
+        padding-left: 0;
+    }
+
+    #entrarBtn, #registoBtn {
+        min-width: 120px;
+        height: 36px;
     }
 }

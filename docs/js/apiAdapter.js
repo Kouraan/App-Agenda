@@ -15,6 +15,10 @@ async function callApi(fn, fallback = null) {
     catch (e) { console.error("[apiAdapter] Erro:", e); return fallback; }
 }
 
+function _nowIsoUtc() {
+    return new Date().toISOString();
+}
+
 function _construirSiteApi() {
     return {
         get_utilizador_info: async () => ({ nome: "Acesso Web", authenticated: true}),
@@ -93,6 +97,7 @@ function _construirSiteApi() {
                 dia_semana: tipo === "SEMANAL" ? dia : null,
                 hora_corte: tipo === "SEMANAL" ? hora : null,
                 rapido: tipo === "SEMANAL" ? rapido : false,
+                updated_at: _nowIsoUtc(),
             });
             if (error) return { success: false, error: "Erro ao guardar cliente." };
 
@@ -134,6 +139,7 @@ function _construirSiteApi() {
                 faltas, dia_semana: tipoNovo === "SEMANAL" ? dia : null,
                 hora_corte: tipoNovo === "SEMANAL" ? hora : null,
                 rapido: tipoNovo === "SEMANAL" ? rapido : false,
+                updated_at: _nowIsoUtc(),
             }).eq("nome", nomeOriginal);
             if (error) return { success: false, error: "Erro ao guardar alterações." };
 
@@ -164,6 +170,7 @@ function _construirSiteApi() {
                 .eq("cliente_nome", nome).gte("data_hora", toLocalISOString(hojeISO));
             const { error } = await supabaseClient.from("clientes").delete().eq("nome", nome);
             if (error) return { success: false, error: "Erro ao apagar cliente." };
+            await supabaseClient.from("sync_tombstones").insert({ tabela: "clientes", chave: nome});
             return { success: true };
         },
 
@@ -198,6 +205,7 @@ function _construirSiteApi() {
         apagar_marcacao: async (dataHora) => {
             const { error } = await supabaseClient.from("marcacoes").delete().eq("data_hora", dataHora);
             if (error) return { success: false, error: "Erro ao apagar marcação." };
+            await supabaseClient.from("sync_tombstones").insert({ tabela: "marcacoes", chave: dataHora });
             return { success: true };
         },
 
@@ -220,11 +228,12 @@ function _construirSiteApi() {
                     duracao: existente.duracao,
                     observacoes: observacoes !== null && observacoes !== undefined ? observacoes : existente.observacoes,
                     falta: existente.falta,
+                    updated_at: _nowIsoUtc(),
                 });
                 if (error) return { success: false, error: "Erro ao alterar marcação." };
             } else if (observacoes !== null && observacoes !== undefined) {
                 const { error } = await supabaseClient.from("marcacoes")
-                    .update({ observacoes }).eq("data_hora", dataHoraOriginal);
+                    .update({ observacoes, updated_at: _nowIsoUtc() }).eq("data_hora", dataHoraOriginal);
                 if (error) return { success: false, error: "Erro ao guardar observações." };
             }
             return { success: true };
@@ -235,14 +244,14 @@ function _construirSiteApi() {
                 .eq("data_hora", dataHora).maybeSingle();
             if (!marcacao) return { success: false, error: "Marcação não encontrada." };
 
-            const { error } = await supabaseClient.from("marcacoes").update({ falta: 1 }).eq("data_hora", dataHora);
+            const { error } = await supabaseClient.from("marcacoes").update({ falta: 1, updated_at: _nowIsoUtc() }).eq("data_hora", dataHora);
             if (error) return { success: false, error: "Erro ao marcar falta." };
 
             if (marcacao.cliente_nome) {
                 const { data: cliente } = await supabaseClient.from("clientes").select("faltas")
                     .eq("nome", marcacao.cliente_nome).maybeSingle();
                 if (cliente) {
-                    await supabaseClient.from("clientes").update({ faltas: (cliente.faltas || 0) + 1 })
+                    await supabaseClient.from("clientes").update({ faltas: (cliente.faltas || 0) + 1, updated_at: _nowIsoUtc() })
                         .eq("nome", marcacao.cliente_nome);
                 }
             }
@@ -256,7 +265,7 @@ function _construirSiteApi() {
             if (!cliente) return { success: false, error: "Cliente não encontrado na base de dados." };
 
             const { error } = await supabaseClient.from("marcacoes")
-                .update({ cliente_nome: nome }).eq("data_hora", dataHora);
+                .update({ cliente_nome: nome, updated_at: _nowIsoUtc() }).eq("data_hora", dataHora);
             if (error) return { success: false, error: "Erro ao trocar cliente." };
             return { success: true };
         },
@@ -267,7 +276,7 @@ function _construirSiteApi() {
             // Nota: cliente "desconhecido" só existe embutido na marcação (cliente_nome),
             // não há linha própria em `clientes`. Apenas atualizamos o nome na marcação.
             const { error } = await supabaseClient.from("marcacoes")
-                .update({ cliente_nome: nome }).eq("data_hora", dataHora);
+                .update({ cliente_nome: nome, updated_at: _nowIsoUtc() }).eq("data_hora", dataHora);
             if (error) return { success: false, error: "Erro ao atualizar." };
             return { success: true };
         },
@@ -315,8 +324,8 @@ function _construirSiteApi() {
             }
 
             if (marcA.duracao === marcB.duracao) {
-                await supabaseClient.from("marcacoes").update({ cliente_nome: marcB.cliente_nome }).eq("data_hora", dataHoraA);
-                await supabaseClient.from("marcacoes").update({ cliente_nome: marcA.cliente_nome }).eq("data_hora", dataHoraB);
+                await supabaseClient.from("marcacoes").update({ cliente_nome: marcB.cliente_nome, updated_at: _nowIsoUtc() }).eq("data_hora", dataHoraA);
+                await supabaseClient.from("marcacoes").update({ cliente_nome: marcA.cliente_nome, updated_at: _nowIsoUtc() }).eq("data_hora", dataHoraB);
             } else {
                 const [m30, m15] = marcA.duracao === 30 ? [marcA, marcB] : [marcB, marcA];
                 const [dt30, dt15] = marcA.duracao === 30 ? [dtA, dtB] : [dtB, dtA];
@@ -329,10 +338,12 @@ function _construirSiteApi() {
                 await supabaseClient.from("marcacoes").insert({
                     data_hora: toLocalISOString(dt15), cliente_nome: m30.cliente_nome,
                     duracao: 30, observacoes: m30.observacoes, falta: m30.falta,
+                    updated_at: _nowIsoUtc()
                 });
                 await supabaseClient.from("marcacoes").insert({
                     data_hora: toLocalISOString(dt30), cliente_nome: m15.cliente_nome,
                     duracao: 15, observacoes: m15.observacoes, falta: m15.falta,
+                    updated_at: _nowIsoUtc()
                 });
             }
             return { success: true };
@@ -470,6 +481,7 @@ async function _gerarMarcacoesSemanaisEGuardar(nomeCliente, diaSemanaPt, horaStr
         await supabaseClient.from("marcacoes").insert({
             data_hora: nova.dataHora, cliente_nome: nomeCliente,
             duracao: nova.duracao, observacoes: "", falta: 0,
+            updated_at: _nowIsoUtc(),
         });
     }
 }
@@ -509,6 +521,7 @@ async function _criarMarcacaoInterna(clienteNome, dataHora, duracao, observacoes
         inserts.push({
             data_hora: blocoISO, cliente_nome: clienteNome,
             duracao: blocoDur, observacoes: observacoes || "", falta: 0,
+            updated_at: _nowIsoUtc(),
         });
         mapa.set(blocoISO, { data_hora: blocoISO, duracao: blocoDur });
 

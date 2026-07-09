@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from contextlib import contextmanager
 from typing import Optional
 
@@ -16,6 +16,9 @@ def _sync(operacao: str, tabela: str, dados: dict):
     except Exception:
         pass
 
+def _agora_utc_iso() -> str:
+    """Timestamp UTC com offset explicito, usado para updated_at em toda a BD."""
+    return datetime.now(timezone.utc).isoformat()
 
 # Ligação
 
@@ -172,7 +175,7 @@ def inserir_cliente(nome: str, numero_telefone: str, tipo_cliente: str,
                     faltas: int = 0, dia_semana=None, hora_corte=None,
                     rapido: bool = False) -> bool:
     try:
-        agora = datetime.now().isoformat()
+        agora = _agora_utc_iso()
         with _connect() as conn:
             conn.execute(
                 """INSERT INTO clientes
@@ -198,7 +201,7 @@ def atualizar_cliente(nome_original: str, nome: str, numero_telefone: str,
                       tipo_cliente: str, faltas: int, dia_semana=None,
                       hora_corte=None, rapido: bool = False) -> bool:
     try:
-        agora = datetime.now().isoformat()
+        agora = _agora_utc_iso()
         with _connect() as conn:
             conn.execute(
                 """UPDATE clientes
@@ -214,7 +217,8 @@ def atualizar_cliente(nome_original: str, nome: str, numero_telefone: str,
             "nome": nome, "numero_telefone": numero_telefone,
             "tipo_cliente": tipo_cliente, "faltas": faltas,
             "dia_semana": dia_semana, "hora_corte": hora_corte,
-            "rapido": int(rapido)
+            "rapido": int(rapido),
+            "updated_at": agora,
         })
         return True
     except Exception as e:
@@ -288,7 +292,7 @@ def inserir_marcacao(data_hora: str, cliente_nome: str, duracao: int,
 def inserir_marcacoes_bulk(marcacoes: list[dict]) -> bool:
     """Insere múltiplas marcações de uma vez (ignora duplicados)."""
     try:
-        agora = datetime.now().isoformat()
+        agora = _agora_utc_iso()
         for m in marcacoes:
             m["updated_at"] = agora
         with _connect() as conn:
@@ -311,7 +315,7 @@ def atualizar_marcacao(data_hora_original: str, data_hora: str,
                        cliente_nome: str, duracao: int,
                        observacoes: str, falta: bool) -> bool:
     try:
-        agora = datetime.now().isoformat()
+        agora = _agora_utc_iso()
         with _connect() as conn:
             conn.execute(
                 """UPDATE marcacoes
@@ -325,7 +329,8 @@ def atualizar_marcacao(data_hora_original: str, data_hora: str,
             _sync("delete", "marcacoes", {"_campo": "data_hora", "_valor": data_hora_original})
         _sync("upsert", "marcacoes", {
             "data_hora": data_hora, "cliente_nome": cliente_nome,
-            "duracao": duracao, "observacoes": observacoes, "falta": int(falta)
+            "duracao": duracao, "observacoes": observacoes, "falta": int(falta),
+            "updated_at": agora,
         })
         return True
     except Exception as e:
