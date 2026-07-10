@@ -19,6 +19,16 @@ function _nowIsoUtc() {
     return new Date().toISOString();
 }
 
+async function _inserirTombstone(tabela, chave) {
+    try {
+        await supabaseClient.from("sync_tombstones").insert({
+            tabela, chave, apagado_em: _nowIsoUtc()
+        });
+    } catch (e) {
+        console.error("[apiAdapter] Erro ao inserir tombstone:", e);
+    }
+}
+
 function _construirSiteApi() {
     return {
         get_utilizador_info: async () => ({ nome: "Acesso Web", authenticated: true}),
@@ -166,11 +176,20 @@ function _construirSiteApi() {
 
         apagar_cliente: async (nome) => {
             const hojeISO = new Date(); hojeISO.setHours(0, 0, 0, 0);
+
+            const { data: futurasApagadas } = await supabaseClient.from("marcacoes")
+                .select("data_hora")
+                .eq("cliente_nome", nome).gte("data_hora", toLocalISOString(hojeISO));
+
             await supabaseClient.from("marcacoes").delete()
                 .eq("cliente_nome", nome).gte("data_hora", toLocalISOString(hojeISO));
+            for (const m of futurasApagadas || []) {
+                await _inserirTombstone("marcacoes", m.data_hora);
+            }
+
             const { error } = await supabaseClient.from("clientes").delete().eq("nome", nome);
             if (error) return { success: false, error: "Erro ao apagar cliente." };
-            await supabaseClient.from("sync_tombstones").insert({ tabela: "clientes", chave: nome});
+            await _inserirTombstone("clientes", nome);
             return { success: true };
         },
 
@@ -205,7 +224,7 @@ function _construirSiteApi() {
         apagar_marcacao: async (dataHora) => {
             const { error } = await supabaseClient.from("marcacoes").delete().eq("data_hora", dataHora);
             if (error) return { success: false, error: "Erro ao apagar marcação." };
-            await supabaseClient.from("sync_tombstones").insert({ tabela: "marcacoes", chave: dataHora });
+            await _inserirTombstone("marcacoes", dataHora);
             return { success: true };
         },
 
@@ -221,8 +240,9 @@ function _construirSiteApi() {
                     .eq("data_hora", dtNova).maybeSingle();
                 if (ocupado) return { success: false, error: "Já existe uma marcação nessa hora." };
 
-                // Apaga a antiga e cria uma nova (a chave data_hora está a mudar)
                 await supabaseClient.from("marcacoes").delete().eq("data_hora", dataHoraOriginal);
+                await _inserirTombstone("marcacoes", dataHoraOriginal);
+
                 const { error } = await supabaseClient.from("marcacoes").insert({
                     data_hora: dtNova, cliente_nome: existente.cliente_nome,
                     duracao: existente.duracao,
@@ -334,6 +354,10 @@ function _construirSiteApi() {
                 await supabaseClient.from("marcacoes").delete().eq("data_hora", toLocalISOString(dt30));
                 await supabaseClient.from("marcacoes").delete().eq("data_hora", toLocalISOString(dt15));
                 await supabaseClient.from("marcacoes").delete().eq("data_hora", toLocalISOString(dt30Segundo));
+
+                await _inserirTombstone("marcacoes", toLocalISOString(dt30));
+                await _inserirTombstone("marcacoes", toLocalISOString(dt15));
+                await _inserirTombstone("marcacoes", toLocalISOString(dt30Segundo));
 
                 await supabaseClient.from("marcacoes").insert({
                     data_hora: toLocalISOString(dt15), cliente_nome: m30.cliente_nome,
