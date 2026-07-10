@@ -238,8 +238,6 @@ class AppController:
             if not Validation.numero_telefone_valido(numero):
                 return {"success": False, "error": "Número de telefone inválido."}
 
-            # Verificação de duplicados directa na BD (rápido)
-            # Exclui o próprio cliente da verificação
             if novo_nome.lower() != nome_original.lower():
                 if Database.cliente_existe_por_nome(novo_nome, excluir_nome=nome_original):
                     return {"success": False, "error": "Já existe um cliente com esse nome."}
@@ -257,6 +255,7 @@ class AppController:
             novo.set_faltas(faltas)
 
             # Actualizar marcações com novo nome
+            marcacoes_afetadas = []
             if novo_nome != nome_original:
                 for dt, m in self.marcacoes_map.items():
                     c = m.get_cliente()
@@ -270,9 +269,10 @@ class AppController:
                         )
                         c_atualizado.set_faltas(c.get_faltas())
                         m.set_cliente(c_atualizado)
+                        marcacoes_afetadas.append(m)
                 Logger.log_nome_alterado(nome_original, novo_nome)
 
-            # Actualiza directamente na BD (rápido)
+            # Actualiza directamente na BD
             Database.atualizar_cliente(
                 nome_original=nome_original,
                 nome=novo_nome,
@@ -297,18 +297,27 @@ class AppController:
                  cliente_atual.get_hora_corte() != hora or
                  cliente_atual.is_rapido() != rapido)
             )
+            
+            precisa_full_sync = False
 
             if tipo_atual == TipoCliente.SEMANAL and tipo_novo != TipoCliente.SEMANAL:
                 self._apagar_marcacoes_futuras_cliente(novo_nome)
                 Database.apagar_slots_semanais_cliente(nome_original)
+                precisa_full_sync = True
             elif tipo_atual != TipoCliente.SEMANAL and tipo_novo == TipoCliente.SEMANAL:
                 self._gerar_e_guardar_semanais(novo)
             elif horario_semanal_mudou:
                 self._apagar_marcacoes_futuras_cliente(novo_nome)
                 Database.apagar_slots_semanais_cliente(nome_original)
                 self._gerar_e_guardar_semanais(novo)
+                precisa_full_sync = True
 
-            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            if precisa_full_sync:
+                Persistencia.guardar_marcacoes(self.marcacoes_map)
+            else:
+                for m in marcacoes_afetadas:
+                    Persistencia.guardar_marcacao_individual(m)
+                    
             return {"success": True}
 
         except Exception as e:
@@ -372,8 +381,7 @@ class AppController:
     def criar_marcacao(self, cliente_nome: str, data_hora: str,
                        duracao: int, observacoes: str = ""):
         """
-        Cria uma (ou mais) marcações de 15 min para cobrir a duração pedida,
-        exactamente como o Java faz no AdicionarMarcacaoController.
+        Cria uma (ou mais) marcações de 15 min para cobrir a duração pedida
         """
         try:
             # suporte a cliente desconhecido (nome arbitrário não registado)
@@ -390,6 +398,7 @@ class AppController:
             duracao = int(duracao)
             minutos_restantes = duracao
             bloco_atual = data_hora_obj
+            novas = []
 
             while minutos_restantes > 0:
                 m_existente = self.marcacoes_map.get(bloco_atual)
@@ -414,12 +423,13 @@ class AppController:
 
                 nova = Marcacao(bloco_atual, cliente, bloco_dur, observacoes)
                 self.marcacoes_map[bloco_atual] = nova
+                novas.append(nova)
                 Logger.log_marcacao_criada(nova)
 
                 minutos_restantes -= bloco_dur
                 bloco_atual += self._td(bloco_dur)
 
-            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            Persistencia.guardar_marcacoes_novas(novas)
             return {"success": True, "message": "Marcação criada com sucesso."}
 
         except Exception as e:
@@ -438,6 +448,7 @@ class AppController:
             duracao = int(duracao)
             minutos_restantes = duracao
             bloco_atual = data_hora_obj
+            novas = []
 
             while minutos_restantes > 0:
                 m_existente = self.marcacoes_map.get(bloco_atual)
@@ -462,12 +473,13 @@ class AppController:
 
                 nova = Marcacao(bloco_atual, cliente, bloco_dur, observacoes)
                 self.marcacoes_map[bloco_atual] = nova
+                novas.append(nova)
                 Logger.log_marcacao_criada(nova)
 
                 minutos_restantes -= bloco_dur
                 bloco_atual += self._td(bloco_dur)
 
-            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            Persistencia.guardar_marcacoes_novas(novas)
             return {"success": True}
 
         except Exception as e:
@@ -538,6 +550,10 @@ class AppController:
                 return {"success": False, "error": "Marcação não encontrada."}
 
             marcacao = self.marcacoes_map[dt]
+            
+            if marcacao.is_falta():
+                return {"success": True}
+            
             marcacao.set_falta(True)
             self.marcacoes_map[dt] = marcacao
 
@@ -546,9 +562,9 @@ class AppController:
             if nome_cliente and nome_cliente in self.clientes_map:
                 c = self.clientes_map[nome_cliente]
                 c.set_faltas(c.get_faltas() + 1)
-                Persistencia.guardar_clientes(self.clientes_map)
+                Persistencia.guardar_cliente_individual(c)
 
-            Persistencia.guardar_marcacoes(self.marcacoes_map)
+            Persistencia.guardar_marcacao_individual(marcacao)
             Logger.log_marcacao_falta(marcacao)
             return {"success": True}
 
@@ -898,6 +914,9 @@ class AppController:
                 cliente, self.marcacoes_map, date.today(),
                 meses_a_frente=6, slots_usados=slots_usados
             )
+            if not novas:
+                return
+            
             slots_a_guardar = []
             for m in novas:
                 slots_a_guardar.append({
@@ -908,9 +927,11 @@ class AppController:
                     Logger.log_marcacao_criada(m)
                 except Exception:
                     pass
+                
             if slots_a_guardar:
                 Database.inserir_slots_semanais_bulk(slots_a_guardar)
-            Persistencia.guardar_marcacoes(self.marcacoes_map)
+                
+            Persistencia.guardar_marcacoes_novas(novas)
         except Exception as e:
             print(f"[AppController] _gerar_e_guardar_semanais: {e}")
 

@@ -845,6 +845,8 @@ class CalendarioModule {
                 btnFaltou.addEventListener("click", async () => {
                     const api = getApi();
                     if (!api) return;
+                    btnFaltou.disabled = true;
+                    btnFaltou.style.opacity = "0.5";
                     try {
                         const res = await api.marcar_falta_marcacao(toLocalISOString(dt));
                         if (res && res.success) {
@@ -853,8 +855,14 @@ class CalendarioModule {
                             this.atualizar();
                         } else {
                             errorEl.textContent = res?.error || "Erro ao marcar falta.";
+                            btnFaltou.disabled = false;
+                            btnFaltou.style.opacity = "1";
                         }
-                    } catch(e) { errorEl.textContent = "Erro de comunicação."; }
+                    } catch(e) {
+                        errorEl.textContent = "Erro de comunicação.";
+                        btnFaltou.disabled = false;
+                        btnFaltou.style.opacity = "1";
+                    }
                 });
 
                 const btnSalvarObs = this._mkBtn("Salvar", "rgb(36,43,141)");

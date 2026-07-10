@@ -169,6 +169,22 @@ def guardar_clientes(clientes: Dict[str, Cliente]) -> bool:
     except Exception as e:
         print(f"[Persistencia] guardar_clientes: {e}")
         return False
+    
+def guardar_cliente_individual(cliente: Cliente) -> bool:
+    """Atualiza APENAS este cliente, sem percorrer a coleção toda."""
+    tipo_str = cliente.get_tipo_cliente().value \
+        if hasattr(cliente.get_tipo_cliente(), "value") \
+        else str(cliente.get_tipo_cliente())
+    return Database.atualizar_cliente(
+        nome_original=cliente.get_nome(),
+        nome=cliente.get_nome(),
+        numero_telefone=cliente.get_numero_telefone(),
+        tipo_cliente=tipo_str,
+        faltas=cliente.get_faltas(),
+        dia_semana=cliente.get_dia_semana(),
+        hora_corte=cliente.get_hora_corte(),
+        rapido=cliente.is_rapido()
+    )
 
 def guardar_marcacoes(marcacoes: Dict[datetime, Marcacao]) -> bool:
     """
@@ -240,6 +256,41 @@ def guardar_marcacoes(marcacoes: Dict[datetime, Marcacao]) -> bool:
     except Exception as e:
         print(f"[Persistencia] guardar_marcacoes: {e}")
         return False
+    
+def guardar_marcacao_individual(marcacao: Marcacao) -> bool:
+    """Atualiza APENAS esta marcação, sem percorrer a coleção toda."""
+    c = marcacao.get_cliente()
+    cliente_nome = c.get_nome() if c is not None else ""
+    dh_str = marcacao.get_data_hora().isoformat()
+    return Database.atualizar_marcacao(
+        data_hora_original=dh_str,
+        data_hora=dh_str,
+        cliente_nome=cliente_nome,
+        duracao=marcacao.get_duracao(),
+        observacoes=marcacao.get_observacoes() or "",
+        falta=marcacao.is_falta()
+    )
+    
+def guardar_marcacoes_novas(marcacoes: List[Marcacao]) -> bool:
+    """
+    Insere um conjunto de marcacoes que ainda n existem na BD
+    sem tocar em nenhum ja existente.
+    """
+    if not marcacoes:
+        return True
+    
+    dados = []
+    for m in marcacoes:
+        c = m.get_cliente()
+        dados.append({
+            "data_hora": m.get_data_hora().isoformat(),
+            "cliente_nome": c.get_nome() if c is not None else "",
+            "duracao": m.get_duracao(),
+            "observacoes": m.get_observacoes() or "",
+            "falta": int(m.is_falta()),
+        })
+        
+    return Database.inserir_marcacoes_bulk(dados)
 
 def guardar_anotacoes(anotacoes: str) -> bool:
     return Database.guardar_anotacoes(anotacoes if anotacoes else "")
