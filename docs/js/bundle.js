@@ -205,12 +205,32 @@ class CalendarioModule {
         const scrollEl = this.grid.closest(".calendar-scroll");
         
         if (scrollEl) {
-            const headerFixo = scrollEl.querySelector(".semana-header-fixo");
+            const headerFixo = scrollEl.parentElement.querySelector(".semana-header-fixo");
             if (headerFixo) headerFixo.remove();
+
+            const inner = scrollEl.querySelector(".calendar-scroll-inner");
+            if (inner) {
+                if (inner.contains(this.grid)) {
+                    scrollEl.insertBefore(this.grid, inner);
+                }
+                inner.remove();
+            }
+
+            scrollEl.style.overflowY = "";
+            scrollEl.style.overflow = "";
         }
 
         this.grid.innerHTML = "";
         this.grid.className = `calendar-grid ${this.modoAtual.toLowerCase()}`;
+
+        if (scrollEl) {
+            if (this.modoAtual === "DIA" || this.modoAtual === "SEMANA") {
+                scrollEl.style.overflowY = "auto";
+                scrollEl.style.scrollbarWidth = "none";
+            } else {
+                scrollEl.style.overflowY = "hidden";
+            }
+        }
 
         switch (this.modoAtual) {
             case "SEMANA": this._criarSemana(); break;
@@ -298,7 +318,12 @@ class CalendarioModule {
         }
 
         if (scrollEl) {
-            scrollEl.insertBefore(headerFixo, this.grid);
+            scrollEl.parentElement.insertBefore(headerFixo, scrollEl);
+
+            const inner = document.createElement("div");
+            inner.className = "calendar-scroll-inner";
+            inner.appendChild(this.grid);
+            scrollEl.appendChild(inner);
         }
 
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {

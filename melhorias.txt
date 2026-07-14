@@ -2,4 +2,14 @@ B-1-um botao que mostra marcacoes que o cliente tem em andamento e que ja passar
 que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N cabem todas na tela por isso teria uma barra
 de scroll
 
-B-2-perfil do utilizador
+B-2-perfil do utilizador:
+-ter de alterar a tabela e utilizador para colocar mais coisas que serao preciso guardar por predefenicoes de utilizador
+-alteracao de nome ou password
+-foto de perfil, se n tiver fica aquele padrao da primeira letra do nome (aquilo basico de conta google ou assim). Ser possivel
+pesquisar no proprio computador e colocar a imagem.
+-tema pre defenidos 2/3 cores
+-alterar o ou os dias de folga
+-fazer backups da base de dados
+-exportar dados
+
+M-3-no site o header que fala os dias da semana no modo semana n esta estatico como no desktop
