@@ -2154,11 +2154,18 @@ class ClientesModule {
         const criarLinha = (v, tipo) => {
             const el = document.createElement("div");
             const isFalta = tipo === "passada" && v.falta;
+
+            const dtInicio = parseISOToLocal(v.dataHora);
+            const dtFim = new Date(dtInicio.getTime() + v.duracao * 60000);
+            const jaPassouHoje = tipo === "hoje" && dtFim < new Date();
+
             const cor = isFalta ? "rgb(128,26,15)"
                 : tipo === "hoje" ? "rgb(189,166,35)"
                 : tipo === "futura" ? "rgb(36,43,141)"
                 : "rgb(90,90,90)";
-            el.style.cssText = `background:${cor};color:white;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;`;
+
+            el.style.cssText = `background:${cor};color:white;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;${jaPassouHoje ? "opacity:0.55;" : ""}`;
+            
             const texto = document.createElement("div");
             texto.textContent = fmtItem(v);
             texto.style.cssText = "font-weight:bold;font-size:14px;";
