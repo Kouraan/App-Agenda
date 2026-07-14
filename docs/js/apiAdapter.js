@@ -226,6 +226,71 @@ function _construirSiteApi() {
             return { success: true, total: count || 0 };
         },
 
+        get_estatisticas_cliente: async (nome) => {
+            const { data, error } = await supabaseClient.from("marcacoes")
+                .select("*").eq("cliente_nome", nome).order("data_hora", { ascending: true });
+            if (error) return { success: false, error: error.message };
+
+            if (!data || data.length === 0) {
+                return {
+                    success: true, totalRealizadas: 0, totalFaltas: 0,
+                    taxaFaltas: 0,
+                    hoje: null, futuras: [], passadas: []
+                };
+            }
+
+            const agora = new Date();
+            const hojeStr = agora.toDateString();
+
+            const visitas = [];
+            let atual = null;
+            for (const row of data) {
+                const dt = new Date(row.data_hora);
+                const dur = row.duracao;
+                if (atual && dt.getTime() === atual.fim.getTime()) {
+                    atual.duracao += dur;
+                    atual.fim = new Date(dt.getTime() + dur * 60000);
+                    atual.falta = atual.falta || !!row.falta;
+                    atual.observacoes = atual.observacoes || row.observacoes || "";
+                } else {
+                    if (atual) visitas.push(atual);
+                    atual = {
+                        dataHora: dt,
+                        fim: new Date(dt.getTime() + dur * 60000),
+                        duracao: dur,
+                        falta: !!row.falta,
+                        observacoes: row.observacoes || "",
+                    };
+                }
+            }
+            if (atual) visitas.push(atual);
+
+            const hojeLista = visitas.filter(v => v.dataHora.toDateString() === hojeStr);
+            const futuras   = visitas.filter(v => v.dataHora.toDateString() !== hojeStr && v.dataHora > agora)
+                .sort((a, b) => a.dataHora - b.dataHora);
+            const ocorridas = visitas.filter(v => v.dataHora < agora);
+            const passadas  = ocorridas.filter(v => v.dataHora.toDateString() !== hojeStr)
+                .sort((a, b) => a.dataHora - b.dataHora);
+
+            const totalFaltas     = ocorridas.filter(v => v.falta).length;
+            const totalRealizadas = ocorridas.length - totalFaltas;
+            const taxaFaltas      = ocorridas.length ? Math.round((totalFaltas / ocorridas.length) * 1000) / 10 : 0;
+
+            const toDict = (v) => ({
+                dataHora: toLocalISOString(v.dataHora),
+                duracao: v.duracao,
+                falta: v.falta,
+                observacoes: v.observacoes,
+            });
+
+            return {
+                success: true, totalRealizadas, totalFaltas, taxaFaltas,
+                hoje: hojeLista.length ? toDict(hojeLista[0]) : null,
+                futuras: futuras.slice(0, 3).map(toDict),
+                passadas: passadas.slice(-3).map(toDict),
+            };
+        },
+
         // Marcacoes
         get_marcacoes_map: async () => {
             const [{ data, error }, { data: clientesData }] = await Promise.all([

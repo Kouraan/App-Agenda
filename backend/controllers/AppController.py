@@ -1082,6 +1082,76 @@ class AppController:
         except Exception as e:
             print(f"[AppController] get_total_marcacoes_cliente: {e}")
             return {"success": False, "error": str(e), "total": 0}
+        
+    def get_estatisticas_cliente(self, nome: str):
+        """Estatisticas do cliente"""
+        try:
+            agora = datetime.now()
+            hoje = date.today()
+            
+            entradas = sorted(
+                [(dt, m) for dt, m in self.marcacoes_map.items()
+                 if self._get_nome_safe(m.get_cliente()) == nome],
+                key=lambda x: x[0]
+            )
+            
+            if not entradas:
+                return {
+                    "success": True, "totalRealizadas": 0, "totalFaltas": 0,
+                    "taxaFaltas": 0,
+                    "hoje": None, "futuras": [], "passadas": []
+                }
+                
+            visitas = []
+            atual = None
+            for dt, m in entradas:
+                dur = m.get_duracao()
+                if atual is not None and dt == atual["fim"]:
+                    atual["duracao"] += dur
+                    atual["fim"] = dt + self._td(dur)
+                    atual["falta"] = atual["falta"] or m.is_falta()
+                    atual["observacoes"] = atual["observacoes"] or m.get_observacoes()
+                else:
+                    if atual is not None:
+                        visitas.append(atual)
+                    atual = {
+                        "dataHora": dt, "fim": dt + self._td(dur),
+                        "duracao": dur, "falta": m.is_falta(),
+                        "observacoes": m.get_observacoes()
+                    }
+            if atual is not None:
+                visitas.append(atual)
+                
+            hoje_lista = [v for v in visitas if v["dataHora"].date() == hoje]
+            futuras = sorted([v for v in visitas if v["dataHora"].date() > hoje], key=lambda v: v["dataHora"])
+            passadas = sorted([v for v in visitas if v["dataHora"].date() < hoje], key=lambda v: v["dataHora"])
+            
+            ocorridas = [v for v in visitas if v["dataHora"] < agora]
+            total_faltas = sum(1 for v in ocorridas if v["falta"])
+            total_realizadas = len(ocorridas) - total_faltas
+            taxa_faltas = round((total_faltas / len(ocorridas)) * 100, 1) if ocorridas else 0
+            
+            def _v_to_dict(v):
+                return {
+                    "dataHora": v["dataHora"].isoformat(),
+                    "duracao": v["duracao"],
+                    "falta": v["falta"],
+                    "observacoes": v["observacoes"],
+                }
+                
+            return {
+                "success": True,
+                "totalRealizadas": total_realizadas,
+                "totalFaltas": total_faltas,
+                "taxaFaltas": taxa_faltas,
+                "hoje": _v_to_dict(hoje_lista[0]) if hoje_lista else None,
+                "futuras": [_v_to_dict(v) for v in futuras[:3]],
+                "passadas": [_v_to_dict(v) for v in passadas[-3:]],
+            }
+            
+        except Exception as e:
+            print(f"[AppController] get_estatisticas_cliente: {e}")
+            return {"success": False, "error": str(e)}
     
     def _apagar_marcacoes_futuras_cliente(self, nome: str):
         """Apaga apenas marcações futuras de um cliente (hoje inclusive)."""

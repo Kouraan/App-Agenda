@@ -1,6 +1,7 @@
 B-1-um botao que mostra marcacoes que o cliente tem em andamento e que ja passaram, dividindo por cores as que estao ativas e as 
 que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N cabem todas na tela por isso teria uma barra
 de scroll
+(no site n funciona)
 
 B-2-perfil do utilizador:
 -ter de alterar a tabela e utilizador para colocar mais coisas que serao preciso guardar por predefenicoes de utilizador
@@ -11,5 +12,3 @@ pesquisar no proprio computador e colocar a imagem.
 -alterar o ou os dias de folga
 -fazer backups da base de dados
 -exportar dados
-
-M-3-no site o header que fala os dias da semana no modo semana n esta estatico como no desktop

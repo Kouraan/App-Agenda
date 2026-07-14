@@ -159,6 +159,7 @@ async function adicionarPendente(nome, numero)    { return callApi(api => api.ad
 async function removerPendente(nome)              { return callApi(api => api.remover_pendente(nome), {success:false}); }
 async function guardarPendentesLista(lista)       { return callApi(api => api.guardar_pendentes_lista(lista), {success:false}); }
 async function getTotalMarcacoesCliente(nome)     { return callApi(api => api.get_total_marcacoes_cliente(nome), {success:false, total:0}); }
+async function getEstatisticasCliente(nome)       { return callApi(api => api.get_estatisticas_cliente(nome), {success:false, error:"API não disponível"}); }
 
 // ==========================================
 // 3. AnotacoesModule.js
@@ -1872,9 +1873,15 @@ class ClientesModule {
         const topRow    = document.createElement("div");
         topRow.style.cssText = "display:flex;align-items:center;gap:8px;";
         const btnEditar = this._btn("Editar", "rgb(60,60,60)");
+        const btnStats  = this._btn("Estatísticas", "rgb(36, 43, 141)");
         const spacer    = document.createElement("div"); spacer.style.flex = "1";
-        topRow.append(btnEditar, spacer);
+        topRow.append(btnEditar, btnStats, spacer);
         modal.appendChild(topRow);
+
+        btnStats.addEventListener("click", () => {
+            closeModal();
+            this._abrirEstatisticasCliente(clienteObj);
+        });
 
         const visualBox = document.createElement("div");
         Object.assign(visualBox.style, {
@@ -2081,6 +2088,140 @@ class ClientesModule {
             } catch { editErrorEl.textContent = "Erro ao comunicar com o backend."; }
             finally { btnSalvar.disabled = false; }
         });
+    }
+
+    async _abrirEstatisticasCliente(clienteLocal) {
+        this.content.innerHTML = "";
+
+        const header = document.createElement("div");
+        header.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:14px;";
+        const btnVoltar = this._btn("← Voltar", "rgb(60,60,60)");
+        btnVoltar.addEventListener("click", () => this.renderizar());
+        const titulo = document.createElement("h2");
+        titulo.textContent = `Estatísticas — ${clienteLocal.nome}`;
+        titulo.style.cssText = "color:white;font-size:20px;margin:0;";
+        header.append(btnVoltar, titulo);
+        this.content.appendChild(header);
+
+        const loading = document.createElement("div");
+        loading.textContent = "A carregar estatísticas...";
+        loading.style.cssText = "color:rgba(255,255,255,0.6);text-align:center;padding:30px;";
+        this.content.appendChild(loading);
+
+        const stats = await getEstatisticasCliente(clienteLocal.nome);
+
+        if (!stats || !stats.success) {
+            loading.textContent = stats?.error || "Erro ao carregar estatísticas.";
+            return;
+        }
+
+        this.content.removeChild(loading);
+        this._renderEstatisticasConteudo(stats);
+    }
+
+    _renderEstatisticasConteudo(stats) {
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "display:flex;flex-direction:column;gap:20px;overflow-y:auto;";
+
+        // Cartões de resumo
+        const resumo = document.createElement("div");
+        resumo.style.cssText = "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;";
+
+        const cartao = (titulo, valor, cor) => {
+            const c = document.createElement("div");
+            c.style.cssText = `background:rgb(43,40,40);border-radius:12px;padding:14px;text-align:center;border-left:4px solid ${cor};`;
+            const t = document.createElement("div");
+            t.textContent = titulo;
+            t.style.cssText = "color:rgba(255,255,255,0.6);font-size:12px;margin-bottom:6px;";
+            const v = document.createElement("div");
+            v.textContent = valor;
+            v.style.cssText = "color:white;font-size:22px;font-weight:bold;";
+            c.append(t, v);
+            return c;
+        };
+
+        resumo.append(
+            cartao("Marcações Realizadas", stats.totalRealizadas, "rgb(120,200,120)"),
+            cartao("Faltas", stats.totalFaltas, "rgb(128,26,15)"),
+            cartao("Taxa de Faltas", `${stats.taxaFaltas}%`, "rgb(230,140,40)")
+        );
+        wrap.appendChild(resumo);
+
+        // Legenda
+        const legenda = document.createElement("div");
+        legenda.style.cssText = "display:flex;gap:16px;flex-wrap:wrap;padding:10px 4px;";
+        const itemLegenda = (cor, texto) => {
+            const el = document.createElement("div");
+            el.style.cssText = "display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.8);font-size:13px;";
+            const bola = document.createElement("span");
+            bola.style.cssText = `width:12px;height:12px;border-radius:50%;background:${cor};display:inline-block;`;
+            el.append(bola, document.createTextNode(texto));
+            return el;
+        };
+        legenda.append(
+            itemLegenda("rgb(189,166,35)", "Hoje"),
+            itemLegenda("rgb(36,43,141)", "Futuras"),
+            itemLegenda("rgb(90,90,90)", "Passadas"),
+            itemLegenda("rgb(128,26,15)", "Falta")
+        );
+        wrap.appendChild(legenda);
+
+        // Timeline
+        const timeline = document.createElement("div");
+        timeline.style.cssText = "display:flex;flex-direction:column;gap:10px;";
+
+        const linhaVazia = (texto) => {
+            const el = document.createElement("div");
+            el.textContent = texto;
+            el.style.cssText = "color:rgba(255,255,255,0.4);font-size:13px;text-align:center;padding:8px;font-style:italic;";
+            return el;
+        };
+
+        const fmtItem = (v) => {
+            const dt = parseISOToLocal(v.dataHora);
+            const dias = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+            return `${dias[dt.getDay()]}, ${String(dt.getDate()).padStart(2,"0")}/${String(dt.getMonth()+1).padStart(2,"0")}/${dt.getFullYear()} às ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
+        };
+
+        const criarLinha = (v, tipo) => {
+            const el = document.createElement("div");
+            const isFalta = tipo === "passada" && v.falta;
+            const cor = isFalta ? "rgb(128,26,15)"
+                : tipo === "hoje" ? "rgb(189,166,35)"
+                : tipo === "futura" ? "rgb(36,43,141)"
+                : "rgb(90,90,90)";
+            el.style.cssText = `background:${cor};color:white;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;`;
+            const texto = document.createElement("div");
+            texto.textContent = fmtItem(v);
+            texto.style.cssText = "font-weight:bold;font-size:14px;";
+            const dur = document.createElement("div");
+            dur.textContent = `${v.duracao} min${isFalta ? " · Faltou" : ""}`;
+            dur.style.cssText = "font-size:12px;opacity:0.85;";
+            el.append(texto, dur);
+            return el;
+        };
+
+        const tituloSecao = (texto) => {
+            const t = document.createElement("div");
+            t.textContent = texto;
+            t.style.cssText = "color:rgba(255,255,255,0.6);font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;margin-top:6px;";
+            return t;
+        };
+
+        timeline.appendChild(tituloSecao("Passadas"));
+        if (stats.passadas.length === 0) timeline.appendChild(linhaVazia("Sem marcações passadas registadas."));
+        else stats.passadas.forEach(v => timeline.appendChild(criarLinha(v, "passada")));
+
+        timeline.appendChild(tituloSecao("Hoje"));
+        if (!stats.hoje) timeline.appendChild(linhaVazia("Sem marcação hoje."));
+        else timeline.appendChild(criarLinha(stats.hoje, "hoje"));
+
+        timeline.appendChild(tituloSecao("Futuras"));
+        if (stats.futuras.length === 0) timeline.appendChild(linhaVazia("Sem marcações futuras."));
+        else stats.futuras.forEach(v => timeline.appendChild(criarLinha(v, "futura")));
+
+        wrap.appendChild(timeline);
+        this.content.appendChild(wrap);
     }
 
     _abrirAdicionarCliente() {
