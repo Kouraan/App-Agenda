@@ -2,4 +2,4 @@ B-1-um botao que mostra marcacoes que o cliente tem em andamento e que ja passar
 que ja passaram, caso a marcacao seja no dia atual ela aprece de outra cor. N cabem todas na tela por isso teria uma barra
 de scroll
 
-A-2-conferir se ele esta a apagar dados antigos que ja n interessam (3 meses)
+B-2-perfil do utilizador

@@ -29,6 +29,30 @@ async function _inserirTombstone(tabela, chave) {
     }
 }
 
+async function _limparMarcacoesAntigas(mesesRetencao = 3) {
+    try {
+        const hoje = new Date();
+        const corte = new Date(hoje.getFullYear(), hoje.getMonth() - mesesRetencao, 1);
+        const corteISO = toLocalISOString(corte);
+
+        const { data: antigas, error: errSel } = await supabaseClient
+            .from("marcacoes").select("data_hora").lt("data_hora", corteISO);
+        if (errSel) { console.error("[apiAdapter] Erro ao selecionar marcacoes antigas:", errSel); return; }
+        if (!antigas || antigas.length === 0) return;
+
+        const { error: errDel } = await supabaseClient
+            .from("marcacoes").delete().lt("data_hora", corteISO);
+        if (errDel) { console.error("[apiAdapter] Erro ao apagar marcacoes antigas:", errDel); return; }
+
+        for (const m of antigas) {
+            await _inserirTombstone("marcacoes", m.data_hora);
+        }
+        console.log(`[apiAdapter] ${antigas.length} marcações antigas removidas.`);
+    } catch (e) {
+        console.error("[apiAdapter] Erro ao limpar marcacoes antigas:", e);
+    }
+}
+
 function _construirSiteApi() {
     return {
         get_utilizador_info: async () => ({ nome: "Acesso Web", authenticated: true}),
@@ -204,11 +228,16 @@ function _construirSiteApi() {
 
         // Marcacoes
         get_marcacoes_map: async () => {
-            const { data, error } = await supabaseClient.from("marcacoes").select("*");
+            const [{ data, error }, { data: clientesData }] = await Promise.all([
+                supabaseClient.from("marcacoes").select("*"),
+                supabaseClient.from("clientes").select("nome, faltas"),
+            ]);
             if (error) { console.error(error); return {}; }
+            const faltasMap = {};
+            (clientesData || []).forEach(c => { faltasMap[c.nome] = c.faltas || 0; });
             const mapa = {};
             for (const row of data) {
-                mapa[row.data_hora] = _marcacaoRowParaDict(row);
+                mapa[row.data_hora] = _marcacaoRowParaDict(row, faltasMap);
             }
             return mapa;
         },
@@ -455,14 +484,14 @@ function _construirSiteApi() {
     };
 }
 
-function _marcacaoRowParaDict(row) {
+function _marcacaoRowParaDict(row, faltasMap = {}) {
     return {
         dataHora: row.data_hora,
         cliente: {
             nome: row.cliente_nome || "N/A",
             numeroTelefone: "",
-            tipoCliente: "DESCONHECIDO", // resolvido pelo bundle.js via lookup no clientes_map se precisar
-            faltas: 0, diaSemana: null, horaCorte: null, rapido: false, temporario: true,
+            tipoCliente: "DESCONHECIDO",
+            diaSemana: null, horaCorte: null, rapido: false, temporario: true,
         },
         duracao: row.duracao,
         observacoes: row.observacoes || "",

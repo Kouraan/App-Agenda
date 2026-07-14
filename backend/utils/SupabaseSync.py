@@ -230,6 +230,20 @@ def _enviar_operacao(client, operacao: str, tabela: str, dados: dict) -> bool:
                     client.table("sync_tombstones").insert(
                         [{"tabela": "marcacoes", "chave": k} for k in chaves]
                     ).execute()
+                    
+        elif operacao == "delete_marcacoes_antes":
+            antes_de = dados.get("antes_de")
+            if antes_de:
+                res = client.table("marcacoes").select("data_hora")\
+                    .lt("data_hora", antes_de).execute()
+                chaves = [r["data_hora"] for r in (res.data or [])]
+                client.table("marcacoes").delete()\
+                    .lt("data_hora", antes_de)\
+                    .execute()
+                if chaves:
+                    client.table("sync_tombstones").insert(
+                        [{"tabela": "marcacoes", "chave": k} for k in chaves]
+                    ).execute()
 
         elif operacao == "delete_pendentes_todos":
             client.table("pendentes").delete().neq("id", 0).execute()

@@ -468,7 +468,8 @@ class CalendarioModule {
 
         const box      = document.createElement("div");
         const isFalta  = marcacao.falta;
-        box.className  = `marcacao${isFalta ? " falta" : ""}`;
+        const avisoFaltas = !isFalta && marcacao.cliente && (marcacao.cliente.faltas || 0) >= 3;
+        box.className  = `marcacao${isFalta ? " falta" : (avisoFaltas ? " aviso-faltas" : "")}`;
 
         const label = document.createElement("div");
         label.textContent = marcacao.cliente ? marcacao.cliente.nome : "—";
@@ -537,6 +538,10 @@ class CalendarioModule {
         txaObs.style.cssText = "width:100%;padding:6px 8px;border-radius:8px;border:none;font-size:14px;box-sizing:border-box;resize:none;";
         modal.append(lblObs, txaObs);
 
+        const avisoFaltasEl = document.createElement("div");
+        avisoFaltasEl.style.cssText = "color:#ff5c5c;font-size:13px;font-weight:bold;min-height:16px;";
+        modal.appendChild(avisoFaltasEl);
+
         const errorEl = document.createElement("div");
         errorEl.style.cssText = "color:#ff8080;font-size:13px;min-height:16px;";
         modal.appendChild(errorEl);
@@ -550,6 +555,18 @@ class CalendarioModule {
 
         let clientesSnapshot = {};
         const api = getApi();
+
+        const atualizarAvisoFaltas = () => {
+            if (chkDesk.checked) { avisoFaltasEl.textContent = ""; return; }
+            const nomeAtual = pesquisa.value.trim();
+            const cliente = clientesSnapshot[nomeAtual];
+            if (cliente && (cliente.faltas || 0) >= 3) {
+                avisoFaltasEl.textContent = `O cliente tem ${cliente.faltas} faltas`;
+            } else {
+                avisoFaltasEl.textContent = "";
+            }
+        };
+
         if (api) {
             api.get_clientes_map().then(m => {
                 clientesSnapshot = m || {};
@@ -562,6 +579,7 @@ class CalendarioModule {
         }
 
         pesquisa.addEventListener("input", () => {
+            atualizarAvisoFaltas();
             if (chkDesk.checked) { sugestoes.style.display = "none"; return; }
             const val = pesquisa.value.trim().toLowerCase();
             if (!val) { sugestoes.style.display = "none"; return; }
@@ -577,6 +595,7 @@ class CalendarioModule {
                     e.preventDefault();
                     pesquisa.value = n;
                     sugestoes.style.display = "none";
+                    atualizarAvisoFaltas();
                 });
                 sugestoes.appendChild(item);
             });
@@ -599,6 +618,7 @@ class CalendarioModule {
             } else {
                 setTimeout(() => fldNome.focus(), 50);
             }
+            atualizarAvisoFaltas();
         });
 
         const closeModal = () => {
@@ -1757,6 +1777,12 @@ class ClientesModule {
                     if (i === 0) {
                         cell.style.cursor = "pointer";
                         cell.addEventListener("click", () => this._abrirDetalheCliente(c));
+                    }
+                    if (i === 3) {
+                        const faltas = c.faltas || 0;
+                        if (faltas >= 10)     cell.classList.add("faltas-vermelho");
+                        else if (faltas >= 5) cell.classList.add("faltas-laranja");
+                        else if (faltas >= 3) cell.classList.add("faltas-amarelo");
                     }
                     table.appendChild(cell);
                 });

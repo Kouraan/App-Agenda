@@ -370,6 +370,31 @@ def apagar_marcacoes_futuras_cliente(cliente_nome: str,
         print(f"[Database] apagar_marcacoes_futuras_cliente: {e}")
         return False
 
+def apagar_marcacoes_antigas(meses_retencao: int = 3) -> int:
+    """
+    Apaga marcações com mais de `meses_retencao` meses completos de antiguidade.
+    """
+    hoje = datetime.now()
+    mes_corte = hoje.month - meses_retencao
+    ano_corte = hoje.year
+    while mes_corte <= 0:
+        mes_corte += 12
+        ano_corte -= 1
+    data_corte_iso = datetime(ano_corte, mes_corte, 1).isoformat()
+    
+    try:
+        with _connect() as conn:
+            cursor = conn.execute(
+                "DELETE FROM marcacoes WHERE data_hora < ?",
+                (data_corte_iso,)
+            )
+            apagados = cursor.rowcount or 0
+        if apagados > 0:
+            _sync("delete_marcacoes_antes", "marcacoes", {"antes_de": data_corte_iso})
+        return apagados
+    except Exception as e:
+        print(f"[Database] limpar_marcacoes_antigas: {e}")
+        return 0
 
 def marcar_falta_marcacao(data_hora: str) -> bool:
     try:

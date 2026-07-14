@@ -25,6 +25,14 @@ class AppController:
         """Carrega dados iniciais a partir da base de dados SQLite."""
         Database.inicializar_bd()
         
+        # Remove marcações antigas (mais de 3 meses)
+        try:
+            apagadas = Database.apagar_marcacoes_antigas()
+            if apagadas:
+                print(f"[AppController] {apagadas} marcações antigas apagadas.")
+        except Exception as e:
+            print(f"[AppController] Erro ao apagar marcações antigas: {e}")
+        
         # Tenta sincronizar com a Supabase (silenciosamente ignora se não houver internet)
         try:
             from ..utils import SupabaseSync

@@ -27,6 +27,7 @@ class AuthModule {
                 this._showError("Credenciais inválidas.");
                 return;
             }
+            await _limparMarcacoesAntigas();
             this.overlay.style.display = "none";
             this.onLoginSuccess();
         } catch (err) {

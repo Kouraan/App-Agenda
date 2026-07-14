@@ -913,6 +913,26 @@ body {
     color: white;
 }
 
+.marcacao.aviso-faltas {
+    background-color: rgb(230, 140, 40);
+    color: white;
+}
+
+.table-cell.faltas-amarelo {
+    background-color: rgb(212, 175, 55);
+    color: white
+}
+
+.table-cell.faltas-laranja {
+    background-color: rgb(230, 140, 40);
+    color: white
+}
+
+.table-cell.faltas-vermelho {
+    background-color: rgb(128, 26, 15);
+    color: white
+}
+
 .marcacao-label {
     font-size: 13px;
     font-weight: bold;
