@@ -251,6 +251,14 @@ position: fixed;
 
 .clientes-container.hidden { display: none; }
 
+.center-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
 .calendar-header {
     display: flex;
     align-items: center;
@@ -368,6 +376,11 @@ position: fixed;
 .calendar-cell.lunch-hour, .calendar-cell.lunch-cell, .calendar-cell.sunday-cell { background-color: rgb(245, 174, 103); }
 .calendar-cell.sunday:not(.header) { background-color: rgb(43, 40, 40); }
 
+.calendar-cell:not(.header):not(.hour):not(.past):hover {
+    background-color: white;
+    color: black;
+}
+
 .marcacao {
     flex: 1 1 0%;
     min-width: 0;
@@ -424,7 +437,13 @@ position: fixed;
 .pendentes-container { display: flex; flex-direction: column; }
 .pendente-item { color: white; font-size: 15px; font-weight: bold; padding: 12px 10px; cursor: pointer; }
 .pendente-separator { height: 2px; margin: 0 4px; background-color: rgba(197, 130, 63, 0.86); }
-.clock { display: none; }
+.clock {
+    width: 100%;
+    color: white;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 900;
+}
 
 .clientes-content { height: 100%; display: flex; flex-direction: column; gap: 16px; }
 .clientes-toolbar { display: flex; align-items: center; gap: 10px; padding-bottom: 15px; }
@@ -577,7 +596,7 @@ position: fixed;
         max-height: 160px;
     }
 
-    .clock { font-size: 26px; }
+    .clock { display: none;}
 
     .center-area, .calendar-container, .clientes-container {
         order: 2;

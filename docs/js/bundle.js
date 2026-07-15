@@ -611,13 +611,18 @@ class CalendarioModule {
             if (chkDesk.checked) { sugestoes.style.display = "none"; return; }
             const val = pesquisa.value.trim().toLowerCase();
             if (!val) { sugestoes.style.display = "none"; return; }
-            const matches = Object.keys(clientesSnapshot).filter(n => n.toLowerCase().includes(val));
+            const matches = Object.keys(clientesSnapshot).filter(n => {
+                const c = clientesSnapshot[n];
+                return n.toLowerCase().includes(val) ||
+                        (c.numeroTelefone || "").toLowerCase().includes(val);
+            });
             sugestoes.innerHTML = "";
             if (!matches.length) { sugestoes.style.display = "none"; return; }
             sugestoes.style.display = "block";
             matches.forEach(n => {
+                const c = clientesSnapshot[n];
                 const item = document.createElement("div");
-                item.textContent  = n;
+                item.textContent  = c.numeroTelefone ? `${n} — ${c.numeroTelefone}` : n;
                 item.style.cssText = "padding:6px 10px;cursor:pointer;font-size:13px;color:black;border-bottom:1px solid #eee;";
                 item.addEventListener("mousedown", (e) => {
                     e.preventDefault();
@@ -1008,15 +1013,20 @@ class CalendarioModule {
                 pesquisa.addEventListener("input", () => {
                     const val = pesquisa.value.trim().toLowerCase();
                     if (!val) { sugestoes.style.display = "none"; return; }
-                    const matches = Object.keys(clientesSnapshot).filter(n =>
-                        n.toLowerCase().includes(val) && n !== (marcacao.cliente?.nome || "")
-                    );
+                    const matches = Object.keys(clientesSnapshot).filter(n => {
+                        const c = clientesSnapshot[n];
+                        return n !== (marcacao.cliente?.nome || "") &&
+                                (n.toLowerCase().includes(val) ||
+                                 (c.numeroTelefone || "").toLowerCase().includes(val));
+
+                    });
                     sugestoes.innerHTML = "";
                     if (!matches.length) { sugestoes.style.display = "none"; return; }
                     sugestoes.style.display = "block";
                     matches.forEach(n => {
+                        const c = clientesSnapshot[n];
                         const item = document.createElement("div");
-                        item.textContent = n;
+                        item.textContent = c.numeroTelefone ? `${n} — ${c.numeroTelefone}` : n;
                         item.style.cssText = "padding:8px 12px;cursor:pointer;font-size:14px;color:black;border-bottom:1px solid #eee;";
                         item.addEventListener("mousedown", (e) => {
                             e.preventDefault();
@@ -2642,15 +2652,19 @@ class PendentesModule {
             const val = pesquisa.value.trim().toLowerCase();
             if (!val) { sugestoes.style.display = "none"; return; }
             const nomesPendentes = this.pendentes.map(p => (p.nome || "").toLowerCase());
-            const matches = Object.keys(clientesSnapshot).filter(
-                n => n.toLowerCase().includes(val) && !nomesPendentes.includes(n.toLowerCase())
-            );
+            const matches = Object.keys(clientesSnapshot).filter( n => {
+                const c = clientesSnapshot[n];
+                return !nomesPendentes.includes(n.toLowerCase()) &&
+                        (n.toLowerCase().includes(val) ||
+                         (c.numeroTelefone || "").toLowerCase().includes(val));
+            });
             sugestoes.innerHTML = "";
             if (!matches.length) { sugestoes.style.display = "none"; return; }
             sugestoes.style.display = "block";
             matches.forEach(n => {
+                const c = clientesSnapshot[n];
                 const item = document.createElement("div");
-                item.textContent  = n;
+                item.textContent  = c.numeroTelefone ? `${n} — ${c.numeroTelefone}` : n;
                 item.style.cssText = "padding:8px 12px;color:black;cursor:pointer;font-size:14px;border-bottom:1px solid #eee;";
                 item.addEventListener("mousedown", (e) => {
                     e.preventDefault();
@@ -2914,6 +2928,7 @@ class PaginaPrincipalController {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("authOverlay")) return;
     window.paginaController = new PaginaPrincipalController();
     window.paginaController.init();
 });
