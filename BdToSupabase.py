@@ -7,17 +7,37 @@ import sqlite3
 import os
 from dotenv import load_dotenv
 from supabase import create_client
+from datetime import datetime, timezone
 
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+EMAIL        = os.getenv("SUPABASE_SERVICE_EMAIL")
+PASSWORD     = os.getenv("SUPABASE_SERVICE_PASSWORD")
 DB_PATH      = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "agenda.db")
+
+if not all([SUPABASE_URL, SUPABASE_KEY, EMAIL, PASSWORD]):
+    raise RuntimeError(
+        "ERRO: .env incompleto — verifica SUPABASE_URL, SUPABASE_KEY, "
+        "SUPABASE_SERVICE_EMAIL e SUPABASE_SERVICE_PASSWORD."
+    )
+    
+def _agora_utc_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 def conectar_sqlite():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def conectar_supabase():
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    res = supabase.auth.sign_in_with_password({"email": EMAIL, "password": PASSWORD})
+    if not res or not res.session:
+        raise RuntimeError("Falha ao autenticar no Supabase — verifica SUPABASE_SERVICE_EMAIL/PASSWORD no .env")
+    return supabase
 
 def migrar():
     print("=" * 50)
@@ -32,7 +52,7 @@ def migrar():
         print(f"ERRO: Base de dados não encontrada em {DB_PATH}")
         return
     
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    supabase = conectar_supabase()
     conn     = conectar_sqlite()
     
     # Utilizador
@@ -54,8 +74,11 @@ def migrar():
         rows = conn.execute("SELECT * FROM clientes").fetchall()
         if rows:
             dados = [dict(r) for r in rows]
+            agora = _agora_utc_iso()
             for d in dados:
                 d.pop("id", None)
+                if not d.get("updated_at"):
+                    d["updated_at"] = agora
             total = 0
             for i in range(0, len(dados), 100):
                 bloco = dados[i:i+100]
@@ -74,8 +97,11 @@ def migrar():
         rows = conn.execute("SELECT * FROM marcacoes").fetchall()
         if rows:
             dados = [dict(r) for r in rows]
+            agora = _agora_utc_iso()
             for d in dados:
                 d.pop("id", None)
+                if not d.get("updated_at"):
+                    d["updated_at"] = agora
             total = 0
             for i in range(0, len(dados), 100):
                 bloco = dados[i:i+100]

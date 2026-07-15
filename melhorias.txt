@@ -1,4 +1,20 @@
 M-1-o site irrita me porque os blocos tao fixos e desformata tudo
+(imagem 1 é o site quando se entra, digamos estado inicial)
+-adicionar relogio dnv como tem no desktop.
+-o tamanho disponibilizado é menor que na app por causa da barra de cima, por isso organizar o tamanho para cabar tudo sem ter de dar scroll na pagina
+-dependendo da resolucao do ecra ao mudar para semanas que tem poucas marcacoes a area central do calendario encurta o tamanho em vez de continuar a preencher a tabela, isso nao so no modo semana mas tbm no modo dia e mes onde é mais visivel (como mostra na imagem 2)
+-se ja tiver um cliente pendente de lado ao entrar no site ele nao deteta e aparece dnv a pagina para adicionar um novo pendente, ao adicionar (da para ser o que aparece visualmente), o que estava visualmente desaparece e fica so o novo adicionado
+-na app desktop a cor da celula do calendario que o mouse esta em cima muda a cor mas no site nao muda.
+-no geral no site os blocos e botoes principalmente estao muito "carnudos" falo principalmente dos botoes: hoje, setas menor e maior, dia, semana, mes
+-na area de clientes temos o mesmo problema para a area central, pesquisando pelo nome de clientes e nao tendo ou diminuindo as hipoteses a area central nao fixa fixa e diminui tamanho, o mesmo acontece para quando vamos para o modo estatisticas
+-no site os clientes aparecem pela ordem que foram inseridos na base de dados e nao por ordem alfabetica
+no telemovel esta tudo uma porcaria, mas vamos la enumerar problemas
+-no telemovel nao é preciso ter o relogio
+-a parte do calendario esta bem menos o header, resolveu se o problema dele ficar fixo e nao descer com o calendario mas os dias saem pra fora da tela...., deveria eles ficarem fixo mas dentro da possibilidade que se pode ver
+-no caso do editar marcacoes esta sempre a tratar como se o cliente fosse desconhecido e a aparecer so para mudar o nome ou numero e nao para pesquisar por outro cliente da base de dados caso seja um cliente que existe na base de dados
+-nos pendentes nao esta mau, apenas o problema que estava antes quando falei no pc de ele nao detetar que tem pendentes no site.
+-os botoes de hoje, seta menor e maior, dia, semana e mes. Estao meio tortos digamos, deveria ser o botao hoje menor e maior mais a esquerda e os botoes dia, semana e mes mais a direita tudo na mesma linha se possivel
+-o telemovel pode estar verticalmente (normal) ou horizontalmente, quando esta neste ultimo formato piora a parte do calendario, porque quase nao da para ver no modo semana e o modo mes fica todo bugado.
 
 B-2-perfil do utilizador:
 -ter de alterar a tabela e utilizador para colocar mais coisas que serao preciso guardar por predefenicoes de utilizador

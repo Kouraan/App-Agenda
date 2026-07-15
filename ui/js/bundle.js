@@ -277,6 +277,8 @@ class CalendarioModule {
         this.modoAtual = modo;
         if (modo === "MES") {
             this.semanaAtual = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth(), 1);
+        } else if (modo === "SEMANA") {
+            this.semanaAtual = getMonday(this.semanaAtual);
         }
         this.atualizar();
     }
@@ -332,7 +334,6 @@ class CalendarioModule {
 
         const headerFixo = document.createElement("div");
         headerFixo.className = "semana-header-fixo";
-
         headerFixo.appendChild(this._celula("", "header"));
 
         for (let i = 0; i < 7; i++) {
