@@ -327,6 +327,9 @@ class CalendarioModule {
             inner.className = "calendar-scroll-inner";
             inner.appendChild(this.grid);
             scrollEl.appendChild(inner);
+
+            inner.addEventListener("scroll", () => { headerFixo.scrollLeft = inner.scrollLeft; });
+            headerFixo.addEventListener("scroll", () => { inner.scrollLeft = headerFixo.scrollLeft; });
         }
 
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {

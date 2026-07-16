@@ -160,11 +160,11 @@ position: fixed;
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 14px;
+    padding: 6px 14px;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
-    min-height: 40px;
+    min-height: 32px;
 }
 
 .main-content {
@@ -194,10 +194,10 @@ position: fixed;
     background-color: rgb(43, 40, 40);
     color: white;
     border: none;
-    border-radius: 12px;
-    min-height: 44px;
-    padding: 12px;
-    font-size: 15px;
+    border-radius: 10px;
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 14px;
     font-weight: bold;
     cursor: pointer;
 }
@@ -272,12 +272,12 @@ position: fixed;
     background-color: rgb(43, 40, 40);
     color: white;
     border: none;
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-size: 14px;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
-    min-height: 40px;
+    min-height: 30px;
 }
 
 .view-btn.active { background-color: rgb(60, 60, 60); }
@@ -613,6 +613,13 @@ position: fixed;
         min-width: 700px;
     }
 
+    .semana-header-fixo {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .semana-header-fixo::-webkit-scrollbar { display: none; }
+
     .calendar-grid.dia {
         grid-template-columns: 56px 1fr;
     }
@@ -629,24 +636,38 @@ position: fixed;
     }
 
     .calendar-header {
+        display: flex;
         flex-wrap: wrap;
-        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        justify-content: space-between;
     }
 
     .calendar-header .spacer {
         display: none;
     }
+
+    .navigation-controls {
+        order: 1;
+        flex-wrap: nowrap;
+    }
+
+    .view-toggles {
+        order: 2;
+        flex-wrap: nowrap;
+    }
     
-    .navigation-controls, .view-toggles {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
+    .control-btn, .vier-btn {
+        min-height: 36px;
+        padding: 6px 10px;
+        font-size: 12px;
     }
 
     .period-label {
+        order: 3;
         font-size: 14px;
         width: 100%;
-        order: -1;
+        text-align: center;
     }
 
     /* Tabela de clientes: scroll horizontal em vez de colunas espremidas */
@@ -660,4 +681,32 @@ position: fixed;
     .auth-content .title { font-size: 26px; }
     .clock { font-size: 22px; }
     .nav-btn { font-size: 12px; }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+    .main-content {
+        flex-direction: row;
+        height: calc(100vh - 50px);
+    }
+
+    .left-sidebar {
+        display: none;
+    }
+
+    .right-sidebar {
+        width: 140px;
+        min-width: 140px;
+        height: auto;
+        order: 0;
+    }
+
+    .center-area, .calendar-container, .clientes-container {
+        order: 0;
+        height: 100%;
+    }
+
+    .semana-header-fixo,
+    .calendar-grid.semana {
+        min-width: 560px;
+    }
 }

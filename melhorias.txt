@@ -1,8 +1,6 @@
 M-1-o site irrita me porque os blocos tao fixos e desformata tudo
 (imagem 1 é o site quando se entra, digamos estado inicial)
 -o tamanho disponibilizado é menor que na app por causa da barra de cima, por isso organizar o tamanho para cabar tudo sem ter de dar scroll na pagina
--no geral no site os blocos e botoes principalmente estao muito "carnudos" falo principalmente dos botoes: hoje, setas menor e maior, dia, semana, mes
--no site os clientes aparecem pela ordem que foram inseridos na base de dados e nao por ordem alfabetica
 no telemovel esta tudo uma porcaria, mas vamos la enumerar problemas
 -a parte do calendario esta bem menos o header, resolveu se o problema dele ficar fixo e nao descer com o calendario mas os dias saem pra fora da tela...., deveria eles ficarem fixo mas dentro da possibilidade que se pode ver
 -no caso do editar marcacoes esta sempre a tratar como se o cliente fosse desconhecido e a aparecer so para mudar o nome ou numero e nao para pesquisar por outro cliente da base de dados caso seja um cliente que existe na base de dados

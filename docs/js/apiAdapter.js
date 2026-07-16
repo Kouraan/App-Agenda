@@ -67,7 +67,7 @@ function _construirSiteApi() {
         },
 
         get_clientes_map: async () => {
-            const { data, error } = await supabaseClient.from("clientes").select("*");
+            const { data, error } = await supabaseClient.from("clientes").select("*").order("nome", { ascending: true });
             if (error) { console.error(error); return {}; }
             const mapa = {};
             for (const row of data) {
@@ -295,14 +295,14 @@ function _construirSiteApi() {
         get_marcacoes_map: async () => {
             const [{ data, error }, { data: clientesData }] = await Promise.all([
                 supabaseClient.from("marcacoes").select("*"),
-                supabaseClient.from("clientes").select("nome, faltas"),
+                supabaseClient.from("clientes").select("nome, numero_telefone, faltas"),
             ]);
             if (error) { console.error(error); return {}; }
-            const faltasMap = {};
-            (clientesData || []).forEach(c => { faltasMap[c.nome] = c.faltas || 0; });
+            const clientesMap = {};
+            (clientesData || []).forEach(c => { clientesMap[c.nome] = c; });
             const mapa = {};
             for (const row of data) {
-                mapa[row.data_hora] = _marcacaoRowParaDict(row, faltasMap);
+                mapa[row.data_hora] = _marcacaoRowParaDict(row, clientesMap);
             }
             return mapa;
         },
@@ -549,11 +549,19 @@ function _construirSiteApi() {
     };
 }
 
-function _marcacaoRowParaDict(row, faltasMap = {}) {
+function _marcacaoRowParaDict(row, clientesMap = {}) {
+    const nomeCliente = row.cliente_nome || "N/A";
+    const registado = clientesMap[nomeCliente];
     return {
         dataHora: row.data_hora,
-        cliente: {
-            nome: row.cliente_nome || "N/A",
+        cliente: registado ? {
+            nome: registado.nome,
+            numeroTelefone: registado.numero_telefone || "",
+            tipoCliente: "NORMAL",
+            duaSemana: null, horaCorte: null, rapido: false, temporario: false,
+            faltas: registado.faltas || 0,
+        } : {
+            nome: nomeCliente,
             numeroTelefone: "",
             tipoCliente: "DESCONHECIDO",
             diaSemana: null, horaCorte: null, rapido: false, temporario: true,
