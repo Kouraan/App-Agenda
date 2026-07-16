@@ -552,7 +552,6 @@ position: fixed;
     .main-content {
         flex-direction: column;
         height: auto;
-        overflow: visible;
         padding: 8px;
         gap: 8px;
     }
@@ -603,6 +602,11 @@ position: fixed;
         height: 65vh;
     }
 
+    .calendar-container, .clientes-container {
+        overflow: hidden;
+        min-width: 0;
+    }
+
     /* Calendário: em vez de espremer 7 colunas, permite scroll horizontal
        mantendo cada dia com largura legível (mín. 90px) */
     .calendar-scroll { overflow-x: auto; }
@@ -648,23 +652,23 @@ position: fixed;
     }
 
     .navigation-controls {
-        order: 1;
+        order: 2;
         flex-wrap: nowrap;
     }
 
     .view-toggles {
-        order: 2;
+        order: 3;
         flex-wrap: nowrap;
     }
     
-    .control-btn, .vier-btn {
+    .control-btn, .view-btn {
         min-height: 36px;
         padding: 6px 10px;
         font-size: 12px;
     }
 
     .period-label {
-        order: 3;
+        order: 1;
         font-size: 14px;
         width: 100%;
         text-align: center;
@@ -708,5 +712,26 @@ position: fixed;
     .semana-header-fixo,
     .calendar-grid.semana {
         min-width: 560px;
+    }
+
+    .calendar-header {
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+    .navigation-controls { order: 1; }
+    .period-label {
+        order: 2;
+        width: auto;
+        flex: 1;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .view-toggles { order: 3; }
+    .control-btn, .view-btn {
+        font-size: 11px;
+        padding: 5px 8px;
+        min-height: 30px;
     }
 }

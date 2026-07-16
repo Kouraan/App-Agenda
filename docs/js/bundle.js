@@ -1628,15 +1628,12 @@ class CalendarioModule {
                 break;
         }
         this.semanaLabel.textContent = texto;
-        this.semanaLabel.style.cssText = "color:white;font-size:20px;font-weight:bold;text-align:center;flex:1;";
     }
 
     _atualizarEstiloToggles() {
-        const ativo   = "background-color:rgb(60,60,60);color:white;font-weight:bold;border:none;border-radius:12px;padding:8px 12px;cursor:pointer;";
-        const inativo = "background-color:rgb(43,40,40);color:white;font-weight:bold;border:none;border-radius:12px;padding:8px 12px;cursor:pointer;";
-        this.diaToggle.style.cssText    = this.modoAtual === "DIA"    ? ativo : inativo;
-        this.semanaToggle.style.cssText = this.modoAtual === "SEMANA" ? ativo : inativo;
-        this.mesToggle.style.cssText    = this.modoAtual === "MES"    ? ativo : inativo;
+        this.diaToggle.classList.toggle("active", this.modoAtual === "DIA");
+        this.semanaToggle.classList.toggle("active", this.modoAtual === "SEMANA");
+        this.mesToggle.classList.toggle("active", this.modoAtual === "MES");
     }
 
     // ── Helpers de UI ─────────────────────────────────────────────────────────
