@@ -810,10 +810,32 @@ class CalendarioModule {
             overlay.appendChild(modal);
 
             // Título
+            const tituloRow = document.createElement("div");
+            tituloRow.style.cssText = "display:flex;align-items:center;justify-content:center;gap:12px;padding-bottom:4px;";
+
             const titulo = document.createElement("div");
             titulo.textContent = `${dias[dt.getDay()]} ${String(dt.getDate()).padStart(2,"0")} às ${String(dt.getHours()).padStart(2,"0")}:${String(dt.getMinutes()).padStart(2,"0")}`;
-            titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;padding-bottom:4px;";
-            modal.appendChild(titulo);
+            titulo.style.cssText = "color:white;font-size:17px;font-weight:bold;text-align:center;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+            tituloRow.appendChild(titulo);
+
+            const clienteRegistado = marcacao.cliente && marcacao.cliente.tipoCliente !== "DESCONHECIDO";
+            if (clienteRegistado) {
+                const btnPerfil = this._mkBtn("Perfil", "rgb(43,80,120)");
+                btnPerfil.style.flexShrink = "0";
+                btnPerfil.addEventListener("click", () => {
+                    closeModal();
+                    if (window.paginaController) {
+                        window.paginaController._mostrarClientes();
+                        window.paginaController.clientesModule._abrirDetalheCliente(
+                            marcacao.cliente,
+                            { tipo: "marcacao", marcacao }
+                        );
+                    }
+                });
+                tituloRow.appendChild(btnPerfil);
+            }
+
+            modal.appendChild(tituloRow);
 
             // Separador
             const sep = document.createElement("div");
@@ -1857,8 +1879,10 @@ class ClientesModule {
             });
     }
 
-    async _abrirDetalheCliente(clienteLocal) {
+    async _abrirDetalheCliente(clienteLocal, origem = null) {
         if (document.getElementById("detalhe-overlay")) return;
+
+        this.renderizar();
 
         let clienteObj = clienteLocal;
         const resp = await getCliente(clienteLocal.nome);
@@ -1886,11 +1910,31 @@ class ClientesModule {
         const btnStats  = this._btn("Estatísticas", "rgb(36, 43, 141)");
         const spacer    = document.createElement("div"); spacer.style.flex = "1";
         topRow.append(btnEditar, btnStats, spacer);
+
+        if (origem && origem.tipo === "marcacao") {
+            const btnVoltarPerfil = this._btn("← Voltar", "rgb(60,60,60)");
+            btnVoltarPerfil.addEventListener("click", () => {
+                closeModal();
+                if (window.paginaController) {
+                    window.paginaController._mostrarCalendario();
+                    window.paginaController.calendarioModule._abrirDetalheMarcacao(origem.marcacao);
+                }
+            });
+            topRow.appendChild(btnVoltarPerfil);
+        }
+
         modal.appendChild(topRow);
 
         btnStats.addEventListener("click", () => {
             closeModal();
-            this._abrirEstatisticasCliente(clienteObj);
+            this._abrirEstatisticasCliente(clienteObj, origem);
+        });
+
+        modal.appendChild(topRow);
+
+        btnStats.addEventListener("click", () => {
+            closeModal();
+            this._abrirEstatisticasCliente(clienteObj, origem);
         });
 
         const visualBox = document.createElement("div");
@@ -2100,13 +2144,16 @@ class ClientesModule {
         });
     }
 
-    async _abrirEstatisticasCliente(clienteLocal) {
+    async _abrirEstatisticasCliente(clienteLocal, origem = null) {
         this.content.innerHTML = "";
 
         const header = document.createElement("div");
         header.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:14px;";
         const btnVoltar = this._btn("← Voltar", "rgb(60,60,60)");
-        btnVoltar.addEventListener("click", () => this.renderizar());
+        btnVoltar.addEventListener("click", () => {
+            this._abrirDetalheCliente(clienteLocal, origem);
+        });
+
         const titulo = document.createElement("h2");
         titulo.textContent = `Estatísticas — ${clienteLocal.nome}`;
         titulo.style.cssText = "color:white;font-size:20px;margin:0;";

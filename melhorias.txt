@@ -1,9 +1,7 @@
 M-1-o site irrita me porque os blocos tao fixos e desformata tudo
 (imagem 1 é o site quando se entra, digamos estado inicial)
 -o tamanho disponibilizado é menor que na app por causa da barra de cima, por isso organizar o tamanho para cabar tudo sem ter de dar scroll na pagina
-no telemovel esta tudo uma porcaria, mas vamos la enumerar problemas
--a parte do calendario esta bem menos o header, resolveu se o problema dele ficar fixo e nao descer com o calendario mas os dias saem pra fora da tela...., deveria eles ficarem fixo mas dentro da possibilidade que se pode ver
--o telemovel pode estar verticalmente (normal) ou horizontalmente, quando esta neste ultimo formato piora a parte do calendario, porque quase nao da para ver no modo semana e o modo mes fica todo bugado.
+-problema do cabeçalho header n ser fluido
 
 B-2-perfil do utilizador:
 -ter de alterar a tabela e utilizador para colocar mais coisas que serao preciso guardar por predefenicoes de utilizador
