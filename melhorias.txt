@@ -1,6 +1,4 @@
 M-1-o site irrita me porque os blocos tao fixos e desformata tudo
-(imagem 1 é o site quando se entra, digamos estado inicial)
--o tamanho disponibilizado é menor que na app por causa da barra de cima, por isso organizar o tamanho para cabar tudo sem ter de dar scroll na pagina
 -problema do cabeçalho header n ser fluido no telemovel. Ou seja, ao mexer no calendario para andar mais pro lado no modo vertical o header fica estatico e nao consigo mexer (o calendario mexe) e no modo deiado ele nao mexe consoante o calendario em baixo, deveria ser como se fossem pertencentes ao msm plano digamos
 -no modo que o telmovel esta deitado nao aparece para alternar entre o modo clientes e o modo calendario(agenda), deveria aparecer em cima da area de calendario
 -e a area que aparece de pendentes no modo deitado, a area dos pendentes deveria ir ate ao final, mantendo aquela barra branca que tem apos a area de pendentes

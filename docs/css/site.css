@@ -584,10 +584,10 @@ position: fixed;
 
     .nav-btn { flex: 1; font-size: 13px; padding: 10px 6px; }
 
-    /* Anotações escondidas por defeito em mobile, para poupar espaço —
-       ainda acessíveis via scroll, mas não competem com o calendário */
     .anotacoes-box {
-        display: none;
+        display: flex;
+        order: 4;
+        height: 150px;
     }
 
     .right-sidebar {
@@ -699,18 +699,22 @@ position: fixed;
 
 @media (max-width: 900px) and (orientation: landscape) {
     .main-content {
-        flex-direction: row;
+        flex-direction: column;
         height: calc(100vh - 50px);
     }
 
     .left-sidebar {
-        display: none;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: auto;
+        padding: 4px;
     }
 
     .right-sidebar {
         width: 140px;
         min-width: 140px;
-        height: auto;
+        height: 100%;
         order: 0;
     }
 
@@ -722,6 +726,12 @@ position: fixed;
     .semana-header-fixo,
     .calendar-grid.semana {
         min-width: 560px;
+    }
+
+    .semana-header-fixo {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
     }
 
     .calendar-header {
@@ -743,5 +753,10 @@ position: fixed;
         font-size: 11px;
         padding: 5px 8px;
         min-height: 30px;
+    }
+
+    .anotacoes-box {
+        order: 99;
+        width: 100%;
     }
 }
