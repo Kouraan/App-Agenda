@@ -584,10 +584,10 @@ position: fixed;
 
     .nav-btn { flex: 1; font-size: 13px; padding: 10px 6px; }
 
+    /* Anotações escondidas por defeito em mobile, para poupar espaço —
+       ainda acessíveis via scroll, mas não competem com o calendário */
     .anotacoes-box {
-        display: flex;
-        order: 4;
-        height: 150px;
+        display: none;
     }
 
     .right-sidebar {
@@ -699,7 +699,7 @@ position: fixed;
 
 @media (max-width: 900px) and (orientation: landscape) {
     .main-content {
-        flex-direction: column;
+        flex-direction: row;
         height: calc(100vh - 50px);
     }
 
@@ -731,7 +731,6 @@ position: fixed;
     .semana-header-fixo {
         overflow-x: auto;
         scrollbar-width: none;
-        -ms-overflow-style: none;
     }
 
     .calendar-header {
@@ -753,10 +752,5 @@ position: fixed;
         font-size: 11px;
         padding: 5px 8px;
         min-height: 30px;
-    }
-
-    .anotacoes-box {
-        order: 99;
-        width: 100%;
     }
 }
