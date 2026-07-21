@@ -698,14 +698,27 @@ position: fixed;
 }
 
 @media (max-width: 900px) and (orientation: landscape) {
+    html, body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #appRoot {
+        height: auto;
+        min-height: 100vh;
+    }
+
     .main-content {
         display: grid;
         grid-template-columns: 1fr 140px;
-        grid-template-rows: auto 1fr;
+        grid-template-rows: auto minmax(480px, auto);
         grid-template-areas: 
             "nav nav"
             "main side";
-        height: calc(100vh - 50px);
+        height: auto;
+        min-height: calc(100vh - 50px);
         gap: 8px;
         padding: 8px;
     }
@@ -718,7 +731,7 @@ position: fixed;
         min-width: 0;
         height: auto;
         padding: 6px 8px;
-        gap: 6px;
+        gap: 8px;
     }
 
     .left-sidebar .navigation-buttons {
@@ -729,6 +742,12 @@ position: fixed;
 
     .left-sidebar .anotacoes-box {
         display: none;
+    }
+
+    .center-area, .calendar-container, .clientes-container {
+        grid-area: main;
+        min-height: 480px;
+        height: auto;
     }
 
     .right-sidebar {
@@ -743,10 +762,19 @@ position: fixed;
 
     .pendentes-scroll {
         flex: 1 1 auto;
-        min-height: 0;
+        min-height: 200px;
     }
 
     .clock { display: none; }
+
+    .calendar-scroll {
+        overflow: visible;
+    }
+
+    .calendar-scroll-inner {
+        overflow: visible;
+        height: auto;
+    }
 
     .semana-header-fixo,
     .calendar-grid.semana {
@@ -754,6 +782,9 @@ position: fixed;
     }
 
     .semana-header-fixo {
+        position: sticky;
+        top: 0;
+        z-index: 5;
         overflow-x: auto;
         scrollbar-width: none;
     }
