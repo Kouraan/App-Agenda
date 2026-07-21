@@ -699,28 +699,26 @@ position: fixed;
 
 @media (max-width: 900px) and (orientation: landscape) {
     html, body {
-        height: auto;
-        min-height: 100vh;
-        overflow-y: auto;
-        overflow-x: hidden;
+        height: 100vh;
+        overflow: hidden;
     }
 
     #appRoot {
-        height: auto;
-        min-height: 100vh;
+        height: 100vh;
     }
 
     .main-content {
         display: grid;
         grid-template-columns: 1fr 140px;
-        grid-template-rows: auto minmax(480px, auto);
+        grid-template-rows: auto 1fr;
         grid-template-areas: 
             "nav nav"
             "main side";
-        height: auto;
-        min-height: calc(100vh - 50px);
+        height: calc(100vh - 50px);
+        min-height: 0;
         gap: 8px;
         padding: 8px;
+        overflow: hidden;
     }
 
     .left-sidebar {
@@ -746,8 +744,9 @@ position: fixed;
 
     .center-area, .calendar-container, .clientes-container {
         grid-area: main;
-        min-height: 480px;
-        height: auto;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
     }
 
     .right-sidebar {
@@ -758,23 +757,16 @@ position: fixed;
         min-height: 0;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
     }
 
     .pendentes-scroll {
         flex: 1 1 auto;
-        min-height: 200px;
+        min-height: 0;
+        overflow-y: auto;
     }
 
     .clock { display: none; }
-
-    .calendar-scroll {
-        overflow: visible;
-    }
-
-    .calendar-scroll-inner {
-        overflow: visible;
-        height: auto;
-    }
 
     .semana-header-fixo,
     .calendar-grid.semana {
