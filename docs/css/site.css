@@ -6,13 +6,18 @@
 
 html, body {
     height: 100vh;
-    overflow: hidden;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #appRoot {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
 }
 
 body {
@@ -699,26 +704,29 @@ position: fixed;
 
 @media (max-width: 900px) and (orientation: landscape) {
     html, body {
-        height: 100vh;
-        overflow: hidden;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
 
     #appRoot {
-        height: 100vh;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
 
     .main-content {
         display: grid;
         grid-template-columns: 1fr 140px;
-        grid-template-rows: auto 1fr;
+        grid-template-rows: auto auto;
         grid-template-areas: 
             "nav nav"
             "main side";
-        height: calc(100vh - 50px);
-        min-height: 0;
+        height: auto;
         gap: 8px;
         padding: 8px;
-        overflow: hidden;
     }
 
     .left-sidebar {
@@ -744,8 +752,9 @@ position: fixed;
 
     .center-area, .calendar-container, .clientes-container {
         grid-area: main;
-        height: 100%;
-        min-height: 0;
+        height: 340px;
+        min-height: 340px;
+        max-height: 340px;
         overflow: hidden;
     }
 
@@ -753,8 +762,9 @@ position: fixed;
         grid-area: side;
         width: 100%;
         min-width: 0;
-        height: 100%;
-        min-height: 0;
+        height: 340px;
+        min-height: 340px;
+        max-height: 340px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -768,15 +778,24 @@ position: fixed;
 
     .clock { display: none; }
 
+    .calendar-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .calendar-scroll-inner {
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+    }
+
     .semana-header-fixo,
     .calendar-grid.semana {
         min-width: 560px;
     }
 
     .semana-header-fixo {
-        position: sticky;
-        top: 0;
-        z-index: 5;
         overflow-x: auto;
         scrollbar-width: none;
     }
