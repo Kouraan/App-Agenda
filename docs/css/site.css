@@ -300,33 +300,15 @@ position: fixed;
 
 .calendar-scroll {
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
     background-color: rgb(15, 14, 14);
     border-radius: 8px;
     padding: 5px;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.calendar-scroll-inner {
-    overflow: auto;
-    flex: 1;
     min-height: 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
-
-.calendar-scroll-inner::-webkit-scrollbar { display: none; }
-
-.semana-header-fixo {
-    display: grid;
-    grid-template-columns: 70px repeat(7, minmax(100px, 1fr));
-    gap: 6px;
-    padding: 10px 10px 0 10px;
-    background-color: rgb(15, 14, 14);
-    flex-shrink: 0;
-}
+.calendar-scroll::-webkit-scrollbar { display: none; }
 
 .calendar-grid.semana, .calendar-grid.dia {
     display: grid;
@@ -337,8 +319,6 @@ position: fixed;
 .calendar-grid.semana {
     grid-template-columns: 70px repeat(7, minmax(100px, 1fr));
     grid-auto-rows: 40px;
-    row-gap: 10px;
-    column-gap: 6px;
     padding: 10px;
 }
 
@@ -354,6 +334,27 @@ position: fixed;
     padding: 10px;
     flex: 1;
     min-height: 0;
+}
+
+.calendar-grid.semana .calendar-cell.header,
+.calendar-grid.dia .calendar-cell.header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.calendar-grid.semana .calendar-cell.hour,
+.calendar-grid.dia .calendar-cell.hour {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.calendar-grid .corner-cell {
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 4;
 }
 
 .mes-header {
@@ -625,19 +626,11 @@ position: fixed;
     /* Calendário: em vez de espremer 7 colunas, permite scroll horizontal
        mantendo cada dia com largura legível (mín. 90px) */
     .calendar-scroll { overflow: hidden; }
-    .calendar-scroll-inner { overflow: auto; }
-    .semana-header-fixo,
+
     .calendar-grid.semana {
         grid-template-columns: 56px repeat(7, minmax(90px, 1fr));
         min-width: 700px;
     }
-
-    .semana-header-fixo {
-        overflow-x: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-    .semana-header-fixo::-webkit-scrollbar { display: none; }
 
     .calendar-grid.dia {
         grid-template-columns: 56px 1fr;
@@ -773,6 +766,7 @@ position: fixed;
     .pendentes-scroll {
         flex: 1 1 auto;
         min-height: 0;
+        max-height: none;
         overflow-y: auto;
     }
 
@@ -784,20 +778,9 @@ position: fixed;
         overflow: hidden;
     }
 
-    .calendar-scroll-inner {
-        overflow-y: auto;
-        flex: 1;
-        min-height: 0;
-    }
-
-    .semana-header-fixo,
     .calendar-grid.semana {
+        grid-template-columns: 56px repeat(7, minmax(90px, 1fr));
         min-width: 560px;
-    }
-
-    .semana-header-fixo {
-        overflow-x: auto;
-        scrollbar-width: none;
     }
 
     .calendar-header {

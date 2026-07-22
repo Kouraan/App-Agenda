@@ -1,6 +1,6 @@
 M-1-o site irrita me porque os blocos tao fixos e desformata tudo
--problema do cabeçalho header n ser fluido no telemovel. Ou seja, ao mexer no calendario para andar mais pro lado no modo vertical o header fica estatico e nao consigo mexer (o calendario mexe) e no modo deiado ele nao mexe consoante o calendario em baixo, deveria ser como se fossem pertencentes ao msm plano digamos
--e a area que aparece de pendentes no modo deitado, a area dos pendentes deveria ir ate ao final, mantendo aquela barra branca que tem apos a area de pendentes
+-no modo landscape no modo mes os dias n cabem todos na tela
+-a parte do header e da coluna de horas ficam 'transparentes' e da pra ver o que passa por traz, eu n quero.
 
 B-2-perfil do utilizador:
 -ter de alterar a tabela e utilizador para colocar mais coisas que serao preciso guardar por predefenicoes de utilizador
@@ -11,3 +11,8 @@ pesquisar no proprio computador e colocar a imagem.
 -alterar o ou os dias de folga
 -fazer backups da base de dados
 -exportar dados
+
+B-3-a tela de login no site esta torta e no caso para telemovel a imagem fica estranha
+
+
+M-4-Android SMS Gateway para enviar mensagens

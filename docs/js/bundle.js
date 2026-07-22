@@ -203,33 +203,17 @@ class CalendarioModule {
     }
 
     atualizar() {
-        const scrollEl = this.grid.closest(".calendar-scroll");
-        
-        if (scrollEl) {
-            const headerFixo = scrollEl.parentElement.querySelector(".semana-header-fixo");
-            if (headerFixo) headerFixo.remove();
-
-            const inner = scrollEl.querySelector(".calendar-scroll-inner");
-            if (inner) {
-                if (inner.contains(this.grid)) {
-                    scrollEl.insertBefore(this.grid, inner);
-                }
-                inner.remove();
-            }
-
-            scrollEl.style.overflowY = "";
-            scrollEl.style.overflow = "";
-        }
-
         this.grid.innerHTML = "";
         this.grid.className = `calendar-grid ${this.modoAtual.toLowerCase()}`;
 
+        const scrollEl = this.grid.closest(".calendar-scroll");
         if (scrollEl) {
             if (this.modoAtual === "DIA" || this.modoAtual === "SEMANA") {
-                scrollEl.style.overflowY = "auto";
+                scrollEl.style.overflow = "auto";
                 scrollEl.style.scrollbarWidth = "none";
             } else {
                 scrollEl.style.overflowY = "hidden";
+                scrollEl.style.overflowX = "hidden";
             }
         }
 
@@ -299,11 +283,7 @@ class CalendarioModule {
     // ── Semana ────────────────────────────────────────────────────────────────
 
     _criarSemana() {
-        const scrollEl = this.grid.closest(".calendar-scroll");
-
-        const headerFixo = document.createElement("div");
-        headerFixo.className = "semana-header-fixo";
-        headerFixo.appendChild(this._celula("", "header"));
+        this.grid.appendChild(this._celula("", "header corner-cell"));
 
         for (let i = 0; i < 7; i++) {
             const data  = new Date(this.semanaAtual.getTime() + i * 86400000);
@@ -317,19 +297,7 @@ class CalendarioModule {
                 this.diaSelecionado = data;
                 this.setModo("DIA");
             });
-            headerFixo.appendChild(cel);
-        }
-
-        if (scrollEl) {
-            scrollEl.parentElement.insertBefore(headerFixo, scrollEl);
-
-            const inner = document.createElement("div");
-            inner.className = "calendar-scroll-inner";
-            inner.appendChild(this.grid);
-            scrollEl.appendChild(inner);
-
-            inner.addEventListener("scroll", () => { headerFixo.scrollLeft = inner.scrollLeft; });
-            headerFixo.addEventListener("scroll", () => { inner.scrollLeft = headerFixo.scrollLeft; });
+            this.grid.appendChild(cel);
         }
 
         for (let h = HORA_ABERTURA; h <= HORA_FECHO; h++) {
