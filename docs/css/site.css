@@ -334,6 +334,7 @@ position: fixed;
     padding: 10px;
     flex: 1;
     min-height: 0;
+    margin-bottom: 2px;
 }
 
 .calendar-grid.semana .calendar-cell.header,
@@ -361,11 +362,11 @@ position: fixed;
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
 }
 
-.mes-weeks { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; }
-.mes-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; flex: 1; min-height: 0; }
+.mes-weeks { display: flex; flex-direction: column; gap: 2px; flex: 1; min-height: 0; }
+.mes-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; flex: 1; min-height: 0; }
 
 .calendar-cell {
     position: relative;
@@ -777,6 +778,7 @@ position: fixed;
         min-height: 0;
         overflow: hidden;
     }
+
 
     .calendar-grid.semana {
         grid-template-columns: 56px repeat(7, minmax(90px, 1fr));

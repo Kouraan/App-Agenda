@@ -1,7 +1,3 @@
-M-1-o site irrita me porque os blocos tao fixos e desformata tudo
--no modo landscape no modo mes os dias n cabem todos na tela
--a parte do header e da coluna de horas ficam 'transparentes' e da pra ver o que passa por traz, eu n quero.
-
 B-2-perfil do utilizador:
 -ter de alterar a tabela e utilizador para colocar mais coisas que serao preciso guardar por predefenicoes de utilizador
 -alteracao de nome ou password

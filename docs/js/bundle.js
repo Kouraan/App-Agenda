@@ -233,6 +233,8 @@ class CalendarioModule {
         } else if (modo === "SEMANA") {
             this.semanaAtual = getMonday(this.semanaAtual);
         }
+        const scrollEl = this.grid.closest(".calendar-scroll");
+        if (scrollEl) scrollEl.scrollTop = 0;
         this.atualizar();
     }
 
