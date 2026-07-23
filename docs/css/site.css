@@ -341,6 +341,7 @@ position: fixed;
     position: sticky;
     top: 0;
     z-index: 3;
+    background-color: rgb(197, 130, 63);
 }
 
 .calendar-grid.semana .calendar-cell.hour,
@@ -348,13 +349,12 @@ position: fixed;
     position: sticky;
     left: 0;
     z-index: 2;
+    background-color: rgb(197, 130, 63);
 }
 
 .calendar-grid .corner-cell {
-    position: sticky;
-    top: 0;
-    left: 0;
     z-index: 4;
+    background-color: rgb(197, 130, 63);
 }
 
 .mes-header {

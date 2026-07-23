@@ -53,6 +53,20 @@ async function _limparMarcacoesAntigas(mesesRetencao = 3) {
     }
 }
 
+async function _fetchTodasMarcacoes() {
+    const todas = [];
+    const pageSize = 1000;
+    for (let from = 0; ; from += pageSize) {
+        const { data, error } = await supabaseClient
+            .from("marcacoes").select("*")
+            .range(from, from + pageSize - 1);
+        if (error) { console.error("[apiAdapter] Erro ao paginar marcacoes:", error); break; }
+        todas.push(...(data || []));
+        if (!data || data.length < pageSize) break;
+    }
+    return todas;
+}
+
 function _construirSiteApi() {
     return {
         get_utilizador_info: async () => ({ nome: "Acesso Web", authenticated: true}),
@@ -293,15 +307,14 @@ function _construirSiteApi() {
 
         // Marcacoes
         get_marcacoes_map: async () => {
-            const [{ data, error }, { data: clientesData }] = await Promise.all([
-                supabaseClient.from("marcacoes").select("*"),
-                supabaseClient.from("clientes").select("nome, numero_telefone, faltas"),
+            const [marcacoesRows, { data: clientesData }] = await Promise.all([
+                _fetchTodasMarcacoes(),
+                supabaseClient.from("clientes").select("nome, numero_telefone, falas"),
             ]);
-            if (error) { console.error(error); return {}; }
             const clientesMap = {};
             (clientesData || []).forEach(c => { clientesMap[c.nome] = c; });
             const mapa = {};
-            for (const row of data) {
+            for (const row of marcacoesRows) {
                 mapa[row.data_hora] = _marcacaoRowParaDict(row, clientesMap);
             }
             return mapa;
@@ -432,7 +445,7 @@ function _construirSiteApi() {
             if (!marcA || !marcB) return { success: false, error: "Marcação não encontrada." };
 
             const dtA = new Date(dataHoraA), dtB = new Date(dataHoraB);
-            const { data: todasDoDia } = await supabaseClient.from("marcacoes").select("*");
+            const todasDoDia = await _fetchTodasMarcacoes();
             if (!_trocasCompativel(dtA, marcA.duracao, dtB, marcB.duracao, todasDoDia)) {
                 return { success: false, error: "Estas marcações não são compatíveis para troca." };
             }
@@ -616,7 +629,7 @@ async function _criarMarcacaoInterna(clienteNome, dataHora, duracao, observacoes
     const dataHoraObj = new Date(dataHora);
     if (isNaN(dataHoraObj.getTime())) return { success: false, error: "Data/hora inválida." };
 
-    const { data: todasMarcacoes } = await supabaseClient.from("marcacoes").select("*");
+    const todasMarcacoes = await _fetchTodasMarcacoes();
     const mapa = new Map((todasMarcacoes || []).map(m => [m.data_hora, m]));
 
     let minutosRestantes = duracao;

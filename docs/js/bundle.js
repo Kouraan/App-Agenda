@@ -406,7 +406,10 @@ class CalendarioModule {
         const is15m1    = marc1 && marc1.duracao === 15;
         const is15m2    = marc2 && marc2.duracao === 15;
 
-        if (is15m1 || is15m2) {
+        if (marc1 && marc1.duracao >= 30) {
+            cel.appendChild(this._boxMarcacao(marc1, false));
+            cel.style.cursor = "pointer";
+        } else if (is15m1 || is15m2) {
             const hbox = document.createElement("div");
             hbox.className = "marcacao-15-container";
 
@@ -430,9 +433,6 @@ class CalendarioModule {
                 hbox.appendChild(r);
             }
             cel.appendChild(hbox);
-        } else if (marc1 && marc1.duracao >= 30) {
-            cel.appendChild(this._boxMarcacao(marc1, false));
-            cel.style.cursor = "pointer";
         } else {
             if (!passado) {
                 cel.style.cursor = "pointer";
