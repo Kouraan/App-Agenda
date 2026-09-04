@@ -11,4 +11,19 @@ pesquisar no proprio computador e colocar a imagem.
 B-3-a tela de login no site esta torta e no caso para telemovel a imagem fica estranha
 
 
-M-4-Android SMS Gateway para enviar mensagens
+M-4-Android SMS Gateway para enviar mensagens (tem a maioria da implementacao noutra pasta)
+
+
+
+
+
+
+
+
+DAR PUSH DE UM NOVA VERSAO
+git add .
+git commit -m "nova funcionalidade X"
+git push origin main
+
+git tag v1.0.0
+git push origin v1.0.0

@@ -1,4 +1,4 @@
-# Script simples de build (usa PyInstaller se estiver instalado).
+# Script de build (usa PyInstaller).
 # Ajuste conforme necessário para incluir assets (ui, data, etc).
 
 import os
@@ -18,11 +18,13 @@ def main():
 
     # Verifica se o .env existe
     if not os.path.exists(".env"):
-        print("AVISO: .env não encontrado — o sync com Supabase não vai funcionar!")
-        print("Cria o ficheiro .env antes de fazer o build.")
-        resposta = input("Continuar mesmo assim? (s/n): ")
-        if resposta.lower() != "s":
-            return
+        print("AVISO: .env não encontrado -- o sync com Supabase não vai funcionar!")
+        if os.environ.get("CI", "").lower() == "true":
+            print("A correr em CI -- a continuar automaticamente.")
+        else:
+            resposta = input("Continuar mesmo assim? (s/n): ")
+            if resposta.lower() != "s":
+                return
 
     separador = ";" if sys.platform == "win32" else ":"
 
@@ -52,6 +54,10 @@ def main():
         if os.path.exists(".env"):
             shutil.copy(".env", os.path.join(dist_path, ".env"))
             print(f"✓ .env copiado para: {dist_path}")
+            
+        if os.path.exists("version.txt"):
+            shutil.copy("version.txt", os.path.join(dist_path, "version.txt"))
+            print(f"✓ version.txt copiado para: {dist_path}")
 
         print("\n" + "=" * 50)
         print("BUILD CONCLUÍDO")

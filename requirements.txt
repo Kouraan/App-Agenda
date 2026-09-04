@@ -2,3 +2,4 @@ pywebview==4.4.1
 supabase
 python-dotenv
 python-dateutil
+requests

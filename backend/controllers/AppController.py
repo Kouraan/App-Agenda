@@ -1,5 +1,13 @@
 import webview
 import os
+import sys
+import time
+import zipfile
+import tempfile
+import subprocess
+import requests
+import threading
+
 from datetime import datetime, date
 from typing import Dict, List, Optional
 
@@ -12,6 +20,30 @@ from ..utils import Logger
 from ..utils import Database
 from ..utils.Validation import Validation
 from ..utils.MarcacoesSemanais import MarcacoesSemanais
+
+GITHUB_REPO = "Kouraan/App-Agenda"
+
+UPDATER_BAT_TEMPLATE = r"""@echo off
+setlocal
+set APP_EXE=AppAgenda.exe
+set INSTALL_DIR=%~1
+set NEW_DIR=%~2
+
+:waitloop
+tasklist /FI "IMAGENAME eq %APP_EXE%" 2>NULL | find /I "%APP_EXE%" >NUL
+if "%ERRORLEVEL%"=="0" (
+    timeout /t 1 /nobreak >NUL
+    goto waitloop
+)
+
+robocopy "%NEW_DIR%" "%INSTALL_DIR%" /E /XD data /IS /NFL /NDL /NJH /NJS
+
+rmdir /S /Q "%NEW_DIR%"
+
+start "" "%INSTALL_DIR%\%APP_EXE%"
+
+del "%~f0"
+"""
 
 
 class AppController:
@@ -1164,3 +1196,89 @@ class AppController:
         ]
         for dt in to_remove:
             del self.marcacoes_map[dt]
+            
+    # ── Atualizações ──────────────────────────────────────────────────────────
+    
+    def _get_base_dir(self):
+        """Pasta onde está o executável"""
+        if getattr(sys, 'frozen', False):
+            return os.path.dirname(sys.executable)
+        return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
+    def get_versao_local(self):
+        try:
+            path = os.path.join(self._get_base_dir(), "version.txt")
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except Exception:
+            return "0.0.0"
+        
+    @staticmethod
+    def _comparar_versoes(a: str, b: str) -> int:
+        def norm(v):
+            return tuple(int(x) for x in v.split(".") if x.isdigit())
+        ta, tb = norm(a), norm(b)
+        if ta > tb: return 1
+        if ta < tb: return -1
+        return 0
+    
+    def verificar_atualizacao(self):
+        try:
+            resp = requests.get(
+                f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
+                timeout=5
+            )
+            if resp.status_code != 200:
+                return {"success": False, "error": "Não foi possível verificar atualizações."}
+            
+            data = resp.json()
+            versao_remota = data.get("tag_name", "").lstrip("v")
+            versao_local = self.get_versao_local()
+            tem_update = self._comparar_versoes(versao_remota, versao_local) > 0
+            
+            url_zip = None
+            for asset in data.get("assets", []):
+                if asset["name"].endswith(".zip"):
+                    url_zip = asset["browser_download_url"]
+                    break
+                
+            return {
+                "success": True,
+                "tem_atualizacao": tem_update,
+                "versao_local": versao_local,
+                "versao_remota": versao_remota,
+                "url_download": url_zip,
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+        
+    def baixar_e_atualizar(self, url_zip: str):
+        try:
+            base_dir  = self._get_base_dir()
+            temp_dir  = tempfile.mkdtemp(prefix="agenda_update_")
+            zip_path  = os.path.join(temp_dir, "update.zip")
+
+            resp = requests.get(url_zip, stream=True, timeout=60)
+            with open(zip_path, "wb") as f:
+                for chunk in resp.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+            extract_dir = os.path.join(temp_dir, "extracted")
+            with zipfile.ZipFile(zip_path, "r") as z:
+                z.extractall(extract_dir)
+
+            updater_path = os.path.join(temp_dir, "updater.bat")
+            with open(updater_path, "w", encoding="utf-8") as f:
+                f.write(UPDATER_BAT_TEMPLATE)
+
+            CREATE_NEW_CONSOLE = 0x00000010 
+
+            subprocess.Popen(
+                [updater_path, base_dir, extract_dir],
+                creationflags=CREATE_NEW_CONSOLE
+            )
+
+            threading.Thread(target=lambda: (time.sleep(3), os._exit(0))).start()
+            return {"success": True}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
