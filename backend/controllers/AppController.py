@@ -1253,6 +1253,7 @@ class AppController:
             return {"success": False, "error": str(e)}
         
     def baixar_e_atualizar(self, url_zip: str):
+        """Baixa o zip da atualização, extrai e executa o updater.bat em nova janela."""
         try:
             base_dir  = self._get_base_dir()
             temp_dir  = tempfile.mkdtemp(prefix="agenda_update_")
