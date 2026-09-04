@@ -42,22 +42,22 @@ def main():
 
     try:
         subprocess.check_call(args)
-        print("\n✓ PyInstaller concluído.")
+        print("\n[OK] PyInstaller concluído.")
 
         # Criar pasta data junto ao executável se não existir
         dist_path = os.path.join("dist", "AppAgenda")
         data_path = os.path.join(dist_path, "data")
         os.makedirs(data_path, exist_ok=True)
-        print(f"✓ Pasta data criada em: {data_path}")
+        print(f"[OK] Pasta data criada em: {data_path}")
 
         # Copiar .env para junto do executável (redundância)
         if os.path.exists(".env"):
             shutil.copy(".env", os.path.join(dist_path, ".env"))
-            print(f"✓ .env copiado para: {dist_path}")
+            print(f"[OK] .env copiado para: {dist_path}")
             
         if os.path.exists("version.txt"):
             shutil.copy("version.txt", os.path.join(dist_path, "version.txt"))
-            print(f"✓ version.txt copiado para: {dist_path}")
+            print(f"[OK] version.txt copiado para: {dist_path}")
 
         print("\n" + "=" * 50)
         print("BUILD CONCLUÍDO")
