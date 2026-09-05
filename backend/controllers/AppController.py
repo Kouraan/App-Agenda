@@ -1297,6 +1297,7 @@ class AppController:
             return {"success": False, "error": str(e)}
         
     def _tem_permissao_escrita(self, pasta: str) -> bool:
+        """Verifica se o processo atual tem permissão de escrita na pasta especificada."""
         try:
             testfile = os.path.join(pasta, ".write_test_tmp")
             with open(testfile, "w") as f:
