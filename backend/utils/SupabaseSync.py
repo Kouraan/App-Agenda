@@ -88,7 +88,7 @@ def _autenticar(client) -> bool:
         if refresh_token:
             res = client.auth.refresh_session(refresh_token)
         else:
-            res = client.auth.sign_in_anonymous()
+            res = client.auth.sign_in_anonymously()
             
         if res and res.session:
             _sessao_valida_ate = agora + res.session.expires_in

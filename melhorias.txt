@@ -13,6 +13,8 @@ B-3-a tela de login no site esta torta e no caso para telemovel a imagem fica es
 
 M-4-Android SMS Gateway para enviar mensagens (tem a maioria da implementacao noutra pasta)
 
+A-5-o calendario quebra no final de outubro, nao sei pq
+
 
 
 
