@@ -34,9 +34,9 @@ def main():
         "--clean",
         "--windowed",
         "--name", "AppAgenda",
+        "--icon", os.path.join("ui", "images", "icon.ico"),
         "--add-data", f"ui{separador}ui",
         "--add-data", f"backend{separador}backend",
-        "--add-data", f".env{separador}.",
         entry
     ]
 

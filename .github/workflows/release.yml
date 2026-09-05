@@ -55,7 +55,7 @@ jobs:
       - name: Compactar o resultado
         shell: powershell
         run: |
-          Compress-Archive -Path "dist/AppAgenda/*" -DestinationPath "AppAgenda-v${{ steps.version.outputs.version }}.zip"
+          Compress-Archive -Path "dist/AppAgenda" -DestinationPath "AppAgenda-v${{ steps.version.outputs.version }}.zip"
 
       - name: Criar GitHub Release
         uses: softprops/action-gh-release@v2

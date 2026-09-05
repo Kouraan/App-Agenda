@@ -1273,13 +1273,35 @@ class AppController:
                 f.write(UPDATER_BAT_TEMPLATE)
 
             CREATE_NEW_CONSOLE = 0x00000010 
-
-            subprocess.Popen(
-                [updater_path, base_dir, extract_dir],
-                creationflags=CREATE_NEW_CONSOLE
-            )
+            
+            precisa_admin = not self._tem_permissao_escrita(base_dir)
+            
+            if precisa_admin:
+                ps_cmd = (
+                    f'Start-Process -FilePath "{updater_path}" '
+                    f'-ArgumentList \'"{base_dir}" "{extract_dir}"\' -Verb RunAs'
+                )
+                subprocess.Popen(
+                    ["powershell", "-NoProfile", "-Command", ps_cmd],
+                    creationflags=CREATE_NEW_CONSOLE
+                )
+            else:
+                subprocess.Popen(
+                    [updater_path, base_dir, extract_dir],
+                    creationflags=CREATE_NEW_CONSOLE
+                )
 
             threading.Thread(target=lambda: (time.sleep(3), os._exit(0))).start()
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}
+        
+    def _tem_permissao_escrita(self, pasta: str) -> bool:
+        try:
+            testfile = os.path.join(pasta, ".write_test_tmp")
+            with open(testfile, "w") as f:
+                f.write("x")
+            os.remove(testfile)
+            return True
+        except Exception:
+            return False

@@ -27,3 +27,21 @@ git push origin main
 
 git tag v1.0.0
 git push origin v1.0.0
+
+INSTALADOR BONITO:
+(Nota à margem, sem urgência: quando quiseres dar um passo maior de qualidade, um instalador feito com Inno Setup — grátis, 
+script simples — resolve isto de forma ainda mais robusta: deixa o utilizador escolher a pasta, cria o atalho sozinho sempre 
+a apontar bem, e pede admin automaticamente só se for preciso. Mas o que fizemos já resolve o problema atual sem precisares 
+disso agora.)
+
+DEIXAR CODIGO PRIVADO:
+-Podes continuar com o repositório público por agora — a app a chamar api.github.com diretamente, como já fazes, funciona sem 
+alterações enquanto não fizeres o repo privado.
+-Quando quiseres esconder o código-fonte: torna o repositório privado, e cria uma pequena função serverless gratuita 
+(Cloudflare Workers, Vercel Functions, ou Netlify Functions são boas opções, free tier chega bem para isto) que:
+    -recebe o pedido da tua app (ex.: GET /latest-version),
+    -por trás, com um token do GitHub guardado só nos secrets do serviço serverless (nunca no cliente), 
+    chama api.github.com/repos/.../releases/latest do teu repo privado,
+    -devolve à app só o que ela precisa: versao_remota, versao_local (calculado no cliente), url_download.
+-A única alteração no código da app nessa altura é trocar, em verificar_atualizacao(), o URL chamado de api.github.com/... para 
+o URL da tua função serverless — o resto do fluxo (comparação de versões, download do zip, updater) mantém-se exatamente igual.

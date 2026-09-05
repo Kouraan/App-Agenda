@@ -1,5 +1,5 @@
 (function () {
-    async function getApi(timeout = 3000, interval = 100) {
+    async function getApi(timeout = 5000, interval = 100) {
         const start = Date.now();
         while (Date.now() - start < timeout) {
             const api = window.pywebview?.api;
@@ -9,7 +9,23 @@
         return null;
     }
 
+    function bloquearFundo() {
+        const container = document.querySelector(".container");
+        if (container) container.setAttribute("inert", "");
+
+        const dim = document.createElement("div");
+        dim.id = "updateDimOverlay";
+        dim.style.cssText = `
+            position: fixed; insert: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 99998;
+        `;
+        document.body.appendChild(dim);
+    }
+
     function mostrarBanner(info) {
+        bloquearFundo();
+
         const banner = document.createElement("div");
         banner.id = "updateBanner";
         banner.style.cssText =
@@ -20,26 +36,43 @@
             <span>Nova versão disponível: ${info.versao_remota} (tens ${info.versao_local})</span>
             <button id="btnBaixarUpdate" style="background:#e5c158;color:#111;border:none;
                 padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:bold;">Baixar agora</button>
+            <span id="updateBannerErro" style="color:#ffbcbc;font-size:12px;"></span>
         `;
         document.body.prepend(banner);
 
         document.getElementById("btnBaixarUpdate").addEventListener("click", async () => {
             const btn = document.getElementById("btnBaixarUpdate");
+            const erroEl = document.getElementById("updateBannerErro");
             btn.disabled = true;
             btn.textContent = "A atualizar...";
-            const api = window.pywebview.api;
-            const res = await api.baixar_e_atualizar(info.url_download);
-            if (!res || !res.success) {
+            erroEl.textContent = "";
+
+            const api = await getApi();
+            if (!api) {
+                erroEl.textContent = "Sem ligação à aplicação.";
                 btn.disabled = false;
-                btn.textContent = "Erro — tentar novamente";
+                btn.textContent = "Baixar agora";
+                return;
             }
-            // se success, a app fecha-se sozinha e reabre atualizada
+            try {
+                const res = await api.baixar_e_atualizar(info.url_download);
+                if (!res || !res.success) {
+                    erroEl.textContent = res?.error || "Erro ao atualizar.";
+                    btn.disabled = false;
+                    btn.textContent = "Tentar novamente";
+                }
+            } catch (e) {
+                erroEl.textContent = "Erro de comunicação.";
+                btn.disabled = false;
+                btn.textContent = "Tentar novamente";
+            }
         });
     }
 
     async function checarAtualizacao() {
         const api = await getApi();
         if (!api) return;
+
         try {
             const res = await api.verificar_atualizacao();
             if (res && res.success && res.tem_atualizacao) {
@@ -51,6 +84,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(checarAtualizacao, 500);
+        checarAtualizacao();
     });
 })();

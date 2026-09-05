@@ -14,6 +14,8 @@ from dateutil import parser as date_parser
 from typing import Any, Dict, List, cast
 from contextlib import contextmanager
 
+from backend.utils import Database
+
 def _carregar_env():
     """
     Carrega as variáveis de ambiente.
@@ -81,19 +83,19 @@ def _autenticar(client) -> bool:
     if agora < _sessao_valida_ate - 60:
         return True
     
-    email = os.getenv("SUPABASE_SERVICE_EMAIL")
-    password = os.getenv("SUPABASE_SERVICE_PASSWORD")
-    if not email or not password:
-        print("[Sync] SUPABASE_SERVICE_EMAIL/PASSWORD não configurados no .env")
-        return False
-    
     try:
-        res = client.auth.sign_in_with_password({"email": email, "password": password})
+        refresh_token = Database.ler_meta("supabase_refresh_token")
+        if refresh_token:
+            res = client.auth.refresh_session(refresh_token)
+        else:
+            res = client.auth.sign_in_anonymous()
+            
         if res and res.session:
             _sessao_valida_ate = agora + res.session.expires_in
+            Database.guardar_meta("supabase_refresh_token", res.session.refresh_token)
             return True
     except Exception as e:
-        print(f"[Sync] Falha na autenticação Supabase (provavelmente sem internet): {e}")
+        print(f"[Sync] Falha na autenticação anónima Supabase: {e}")
     return False
 
 # Cliente Supabase
