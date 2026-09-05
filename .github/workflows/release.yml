@@ -39,8 +39,6 @@ jobs:
           cat <<EOF > .env
           SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}
-          SUPABASE_SERVICE_EMAIL=${{ secrets.SUPABASE_SERVICE_EMAIL }}
-          SUPABASE_SERVICE_PASSWORD=${{ secrets.SUPABASE_SERVICE_PASSWORD }}
           EOF
 
       - name: Instalar dependências
