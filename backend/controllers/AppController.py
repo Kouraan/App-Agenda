@@ -1224,6 +1224,17 @@ class AppController:
     
     def verificar_atualizacao(self):
         try:
+            versao_local = self.get_versao_local()
+            
+            if versao_local.endswith("-dev"):
+                return {
+                    "success": True,
+                    "tem_atualizacao": False,
+                    "versao_local": versao_local,
+                    "versao_remota": None,
+                    "url_download": None,
+                }
+            
             resp = requests.get(
                 f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
                 timeout=5
@@ -1233,7 +1244,6 @@ class AppController:
             
             data = resp.json()
             versao_remota = data.get("tag_name", "").lstrip("v")
-            versao_local = self.get_versao_local()
             tem_update = self._comparar_versoes(versao_remota, versao_local) > 0
             
             url_zip = None

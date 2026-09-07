@@ -115,6 +115,12 @@ function marcacaoKey(date) {
     return toLocalISOString(date);
 }
 
+function addDays(date, dias) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + dias);
+    return d;
+}
+
 
 // ==========================================
 // 2. apiUtils.js
@@ -316,16 +322,16 @@ class CalendarioModule {
     }
 
     _anterior() {
-        if (this.modoAtual === "SEMANA")       this.semanaAtual = new Date(this.semanaAtual.getTime() - 7 * 86400000);
+        if (this.modoAtual === "SEMANA")       this.semanaAtual = addDays(this.semanaAtual, -7);
         else if (this.modoAtual === "MES")     this.semanaAtual = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() - 1, 1);
-        else { this.diaSelecionado = new Date(this.diaSelecionado.getTime() - 86400000); this.semanaAtual = getMonday(this.diaSelecionado); }
+        else { this.diaSelecionado = addDays(this.diaSelecionado, -1); this.semanaAtual = getMonday(this.diaSelecionado); }
         this.atualizar();
     }
 
     _proximo() {
-        if (this.modoAtual === "SEMANA")       this.semanaAtual = new Date(this.semanaAtual.getTime() + 7 * 86400000);
+        if (this.modoAtual === "SEMANA")       this.semanaAtual = addDays(this.semanaAtual, 7);
         else if (this.modoAtual === "MES")     this.semanaAtual = new Date(this.semanaAtual.getFullYear(), this.semanaAtual.getMonth() + 1, 1);
-        else { this.diaSelecionado = new Date(this.diaSelecionado.getTime() + 86400000); this.semanaAtual = getMonday(this.diaSelecionado); }
+        else { this.diaSelecionado = addDays(this.diaSelecionado, 1); this.semanaAtual = getMonday(this.diaSelecionado); }
         this.atualizar();
     }
 
@@ -339,12 +345,12 @@ class CalendarioModule {
         headerFixo.appendChild(this._celula("", "header"));
 
         for (let i = 0; i < 7; i++) {
-            const data  = new Date(this.semanaAtual.getTime() + i * 86400000);
+            const data  = addDays(this.semanaAtual, i);
             const texto = `${DIAS_SEMANA_CURTO[i]} ${String(data.getDate()).padStart(2, "0")}`;
             const cel   = this._celula(texto, "header");
             if      (isToday(data))    cel.classList.add("today");
-            else if (isSunday(data))   cel.classList.add("sunday");
             else if (isHoliday(data))  cel.classList.add("holiday");
+            else if (isSunday(data))   cel.classList.add("sunday");
             cel.style.cursor = "pointer";
             cel.addEventListener("click", () => {
                 this.diaSelecionado = data;
@@ -369,7 +375,7 @@ class CalendarioModule {
                 if (h === 13) horaCel.classList.add("lunch-hour");
                 this.grid.appendChild(horaCel);
                 for (let d = 0; d < 7; d++) {
-                    const data     = new Date(this.semanaAtual.getTime() + d * 86400000);
+                    const data     = addDays(this.semanaAtual, d);
                     const dataHora = new Date(data.getFullYear(), data.getMonth(), data.getDate(), h, m);
                     this.grid.appendChild(this._celulaHorario(dataHora));
                 }
@@ -408,8 +414,8 @@ class CalendarioModule {
                 const cel    = this._celula(String(cur.getDate()), "");
                 const clique = new Date(cur);
                 if      (isToday(cur))    cel.classList.add("today");
-                else if (isSunday(cur))   cel.classList.add("sunday");
                 else if (isHoliday(cur))  cel.classList.add("holiday");
+                else if (isSunday(cur))   cel.classList.add("sunday");
                 if (cur.getMonth() !== this.semanaAtual.getMonth()) {
                     cel.style.opacity = "0.4"; cel.style.fontSize = "16px";
                 }
@@ -1220,7 +1226,7 @@ class CalendarioModule {
             let horaSelAH = null;        // string "HH:MM"
 
             const atualizarNavAH = () => {
-                const fim = new Date(semanaAlvoAH.getTime() + 6 * 86400000);
+                const fim = addDays(semanaAlvoAH, 6);
                 const fmt = d => `${String(d.getDate()).padStart(2,"0")} ${d.toLocaleDateString("pt-PT",{month:"short"})}`;
                 navLblAH.textContent = `${fmt(semanaAlvoAH)} – ${fmt(fim)}`;
                 btnAntAH.disabled = semanaAlvoAH.getTime() <= semanaMinAH.getTime();
@@ -1235,7 +1241,7 @@ class CalendarioModule {
                 const agora = new Date();
 
                 for (let i = 0; i < 7; i++) {
-                    const data = new Date(semanaAlvoAH.getTime() + i * 86400000);
+                    const data = addDays(semanaAlvoAH, i);
                     const isSab = data.getDay() === 6;
                     const isDom = data.getDay() === 0;
                     // Dias passados (antes de hoje) não são clicáveis
@@ -1309,7 +1315,7 @@ class CalendarioModule {
             };
 
             btnAntAH.addEventListener("click", () => {
-                const nova = new Date(semanaAlvoAH.getTime() - 7 * 86400000);
+                const nova = addDays(semanaAlvoAH, -7);
                 if (nova.getTime() >= semanaMinAH.getTime()) {
                     semanaAlvoAH = nova;
                     atualizarNavAH();
@@ -1317,7 +1323,7 @@ class CalendarioModule {
                 }
             });
             btnProxAH.addEventListener("click", () => {
-                semanaAlvoAH = new Date(semanaAlvoAH.getTime() + 7 * 86400000);
+                semanaAlvoAH = addDays(semanaAlvoAH, 7);
                 atualizarNavAH();
                 popularDiasAH();
             });
@@ -1357,7 +1363,7 @@ class CalendarioModule {
             let marcacaoTrocaSelecionada = null;
 
             const atualizarNavTR = () => {
-                const fim = new Date(semanaAlvoTR.getTime() + 6 * 86400000);
+                const fim = addDays(semanaAlvoTR, 6);
                 const fmt = d => `${String(d.getDate()).padStart(2,"0")} ${d.toLocaleDateString("pt-PT",{month:"short"})}`;
                 navLblTR.textContent = `${fmt(semanaAlvoTR)} – ${fmt(fim)}`;
                 btnAntTR.disabled = semanaAlvoTR.getTime() <= semanaMinTR.getTime();
@@ -1372,7 +1378,7 @@ class CalendarioModule {
                 const agora = new Date();
 
                 for (let i = 0; i < 7; i++) {
-                    const data = new Date(semanaAlvoTR.getTime() + i * 86400000);
+                    const data = addDays(semanaAlvoTR, i);
                     const isDom = data.getDay() === 0;
                     const dataFim = new Date(data.getFullYear(), data.getMonth(), data.getDate(), 23, 59, 59);
                     const passado = dataFim < agora;
@@ -1462,7 +1468,7 @@ class CalendarioModule {
             };
 
             btnAntTR.addEventListener("click", () => {
-                const nova = new Date(semanaAlvoTR.getTime() - 7 * 86400000);
+                const nova = addDays(semanaAlvoTR, -7);
                 if (nova.getTime() >= semanaMinTR.getTime()) {
                     semanaAlvoTR = nova;
                     atualizarNavTR();
@@ -1470,7 +1476,7 @@ class CalendarioModule {
                 }
             });
             btnProxTR.addEventListener("click", () => {
-                semanaAlvoTR = new Date(semanaAlvoTR.getTime() + 7 * 86400000);
+                semanaAlvoTR = addDays(semanaAlvoTR, 7);
                 atualizarNavTR();
                 popularDiasTR();
             });
@@ -1586,7 +1592,7 @@ class CalendarioModule {
 
         const atualizar = () => {
             const s = getSemana();
-            const dom = new Date(s.getTime() + 6 * 86400000);
+            const dom = addDays(s, 6);
             const fmt = (d) => `${d.getDate()} ${d.toLocaleDateString("pt-PT", { month: "short" })}`;
             lblSem.textContent = `${fmt(s)} – ${fmt(dom)}`;
             btnAnt.disabled = s.getTime() <= semanaMin.getTime();
@@ -1595,7 +1601,7 @@ class CalendarioModule {
         };
 
         btnAnt.addEventListener("click", () => {
-            const nova = new Date(getSemana().getTime() - 7 * 86400000);
+            const nova = addDays(getSemana(), -7);
             if (nova.getTime() >= semanaMin.getTime()) {
                 setSemana(nova);
                 atualizar();
@@ -1603,7 +1609,7 @@ class CalendarioModule {
         });
 
         btnProx.addEventListener("click", () => {
-            setSemana(new Date(getSemana().getTime() + 7 * 86400000));
+            setSemana(addDays(getSemana(), 7));
             atualizar();
         });
 
@@ -1662,7 +1668,7 @@ class CalendarioModule {
         let texto = "";
         switch (this.modoAtual) {
             case "SEMANA": {
-                const fim    = new Date(this.semanaAtual.getTime() + 6 * 86400000);
+                const fim    = addDays(this.semanaAtual, 6);
                 const ini    = this.semanaAtual;
                 const mesIni = ini.toLocaleDateString("pt-PT", { month: "long" });
                 const mesFim = fim.toLocaleDateString("pt-PT", { month: "long" });
