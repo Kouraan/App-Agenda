@@ -32,7 +32,7 @@ def main():
         "pyinstaller",
         "--noconfirm",
         "--clean",
-        "--windowed",
+        #"--windowed",  adcionar dnv depois
         "--name", "AppAgenda",
         "--icon", os.path.join("ui", "images", "icon.ico"),
         "--add-data", f"ui{separador}ui",

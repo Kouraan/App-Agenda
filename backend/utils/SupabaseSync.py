@@ -83,8 +83,8 @@ def _autenticar(client) -> bool:
     if agora < _sessao_valida_ate - 60:
         return True
     
+    refresh_token = Database.ler_meta("supabase_refresh_token")
     try:
-        refresh_token = Database.ler_meta("supabase_refresh_token")
         if refresh_token:
             res = client.auth.refresh_session(refresh_token)
         else:
@@ -96,6 +96,18 @@ def _autenticar(client) -> bool:
             return True
     except Exception as e:
         print(f"[Sync] Falha na autenticação anónima Supabase: {e}")
+        
+        # se falhou a renovar um token guardado, limpa-o e tenta autenticar de novo
+        if refresh_token:
+            Database.guardar_meta("supabase_refresh_token", "")
+            try:
+                res = client.auth.sign_in_anonymously()
+                if res and res.session:
+                    _sessao_valida_ate = agora + res.session.expires_in
+                    Database.guardar_meta("supabase_refresh_token", res.session.refresh_token)
+                    return True
+            except Exception as e2:
+                print(f"[Sync] Falha na autenticação anónima Supabase (2ª tentativa): {e2}")
     return False
 
 # Cliente Supabase
