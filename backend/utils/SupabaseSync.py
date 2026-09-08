@@ -65,6 +65,7 @@ _client_lock     = threading.Lock()
 _sync_thread     = None
 _fila_lock       = threading.Lock()
 _iniciado        = False
+_auth_lock       = threading.Lock()
 
 
 def _parse_ts(valor: str):
@@ -79,35 +80,37 @@ def _parse_ts(valor: str):
 def _autenticar(client) -> bool:
     """Garante que o cliente tem uma sessão válida. Só reautentica se necessário."""
     global _sessao_valida_ate
-    agora = time.time()
-    if agora < _sessao_valida_ate - 60:
-        return True
     
-    refresh_token = Database.ler_meta("supabase_refresh_token")
-    try:
-        if refresh_token:
-            res = client.auth.refresh_session(refresh_token)
-        else:
-            res = client.auth.sign_in_anonymously()
-            
-        if res and res.session:
-            _sessao_valida_ate = agora + res.session.expires_in
-            Database.guardar_meta("supabase_refresh_token", res.session.refresh_token)
+    with _auth_lock:
+        agora = time.time()
+        if agora < _sessao_valida_ate - 60:
             return True
-    except Exception as e:
-        print(f"[Sync] Falha na autenticação anónima Supabase: {e}")
         
-        # se falhou a renovar um token guardado, limpa-o e tenta autenticar de novo
-        if refresh_token:
-            Database.guardar_meta("supabase_refresh_token", "")
-            try:
+        refresh_token = Database.ler_meta("supabase_refresh_token")
+        try:
+            if refresh_token:
+                res = client.auth.refresh_session(refresh_token)
+            else:
                 res = client.auth.sign_in_anonymously()
-                if res and res.session:
-                    _sessao_valida_ate = agora + res.session.expires_in
-                    Database.guardar_meta("supabase_refresh_token", res.session.refresh_token)
-                    return True
-            except Exception as e2:
-                print(f"[Sync] Falha na autenticação anónima Supabase (2ª tentativa): {e2}")
+                
+            if res and res.session:
+                _sessao_valida_ate = agora + res.session.expires_in
+                Database.guardar_meta("supabase_refresh_token", res.session.refresh_token)
+                return True
+        except Exception as e:
+            print(f"[Sync] Falha ao renovar sessão (token guardado={'sim' if refresh_token else 'não'}): {e}")
+        
+            # Token guardado está morto (já usado/expirado/inválido) — limpa e tenta do zero
+            if refresh_token:
+                Database.guardar_meta("supabase_refresh_token", "")
+                try:
+                    res = client.auth.sign_in_anonymously()
+                    if res and res.session:
+                        _sessao_valida_ate = agora + res.session.expires_in
+                        Database.guardar_meta("supabase_refresh_token", res.session.refresh_token)
+                        return True
+                except Exception as e2:
+                    print(f"[Sync] Falha também no sign_in_anonymously de recuperação: {e2}")
     return False
 
 # Cliente Supabase
@@ -373,9 +376,10 @@ def puxar_alteracoes() -> dict:
     resumo = {"sucesso": False, "clientes": 0, "marcacoes": 0,
               "pendentes": 0, "anotacoes": False, "conflitos": []}
 
-    client = _get_client_autenticado()
-    if not client:
-        return resumo
+    with _fila_lock:
+        client = _get_client_autenticado()
+        if not client:
+            return resumo
 
     ultimo_pull = Database.ler_meta("last_pull_timestamp") or "1970-01-01T00:00:00+00:00"
     agora_iso = datetime.utcnow().isoformat() + "+00:00"
